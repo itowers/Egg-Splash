@@ -7,6 +7,13 @@ Jogo 8-bit para iPhone: a raposa come os ovos e desvia das bolas.
 2. Toque em **Compartilhar → Adicionar à Tela de Início**.
 3. Abra pelo ícone. Depois da primeira abertura, o jogo funciona sem internet.
 
+## Dificuldade
+A curva segue o princípio de ensinar uma coisa por vez (*Design for How People Learn*, Julie Dirksen):
+- **Queda:** 3,0 s → 1,6 s · **Intervalo:** 1,6 s → 0,7 s · **Bolas:** 0% → 50% (curvas exponenciais com teto)
+- Os 3 primeiros objetos são sempre ovos; no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
+- **Disfarce da bola:** vermelha (0–9) → cor do ovo com listra vermelha (10–29) → só forma e listra sutil (30+)
+- A primeira bola de cada fase cai sozinha e 30% mais devagar
+
 ## Controles
 - ◀ ▶ andar · botão redondo (segurar) abrir a boca
 - Teclado: setas / A D, ↑ ou espaço para a boca, P pausa, M som
