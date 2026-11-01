@@ -561,7 +561,7 @@ let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,timerT=0,lastEgg={x:W/2-4,a
 let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1;
 const RAIN_EVERY=30*60,RAIN_LEN=5*60;
 // Pintinho/galinha: recompensa por ir muito bem (ver README). Um passaro por vez.
-const HATCH_COMBO=8,HATCH_P=.3,HATCH_CD=20*60,CHICK_LIFE=8*60,GROW_T=40,HEN_LIFE=12*60,HALT_T=24;
+const HATCH_COMBO=8,HATCH_P=.3,HATCH_CD=20*60,CHICK_LIFE=8*60,GROW_T=40,HEN_LIFE=12*60,HALT_T=24,CHICK_FLEE=20;
 let bird=null,hatchCD=0;
 // Ovo podre (ver README): aparece a partir de ROT_FROM pts. Comer = vomita e fica parado um instante.
 // Cair no chao = nuvem de cheiro que deixa a raposa lenta enquanto ela passa por ali.
@@ -719,7 +719,15 @@ function updateBird(){
     if(b.x>W-10){b.x=W-10;b.vx=-Math.abs(b.vx);b.face=-1;}
     if(b.y>=GROUND-8){b.y=GROUND-8;b.vy=0;b.vx=0;b.ground=true;}
     if(b.kind==='chick'){
-      if(b.ground&&--b.hopT<=0){b.ground=false;b.vy=-1.2-Math.random()*.6;
+      // foge da raposa: se ela chega perto, pula para longe na hora; encurralado na parede, pula por cima dela
+      const dx=b.x+4-(fox.x+8),near=fox.big?CHICK_FLEE+8:CHICK_FLEE;
+      if(b.ground&&Math.abs(dx)<near){
+        let d=dx<0?-1:1;
+        const stuck=d<0?b.x<14:b.x>W-22;
+        if(stuck){d=-d;b.vy=-2.7;b.vx=d*1.7;}else{b.vy=-1.5;b.vx=d*1.4;}
+        b.ground=false;b.face=d;b.hopT=12;
+        if(!b.scared||b.t-b.scared>40){b.scared=b.t;sfx.chirp();}
+      }else if(b.ground&&--b.hopT<=0){b.ground=false;b.vy=-1.2-Math.random()*.6;
         let d=Math.random()<.5?-1:1;if(b.x<20)d=1;if(b.x>W-28)d=-1;
         b.vx=d*(.4+Math.random()*.5);b.face=d;b.hopT=25+Math.floor(Math.random()*30);}
       if(b.t%50===0)sfx.chirp();
@@ -958,7 +966,7 @@ function render(){
       else img=HEN[Math.floor(b.t/5)%2?2:3][f];
       const yy=b.kind==='grow'&&img===HEN[0][f]?GROUND-14:b.y;
       ctx.drawImage(img,Math.round(b.x),Math.round(yy));
-      if(b.kind==='chick'&&b.t<50)text('PIU!',b.x+4,b.y-8,1,PAL.y,'center',PAL.k);
+      if(b.kind==='chick'&&(b.t<50||b.t-b.scared<30))text('PIU!',b.x+4,b.y-8,1,PAL.y,'center',PAL.k);
     }
     const legs=(Math.abs(fox.vx)>.2||(fox.walk&&(keys.l||keys.r||touch.l||touch.r)))&&!fox.stun?(Math.floor(fox.walk/5)%2?1:2):0;
     {const k=bigK(),fcx=Math.round(fox.x)+8;ctx.save(); // gigante: escala a partir do pe, no centro da raposa
