@@ -541,7 +541,7 @@ const sfx={
 /* ---------- state ---------- */
 let state='title',score=0,best=0,lives=3,frame=0,overT=0,newBest=false;
 let items=[],parts=[],puddles=[],spawnT=60,shake=0,combo=0,prevMouth=false,prevLeg=0;
-let heartsToDrop=0,heartPlan=[],rainT=0,timerT=0,lastEgg={x:W/2-4,arr:0},recent=[];
+let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,timerT=0,lastEgg={x:W/2-4,arr:0},recent=[];
 let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1;
 const RAIN_EVERY=30*60,RAIN_LEN=5*60;
 // Pintinho/galinha: recompensa por ir muito bem (ver README). Um passaro por vez.
@@ -559,7 +559,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){skyT=0;resetWeather();score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;stinks=[];rotSeen=false;closePyr();
+function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;stinks=[];rotSeen=false;closePyr();
   Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,stink:false});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -741,14 +741,14 @@ function update(){
   parts=parts.filter(p=>p.life>0);
   if(state==='over'){overT++;return;}
   if(state!=='play')return;
-  if(shake>0)shake--;
+  if(shake>0)shake--;if(lvlT>0)lvlT--;
   const L=level();
   if(rainT>0){
     rainT--;if(frame%6===0)spawnRain();
     {const k=RAIN_LEN-rainT;while(heartPlan.length&&k>=heartPlan[0].k){spawnHeart(heartPlan.shift().x);heartsToDrop--;}}
     if(rainT===0){for(const p of puddles)burst(p.x+11,GROUND-2,3,[PAL.t,PAL.y],1,1.2);puddles=[];stinks=[]; // rain end cleans the whole floor
       for(const it of items)if(it.rain){it.dead=true;burst(it.x+4,it.y+5,4,[PAL.t,PAL.y],1,1);}
-      timerT=0;spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();}
+      timerT=0;spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();lvl++;lvlT=60;}
   }else{
     timerT++;
     const left=RAIN_EVERY-timerT;
@@ -938,7 +938,9 @@ function render(){
   for(let i=0;i<5;i++)ctx.drawImage(i<lives?HEART:HEART0,4+i*9,5);
   text(score,W-5,4,2,PAL.t,'right',PAL.k);
   if(state!=='title'){
-    const bx=50,bw=50,by=6,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
+    const bx=50,bw=50,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
+    // nivel em cima do tempo: sobe a cada Chuva de Ovos que termina e pisca amarelo ao subir
+    text('NIVEL '+lvl,bx+bw/2,2,1,lvlT>0&&frame%10<5?PAL.y:PAL.t,'center',PAL.k);
     ctx.fillStyle=PAL.k;ctx.fillRect(bx-1,by-1,bw+2,7);
     ctx.fillStyle='#6b2a1f';ctx.fillRect(bx,by,bw,5);
     const low=rainT===0&&RAIN_EVERY-timerT<=180;
@@ -1146,7 +1148,7 @@ window.__egg={reset,update,render,fox,keys,get items(){return items},get puddles
     g.fillStyle='#8a5a3c';g.fillRect(0,o+21*u,S,S);
     g.drawImage(FOX.c0[0],o+4*u,o+6*u,16*u,15*u);g.drawImage(EGG,o+8*u,o-2*u+u,8*u*0.75|0,10*u*0.75|0);
     return c.toDataURL('image/png');},
-  puddle(x){puddles.push({x,w:22,life:Infinity})},get score(){return score},forceOver(){gameOver()},level,fallFrames,
+  puddle(x){puddles.push({x,w:22,life:Infinity})},get score(){return score},get lvl(){return lvl},forceOver(){gameOver()},level,fallFrames,
   get bird(){return bird},set combo(v){combo=v},hatchAt(x){hatchEgg({x,y:GROUND-40})},
   setBird(o){bird=o},set eaten(v){eaten=v},get eaten(){return eaten},set hatched(v){hatched=v},openPyr,pyramidCells,drawPyramid};
 })();
