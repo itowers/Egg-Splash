@@ -119,6 +119,18 @@ const HEAD_OPEN=[
 "koookkooookkoook",
 ".kooooooooooook.",
 ];
+// raposa sorrindo (olhos fechados de alegria), usada na piramide de ovos
+const HEAD_SMILE=[
+"..kk........kk..",
+".kook......kook.",
+".kopokkkkkkopok.",
+"kookkooooookkook",
+"kokookooookookok",
+"kooooookkooooook",
+"kowwkwwwwwwkwwok",
+".kwwwkkkkkkwwwk.",
+"..kkwwwwwwwwkk..",
+];
 const BODY=[
 "...kooowwoook.kk",
 "..kooowwwwoookok",
@@ -131,7 +143,7 @@ const LEGS=[
 ["..kdk......kdk..","..kkk......kkk.."],
 ];
 const FOX={};
-for(const [name,head] of [['c',HEAD],['o',HEAD_OPEN]])
+for(const [name,head] of [['c',HEAD],['o',HEAD_OPEN],['s',HEAD_SMILE]])
   LEGS.forEach((l,i)=>{const rows=[...head,...BODY,...l];FOX[name+i]=[bake(rows,false),bake(rows,true)];});
 
 const EGG=bake([
@@ -909,7 +921,7 @@ function drawPyramid(list,chicks){
   // ceu, sol e colinas
   g.fillStyle=P.sky;g.fillRect(0,0,PW,PH);
   g.fillStyle=P.b1;g.fillRect(0,gy-34,PW,34);g.fillStyle=P.b2;g.fillRect(0,gy-16,PW,16);
-  g.drawImage(SUN,PW-34,HEAD+4);
+  g.drawImage(SUN,PW-30,Math.max(HEAD-2,Math.min(HEAD+10,gy-62)));
   for(let x=0;x<PW;x++){const h1=Math.round(18+8*Math.sin(x/13)+5*Math.sin(x/5.3+1));g.fillStyle=P.h1;g.fillRect(x,gy-h1-8,1,h1+8);
     const h2=Math.round(10+5*Math.sin(x/9+2)+3*Math.sin(x/4.1));g.fillStyle=P.h2;g.fillRect(x,gy-h2,1,h2);}
   g.fillStyle=P.gr;g.fillRect(0,gy,PW,PH-gy);g.fillStyle=P.gt;g.fillRect(0,gy,PW,1);
@@ -919,8 +931,8 @@ function drawPyramid(list,chicks){
   if(n){g.fillStyle='rgba(30,60,30,.25)';for(const e of cells)if(e.L===0)g.fillRect(ox+e.x-5,oy+e.y-2,10,3);}
   // ovos
   cells.forEach((e,i)=>g.drawImage(cols[i]>=0?RAIN_EGGS[cols[i]]:EGG,ox+e.x-4,oy+e.y-10));
-  // raposa no topo, de boca aberta
-  g.drawImage(FOX.o0[0],ox+fx-8,n?oy+fy-15:oy-15);
+  // raposa no topo, sorrindo
+  g.drawImage(FOX.s0[0],ox+fx-8,n?oy+fy-15:oy-15);
   // pintinhos (ovos que chocaram em vez de serem comidos)
   for(let i=0;i<nc;i++)g.drawImage(CHICK[i%3===1?1:0][i%2],Math.round(PW/2-(nc*11-3)/2+i*11),PH-FOOT+2);
   // textos
