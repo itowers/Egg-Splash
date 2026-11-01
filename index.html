@@ -188,30 +188,104 @@ function text(s,x,y,sc=1,col=PAL.k,align='center',sh=null){
   draw(0,0,col);
 }
 
-/* ---------- background ---------- */
-const bg=document.createElement('canvas');bg.width=W;bg.height=H;
-(()=>{const g=bg.getContext('2d');
-  g.fillStyle='#9fd3e0';g.fillRect(0,0,W,H);
-  g.fillStyle='#b3dde4';g.fillRect(0,110,W,30);
-  g.fillStyle='#c6e6e6';g.fillRect(0,128,W,20);
-  // sun
-  g.fillStyle='#fbe9a6';for(let y=-9;y<=9;y++)for(let x=-9;x<=9;x++)if(x*x+y*y<=80)g.fillRect(116+x,30+y,1,1);
-  // clouds
-  g.fillStyle='#eef7f5';
-  [[14,40],[70,62],[100,96]].forEach(([x,y])=>{g.fillRect(x,y,22,4);g.fillRect(x+4,y-3,12,3);g.fillRect(x+9,y-5,6,2);});
-  // hills
+/* ---------- background: ciclo dia/noite + clima ---------- */
+// ordem do ciclo: dia -> por do sol -> noite -> amanhecer -> dia
+const TIMES=[
+ {sky:'#9fd3e0',b1:'#b3dde4',b2:'#c6e6e6',cl:'#eef7f5',h1:'#a8cfa2',h2:'#7db37f',gt:'#7cbf6a',gr:'#4f8a4f',dirt:'#8a5a3c',dot:'#6e4630'}, // dia
+ {sky:'#f0a266',b1:'#f4b67a',b2:'#f8cb92',cl:'#fbe0c4',h1:'#b39a72',h2:'#8a7d55',gt:'#a5a35a',gr:'#5f6a3a',dirt:'#7a4e34',dot:'#5e3a26'}, // por do sol
+ {sky:'#1c2547',b1:'#232e58',b2:'#2b376a',cl:'#3b4777',h1:'#2e4648',h2:'#223636',gt:'#3d5e45',gr:'#1f3a2c',dirt:'#4a3428',dot:'#36251c'}, // noite
+ {sky:'#e7a9b9',b1:'#eebcc8',b2:'#f3cfd5',cl:'#fbe6ea',h1:'#9cb39a',h2:'#74967a',gt:'#86b874',gr:'#46784a',dirt:'#7e5238',dot:'#62402c'}, // amanhecer
+];
+const PHASE=45*60;        // 45 s por fase -> ciclo completo de 3 min
+const FADE=.3,STEPS=8;    // transicao nos ultimos 30% da fase, em 8 degraus (visual 8-bit)
+function mk(){const c=document.createElement('canvas');c.width=W;c.height=H;return c;}
+function makeSky(p){const c=mk(),g=c.getContext('2d');
+  g.fillStyle=p.sky;g.fillRect(0,0,W,H);
+  g.fillStyle=p.b1;g.fillRect(0,110,W,30);
+  g.fillStyle=p.b2;g.fillRect(0,128,W,20);
+  return c;}
+function makeLand(p){const c=mk(),g=c.getContext('2d');
   for(let x=0;x<W;x++){
     const h1=Math.round(18+8*Math.sin(x/13)+5*Math.sin(x/5.3+1));
-    g.fillStyle='#a8cfa2';g.fillRect(x,GROUND-h1-8,1,h1+8);
+    g.fillStyle=p.h1;g.fillRect(x,GROUND-h1-8,1,h1+8);
     const h2=Math.round(10+5*Math.sin(x/9+2)+3*Math.sin(x/4.1));
-    g.fillStyle='#7db37f';g.fillRect(x,GROUND-h2,1,h2);
+    g.fillStyle=p.h2;g.fillRect(x,GROUND-h2,1,h2);
   }
-  g.fillStyle='#4f8a4f';g.fillRect(0,GROUND,W,4);
-  g.fillStyle='#7cbf6a';g.fillRect(0,GROUND,W,1);
-  g.fillStyle='#8a5a3c';g.fillRect(0,GROUND+4,W,H-GROUND-4);
-  g.fillStyle='#6e4630';
+  g.fillStyle=p.gr;g.fillRect(0,GROUND,W,4);
+  g.fillStyle=p.gt;g.fillRect(0,GROUND,W,1);
+  g.fillStyle=p.dirt;g.fillRect(0,GROUND+4,W,H-GROUND-4);
+  g.fillStyle=p.dot;
   for(let i=0;i<40;i++){g.fillRect((i*37)%W,GROUND+6+((i*13)%(H-GROUND-8)),2,1);}
-})();
+  return c;}
+const SKIES=TIMES.map(makeSky),LANDS=TIMES.map(makeLand);
+function orb(r,col,sh){const c=document.createElement('canvas');c.width=c.height=r*2+1;const g=c.getContext('2d');
+  for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++)if(x*x+y*y<=r*r+r){g.fillStyle=col;g.fillRect(x+r,y+r,1,1);}
+  if(sh){g.fillStyle=sh;[[-2,-1,2],[2,2,1],[-1,3,1],[3,-3,1]].forEach(([x,y,w])=>g.fillRect(x+r,y+r,w,w));}
+  return c;}
+const SUN=orb(9,'#fbe9a6'),SUN_LOW=orb(9,'#f8c46c');
+// lua crescente (nao pode parecer uma bola redonda e clara)
+const MOON=(()=>{const c=orb(6,'#c9d4ee'),g=c.getContext('2d');g.globalCompositeOperation='destination-out';
+  for(let y=-6;y<=6;y++)for(let x=-6;x<=6;x++)if((x-3)*(x-3)+(y+2)*(y+2)<=30)g.fillRect(x+6,y+6,1,1);return c;})();
+const STARS=[];{let z=7;const rnd=()=>(z=(z*16807)%2147483647)/2147483647;
+  for(let i=0;i<28;i++)STARS.push({x:Math.floor(rnd()*W),y:Math.floor(4+rnd()*100),b:rnd()<.25,ph:Math.floor(rnd()*60)});}
+const CLOUDS=[{x:14,y:40,v:.05},{x:70,y:62,v:.035},{x:100,y:96,v:.025}];
+let skyT=0;
+// clima: chuva de verdade (aleatoria) + ceu fechando como aviso antes da Chuva de Ovos
+const wx={raining:false,t:60*50,over:0};
+let drops=[];
+const q=(v,n=STEPS)=>Math.round(v*n)/n;
+function cyc(){return (skyT/PHASE)%TIMES.length;}
+function nightK(c){return c<1.7?0:c<2?(c-1.7)/.3:c<3?1:c<3.3?1-(c-3)/.3:0;}
+function layer(arr,c){const i=Math.floor(c),k=c-i,f=q(Math.max(0,(k-(1-FADE))/FADE));
+  ctx.drawImage(arr[i],0,0);
+  if(f>0){ctx.globalAlpha=f;ctx.drawImage(arr[(i+1)%arr.length],0,0);ctx.globalAlpha=1;}}
+function arc(u){return {x:Math.round(-10+u*(W+20)),y:Math.round(140-Math.sin(u*Math.PI)*92)};}
+function drawWorld(){
+  const c=cyc(),i=Math.floor(c),k=c-i,f=q(Math.max(0,(k-(1-FADE))/FADE)),ni=(i+1)%TIMES.length;
+  layer(SKIES,c);
+  // estrelas
+  const n=q(nightK(c)*(1-wx.over));
+  if(n>0){ctx.globalAlpha=n;ctx.fillStyle='#f4f1e0';
+    for(const s of STARS){if(s.b&&Math.floor((frame+s.ph)/30)%4===0)continue;ctx.fillRect(s.x,s.y,1,1);}
+    ctx.globalAlpha=1;}
+  // sol: nasce no amanhecer, se poe no fim do por do sol
+  const su=((c+1)%4)/3;
+  if((c+1)%4<3){const p=arc(su);ctx.globalAlpha=q(1-wx.over*.85);ctx.drawImage(i===0?SUN:SUN_LOW,p.x-9,p.y-9);ctx.globalAlpha=1;}
+  // lua
+  if(c>=1.6&&c<3.4){const p=arc((c-1.6)/1.8);ctx.globalAlpha=q(1-wx.over*.85);ctx.drawImage(MOON,p.x-6,p.y-6);ctx.globalAlpha=1;}
+  // nuvens (cor da fase atual, trocando no meio da transicao)
+  const cl=f>=.5?TIMES[ni].cl:TIMES[i].cl;
+  for(const o of CLOUDS){const x=Math.round(o.x),y=o.y;ctx.fillStyle=cl;
+    ctx.fillRect(x,y,22,4);ctx.fillRect(x+4,y-3,12,3);ctx.fillRect(x+9,y-5,6,2);}
+  layer(LANDS,c);
+  // ceu fechado (chuva / aviso)
+  const o=q(wx.over);
+  if(o>0){ctx.fillStyle='rgba(58,66,84,'+(o*.45)+')';ctx.fillRect(0,0,W,GROUND+4);}
+}
+function updateWorld(){
+  for(const o of CLOUDS){o.x+=o.v*(1+wx.over*3);if(o.x>W+2)o.x=-24;}
+  let target=0;
+  if(state==='play'){
+    if(rainT>0){wx.raining=false;}
+    else{
+      if(--wx.t<=0){wx.raining=!wx.raining;wx.t=wx.raining?60*(12+Math.random()*8):60*(40+Math.random()*40);}
+      const left=RAIN_EVERY-timerT;
+      target=wx.raining?1:left<=180?1-left/180:0; // ceu fecha nos 3 s antes da Chuva de Ovos
+    }
+  }
+  wx.over+=Math.sign(target-wx.over)*Math.min(Math.abs(target-wx.over),1/60);
+  if(state==='play'&&wx.raining&&rainT===0)for(let j=0;j<2;j++)drops.push({x:Math.random()*(W+48),y:-4-Math.random()*20});
+  const dc=nightK(cyc())>.5?'#8fa6c8':'#dceaf2';
+  for(const d of drops){d.x-=1.2;d.y+=4.5;
+    if(d.y>=GROUND){d.dead=true;if(Math.random()<.3)parts.push({x:d.x,y:GROUND-1,vx:(Math.random()-.5)*.6,vy:-.7,life:6,c:dc});}}
+  drops=drops.filter(d=>!d.dead&&d.x>-4);
+}
+function drawDrops(){
+  if(!drops.length)return;
+  ctx.fillStyle=nightK(cyc())>.5?'rgba(143,166,200,.8)':'rgba(220,234,242,.75)';
+  for(const d of drops){const x=Math.round(d.x),y=Math.round(d.y);ctx.fillRect(x,y,1,2);ctx.fillRect(x-1,y+2,1,2);}
+}
+
 
 /* ---------- audio ---------- */
 let ac=null,master=null,noiseBuf=null,silentEl=null,muted=false;
@@ -287,7 +361,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;
+function reset(){skyT=0;wx.raining=false;wx.t=60*(40+Math.random()*30);wx.over=0;drops=[];score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;
   Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -366,6 +440,8 @@ function breakEgg(it){
 
 function update(){
   frame++;
+  if(state==='play'||state==='title')skyT++;
+  if(state!=='pause')updateWorld();
   for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.life--;if(p.y>GROUND){p.y=GROUND;p.vx*=.5;p.vy=0;}}
   parts=parts.filter(p=>p.life>0);
   if(state==='over'){overT++;return;}
@@ -488,7 +564,7 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
 function render(){
   ctx.save();
   if(shake)ctx.translate(Math.round((Math.random()-.5)*shake*.6),Math.round((Math.random()-.5)*shake*.6));
-  ctx.drawImage(bg,0,0);
+  drawWorld();
   for(const p of puddles){
     if(p.life<120&&Math.floor(p.life/6)%2)continue;
     const pc=p.col!=null?EGG_COLS[p.col]:[PAL.w,PAL.c];
@@ -497,6 +573,7 @@ function render(){
     const m=p.x+p.w/2;ctx.fillStyle=PAL.y;ctx.fillRect(m-4,GROUND-2,8,3);ctx.fillRect(m-3,GROUND-3,6,1);
     ctx.fillStyle=PAL.t;ctx.fillRect(p.x+3,GROUND-1,2,1);ctx.fillRect(m-2,GROUND-2,1,1);
   }
+  drawDrops();
   if(state!=='title'){
     for(const it of items){
       if(it.type==='ball'&&it.state==='bounce'&&it.t>110&&frame%4<2)continue;
