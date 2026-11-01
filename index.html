@@ -144,8 +144,8 @@ const BALL_ROWS=[[
 ".kwwrwck.",
 "..kkkkk..",
 ]];
-// disfarce progressivo: fase 1 bola vermelha, fase 2 cor do ovo + listra vermelha, fase 3 so forma + listra sutil
-const BALL_PALS=[{...PAL,w:'#e8604c',c:'#b03a2a',r:'#ffffff'},PAL,{...PAL,r:'#e2cfae'}];
+// disfarce progressivo: fase 1 bola vermelha, fase 2 cor do ovo + listra vermelha, fase 3 listra sutil, fase 4 sem listra (so a forma)
+const BALL_PALS=[{...PAL,w:'#e8604c',c:'#b03a2a',r:'#ffffff'},PAL,{...PAL,r:'#e2cfae'},{...PAL,r:PAL.w}];
 const BALLS=BALL_PALS.map(p=>BALL_ROWS.map(r=>bake(r,false,p)));
 const BALL=BALLS[1];
 const HEART=bake([".kk.kk.","krrkrrk","krrrrrk",".krrrk.","..krk..","...k..."]);
@@ -278,7 +278,7 @@ const sfx={
 /* ---------- state ---------- */
 let state='title',score=0,best=0,lives=3,frame=0,overT=0,newBest=false;
 let items=[],parts=[],puddles=[],spawnT=60,shake=0,combo=0,prevMouth=false,prevLeg=0;
-let heartsToDrop=0,rainT=0,timerT=0,lastEgg={x:W/2-4,arr:0},recent=[];
+let heartsToDrop=0,heartPlan=[],rainT=0,timerT=0,lastEgg={x:W/2-4,arr:0},recent=[];
 let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1;
 const RAIN_EVERY=30*60,RAIN_LEN=5*60;
 try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
@@ -287,7 +287,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){score=0;lives=5;heartsToDrop=0;combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;
+function reset(){score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;
   Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -296,7 +296,7 @@ function vmaxFor(frames){ // velocidade maxima para um ovo levar ~frames do topo
   if(fallCache.has(frames))return fallCache.get(frames);
   let lo=.6,hi=6;for(let i=0;i<30;i++){const m=(lo+hi)/2;if(fallFrames(m,GROUND-26)>frames)lo=m;else hi=m;}
   fallCache.set(frames,hi);return hi;}
-const phaseOf=s=>s<10?0:s<30?1:2;
+const phaseOf=s=>s<10?0:s<30?1:s<50?2:3;
 function level(){const s=score,fall=Math.round(60*(1.6+1.4*Math.exp(-s/40)));
   return{fall,vmax:vmaxFor(fall),interval:Math.round(60*(.7+.9*Math.exp(-s/35))),
     ballP:.5*(1-Math.exp(-s/25)),maxOn:s<5?1:s<20?2:s<100?3:4,phase:phaseOf(s)};}
@@ -337,10 +337,16 @@ function spawn(){
 }
 function spawnRain(){items.push({type:'egg',x:4+Math.random()*(W-12),y:-12,vx:0,vy:.5+Math.random()*.8,state:'fall',t:0,rain:true,col:Math.floor(Math.random()*EGG_COLS.length)});}
 // lost hearts come back during the rain, dropped on the side farthest from the fox
-function spawnHeart(){const fc=fox.x+8;const bx=fc<W/2?W-16-Math.random()*10:7+Math.random()*10;
-  items.push({type:'heart',x:bx,bx,y:-10,vx:0,vy:0,state:'fall',t:0});}
+function spawnHeart(bx){items.push({type:'heart',x:bx,bx,y:-10,vx:0,vy:0,state:'fall',t:0});}
+// lost hearts come back during the rain, spread over the whole rain and across the whole screen (shuffled lanes)
+function planHearts(n){
+  const lanes=[...Array(n)].map((_,i)=>Math.round(8+(n>1?i*(W-25)/(n-1):(W-25)/2)));
+  for(let i=lanes.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
+  const span=RAIN_LEN-100;
+  return lanes.map((x,i)=>({k:30+Math.round((i+.5)*span/n),x}));
+}
 function startRain(){
-  rainT=RAIN_LEN;heartsToDrop=5-lives;sfx.rain();
+  rainT=RAIN_LEN;heartsToDrop=5-lives;heartPlan=planHearts(heartsToDrop);sfx.rain();
   for(const it of items)if(it.type==='ball'){it.dead=true;burst(it.x+4,it.y+4,8,[PAL.t,PAL.y],1.2,1.2);}
   items=items.filter(i=>!i.dead);
 }
@@ -368,7 +374,7 @@ function update(){
   const L=level();
   if(rainT>0){
     rainT--;if(frame%6===0)spawnRain();
-    {const k=RAIN_LEN-rainT;if(heartsToDrop>0&&k>=30&&(k-30)%28===0){spawnHeart();heartsToDrop--;}}
+    {const k=RAIN_LEN-rainT;while(heartPlan.length&&k>=heartPlan[0].k){spawnHeart(heartPlan.shift().x);heartsToDrop--;}}
     if(rainT===0){for(const p of puddles)burst(p.x+11,GROUND-2,3,[PAL.t,PAL.y],1,1.2);puddles=[]; // rain end cleans the whole floor
       for(const it of items)if(it.rain){it.dead=true;burst(it.x+4,it.y+5,4,[PAL.t,PAL.y],1,1);}
       timerT=0;spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();}

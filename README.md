@@ -10,8 +10,9 @@ Jogo 8-bit para iPhone: a raposa come os ovos e desvia das bolas.
 ## Dificuldade
 A curva segue o princípio de ensinar uma coisa por vez (*Design for How People Learn*, Julie Dirksen):
 - **Queda:** 3,0 s → 1,6 s · **Intervalo:** 1,6 s → 0,7 s · **Bolas:** 0% → 50% (curvas exponenciais com teto)
+- Na Chuva de Ovos, os corações perdidos caem espalhados pela chuva toda e pela tela inteira
 - Os 3 primeiros objetos são sempre ovos; no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
-- **Disfarce da bola:** vermelha (0–9) → cor do ovo com listra vermelha (10–29) → só forma e listra sutil (30+)
+- **Disfarce da bola:** vermelha (0–9) → cor do ovo com listra vermelha (10–29) → listra sutil (30–49) → sem listra, só a forma (50+)
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
 ## Controles
