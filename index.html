@@ -158,6 +158,19 @@ const EGG=bake([
 ".kwwwck.",
 "..kkkk..",
 ]);
+// ovo dourado: mesmo desenho do ovo, em ouro
+const GOLD=bake([
+"...kk...",
+"..kwwk..",
+".kwwwck.",
+".kwswck.",
+"kwwwwwck",
+"kwswwwck",
+"kwwwwsck",
+"kwwwwwck",
+".kwwwck.",
+"..kkkk..",
+],false,{...PAL,w:'#f4c430',c:'#b8861a',s:'#fff3b0'});
 // ovo podre: casca verde-oliva com manchas marrons (cheiro desenhado por cima no render)
 const ROTTEN=bake([
 "...kk...",
@@ -533,6 +546,9 @@ const sfx={
   grow(){arp([523,659,784,659,880,1047],.06,.08,.05)},
   cluck(){tone(520,380,.07,'square',.06);tone(620,300,.12,'square',.06,.09);noise(.08,.06,'bandpass',1800)},
   flap(){noise(.05,.05,'bandpass',900)},
+  power(){arp([523,659,784,1047,1319,1568,2093],.04,.08,.06);arp([784,1047,1319,1568],.05,.1,.05,'triangle',.32)},
+  powerEnd(){arp([1568,1047,784,523],.05,.07,.05)},
+  smash(){noise(.08,.14,'bandpass',1800);tone(900,1800,.08,'square',.05)},
   vomit(){tone(180,70,.35,'sawtooth',.06);noise(.4,.12,'lowpass',700,150,.05);tone(120,60,.2,'square',.05,.3)},
   rotten(){noise(.18,.14,'lowpass',600,120);tone(150,70,.22,'triangle',.08,.02)},
   record(){arp([523,659,784,1047,784,1047],.09,.1,.06,'square',.9)},
@@ -551,16 +567,18 @@ let bird=null,hatchCD=0;
 // Cair no chao = nuvem de cheiro que deixa a raposa lenta enquanto ela passa por ali.
 const ROT_FROM=15,SICK_T=40,STINK_LIFE=6*60,STINK_W=24,STINK_SLOW=.55;
 let stinks=[],rotSeen=false;
+// Ovo dourado (ver README): 2% dos ovos depois de GOLD_FROM pts. Vale +5 e deixa a raposa 2x maior e invencivel por 5 s.
+const GOLD_FROM=20,GOLD_P=.02,GOLD_PTS=5,BIG_T=5*60,BIG_GROW=30,BIG_WARN=90;
 const rotP=s=>s<ROT_FROM?0:Math.min(.12,.05+(s-ROT_FROM)*.0015);
-let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
+let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
 try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
-const fox={x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,stink:false};
+const fox={x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,stink:false,big:0};
 const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
 function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;stinks=[];rotSeen=false;closePyr();
-  Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,stink:false});state='play';sfx.start();}
+  Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,stink:false,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
 const fallCache=new Map();
@@ -617,8 +635,9 @@ function spawn(){
   else{ballRun++;eggRun=0;lastBallPhase=L.phase;}
   spawned++;
   recent.push({type,x,arr});
-  const hatch=type==='egg'&&!bird&&hatchCD===0&&combo>=HATCH_COMBO&&!items.some(i=>i.hatch)&&Math.random()<HATCH_P;
-  items.push({type,x:sx,y:-12,vx:0,vy:.5,state:'fall',t:0,vmax,ph:L.phase,intro,hatch,land:x});
+  const gold=type==='egg'&&score>=GOLD_FROM&&fox.big===0&&!items.some(i=>i.gold)&&Math.random()<GOLD_P;
+  const hatch=!gold&&type==='egg'&&!bird&&hatchCD===0&&combo>=HATCH_COMBO&&!items.some(i=>i.hatch)&&Math.random()<HATCH_P;
+  items.push({type,x:sx,y:-12,vx:0,vy:.5,state:'fall',t:0,vmax,ph:L.phase,intro,hatch,gold,land:x});
   return intro?L.interval+Math.round(fall*.6):L.interval;
 }
 function spawnRain(){items.push({type:'egg',x:4+Math.random()*(W-12),y:-12,vx:0,vy:.5+Math.random()*.8,state:'fall',t:0,rain:true,col:Math.floor(Math.random()*EGG_COLS.length)});}
@@ -642,6 +661,7 @@ function gameOver(){state='over';overT=0;if(score>best){best=score;newBest=true;
 
 function breakEgg(it){
   it.dead=true;const cx=it.x+4;
+  if(it.gold){burst(cx,GROUND-2,10,[PAL.y,'#b8861a','#fff3b0'],1.3,1.6);sfx.heartLost();return;} // perder o dourado nao tira vida
   if(it.rain||rainT>0){const c=it.rain?EGG_COLS[it.col]:[PAL.w,PAL.c];burst(cx,GROUND-2,5,[c[0],c[1]],1.2,1.4);burst(cx,GROUND-2,3,[PAL.y],.8,1);sfx.splat();
     puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rain:true,col:it.rain?it.col:null});return;}
   lives--;combo=0;shake=5;sfx.crack();if(lives>0)sfx.hurt();
@@ -661,6 +681,22 @@ function breakRotten(it){
 // comeu: vomita e fica parado um instante (sem perder vida, mas zera o combo e nao conta ponto)
 function eatRotten(it){
   it.dead=true;combo=0;fox.sick=SICK_T;fox.vx=0;fox.chew=0;shake=3;sfx.vomit();
+}
+
+/* ---------- ovo dourado ---------- */
+function eatGold(it){
+  it.dead=true;score+=GOLD_PTS;combo++;fox.chew=16;eaten.push(-2);
+  fox.big=BIG_T;fox.stun=0;fox.sick=0;fox.halt=0;fox.inv=0;sfx.power();
+  burst(fox.x+8,GROUND-16,16,[PAL.y,'#fff3b0',PAL.t],1.8,2.2);
+  if(bird&&bird.kind==='hen')henFly(0);
+}
+const bigK=()=>{const b=fox.big;if(!b)return 1; // escala para desenhar: cresce piscando no inicio e pisca antes de acabar
+  if(b>BIG_T-BIG_GROW)return Math.floor((BIG_T-b)/5)%2?2:1.5;
+  if(b<BIG_WARN)return Math.floor(b/(b<40?4:8))%2?1:2;return 2;};
+// invencivel: o que encosta na raposa gigante sai voando
+function smashAway(it){
+  it.state='bounce';it.t=0;it.b=1;it.vy=-2.6;it.vx=(it.x+4<fox.x+8?-1:1)*2.2;sfx.smash();
+  burst(it.x+4,it.y+4,6,[PAL.y,PAL.t],1.4,1.4);
 }
 
 /* ---------- pintinho -> galinha ---------- */
@@ -724,8 +760,9 @@ function henFly(dir){
 // a raposa nao atravessa a galinha: bate, para, e a galinha sai voando
 function henBlock(){
   if(!bird||bird.kind!=='hen')return;
-  const hb=henBox(bird),fl=fox.x+3,fr=fox.x+13;
+  const hb=henBox(bird),fl=fox.big?fox.x-2:fox.x+3,fr=fox.big?fox.x+18:fox.x+13;
   if(fr<=hb.x||fl>=hb.x+hb.w)return;
+  if(fox.big){sfx.cluck();henFly(hb.x+hb.w/2<fox.x+8?-1:1);return;} // gigante: a galinha sai voando sem parar a raposa
   const fromLeft=fl+5<hb.x+hb.w/2;
   fox.x=fromLeft?hb.x-13:hb.x+hb.w-3;
   fox.vx=0;fox.halt=HALT_T;shake=3;sfx.cluck();sfx.bonk();
@@ -762,7 +799,9 @@ function update(){
   // fox
   const cx=fox.x+8;
   fox.onP=puddles.some(p=>cx>p.x&&cx<p.x+p.w);
-  fox.stink=stinks.some(z=>cx>z.x&&cx<z.x+z.w);
+  fox.stink=!fox.big&&stinks.some(z=>cx>z.x&&cx<z.x+z.w);
+  if(fox.big>0){fox.big--;if(fox.big===0)sfx.powerEnd();
+    if(frame%4===0)parts.push({x:fox.x+8+(Math.random()-.5)*26,y:GROUND-4-Math.random()*28,vx:0,vy:-.5,life:18,c:Math.random()<.5?PAL.y:'#fff3b0'});}
   let dir=0;
   if(fox.stun>0){if(--fox.stun===0){fox.inv=40;sfx.wake();}else if(fox.stun%20===0)sfx.dizzy();}
   else if(fox.halt>0){fox.halt--;fox.vx=0;}
@@ -781,8 +820,9 @@ function update(){
     else{fox.vx*=.6;if(Math.abs(fox.vx)<.05)fox.vx=0;}
   }
   fox.x+=fox.vx;
-  if(fox.x<0){fox.x=0;fox.vx=fox.onP?-fox.vx*.5:0;}
-  if(fox.x>W-16){fox.x=W-16;fox.vx=fox.onP?-fox.vx*.5:0;}
+  const xm=fox.big?8:0; // gigante: 32 px de largura, centrada no mesmo ponto
+  if(fox.x<xm){fox.x=xm;fox.vx=fox.onP?-fox.vx*.5:0;}
+  if(fox.x>W-16-xm){fox.x=W-16-xm;fox.vx=fox.onP?-fox.vx*.5:0;}
   henBlock();
   if(dir)fox.face=dir;
   fox.slip=fox.onP&&Math.abs(fox.vx)>.35;
@@ -792,8 +832,8 @@ function update(){
   if(fox.chew>0)fox.chew--;
   if(fox.slip&&frame%4===0)parts.push({x:fox.x+8-Math.sign(fox.vx)*6,y:GROUND-1,vx:-fox.vx*.3,vy:-.4,life:10,c:PAL.t});
 
-  const body={x:fox.x+3,y:GROUND-14,w:10,h:14};
-  const mouthZ={x:fox.x+1,y:GROUND-18,w:14,h:9};
+  const body=fox.big?{x:fox.x-2,y:GROUND-28,w:20,h:28}:{x:fox.x+3,y:GROUND-14,w:10,h:14};
+  const mouthZ=fox.big?{x:fox.x-6,y:GROUND-36,w:28,h:18}:{x:fox.x+1,y:GROUND-18,w:14,h:9};
 
   for(const it of items){
     it.t++;
@@ -809,6 +849,7 @@ function update(){
       it.x=clamp(it.x+windAt(wt),0,W-w); // vento (mesma conta de landX)
       if(it.type==='egg'){
         if(it.hatch&&!bird&&rainT===0&&it.y+h>=GROUND-34&&Math.abs(it.x+4-(fox.x+8))<16){hatchEgg(it);continue;}
+        if(it.gold&&fox.mouth&&hit(it,w,h,mouthZ)){eatGold(it);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){
           it.dead=true;score++;combo++;fox.chew=16;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
           burst(fox.x+8,GROUND-16,6,[PAL.y,PAL.t,PAL.w],1.2,1.6);continue;
@@ -816,8 +857,11 @@ function update(){
           it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();
         }
       }else if(it.type==='rotten'){
+        if(fox.big&&(hit(it,w,h,body)||hit(it,w,h,mouthZ))){ // gigante: o ovo podre se desfaz sem vomito e sem cheiro
+          it.dead=true;sfx.smash();burst(it.x+4,it.y+5,8,['#a3ad5e','#6f7a34',PAL.y],1.5,1.5);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){eatRotten(it);continue;}
         else if(hit(it,w,h,body)){it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();}
+      }else if(fox.big&&hit(it,w,h,body)){smashAway(it);
       }else if(hit(it,w,h,body)){
         if(fox.stun===0&&fox.inv===0){
           fox.stun=60;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
@@ -897,8 +941,10 @@ function render(){
   if(state!=='title'){
     for(const it of items){
       if(it.type==='ball'&&it.state==='bounce'&&it.t>110&&frame%4<2)continue;
-      const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:EGG):it.type==='rotten'?ROTTEN:(BALLS[it.ph]||BALL)[Math.floor((it.t+it.x)/8)%2];
+      const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?ROTTEN:(BALLS[it.ph]||BALL)[Math.floor((it.t+it.x)/8)%2];
       ctx.drawImage(img,Math.round(it.x),Math.round(it.y));
+      if(it.gold&&frame%16<8){ctx.fillStyle=PAL.t;const gx=Math.round(it.x),gy=Math.round(it.y); // brilho
+        ctx.fillRect(gx+9,gy+1,1,3);ctx.fillRect(gx+8,gy+2,3,1);ctx.fillRect(gx-2,gy+6,1,1);}
       if(it.type==='rotten'){ // fiozinhos de cheiro em cima do ovo podre
         ctx.fillStyle='#4b5a14';for(const dx of [1,5]){const o=Math.floor((it.t+dx*3)/6)%2;
           ctx.fillRect(Math.round(it.x)+dx+o,Math.round(it.y)-3,1,1);ctx.fillRect(Math.round(it.x)+dx+1-o,Math.round(it.y)-5,1,1);}
@@ -915,7 +961,9 @@ function render(){
       if(b.kind==='chick'&&b.t<50)text('PIU!',b.x+4,b.y-8,1,PAL.y,'center',PAL.k);
     }
     const legs=(Math.abs(fox.vx)>.2||(fox.walk&&(keys.l||keys.r||touch.l||touch.r)))&&!fox.stun?(Math.floor(fox.walk/5)%2?1:2):0;
-    drawFox(fox.x,fox.stun>0,fox.mouth||fox.sick>0,fox.chew,fox.sick?0:legs,fox.face,fox.inv>0);
+    {const k=bigK(),fcx=Math.round(fox.x)+8;ctx.save(); // gigante: escala a partir do pe, no centro da raposa
+      if(k!==1){ctx.translate(fcx,GROUND);ctx.scale(k,k);ctx.translate(-fcx,-GROUND);}
+      drawFox(fox.x,fox.stun>0,fox.mouth||fox.sick>0,fox.chew,fox.sick?0:legs,fox.face,fox.inv>0);ctx.restore();}
     if(fox.sick){ctx.fillStyle='#8fa040';ctx.fillRect(Math.round(fox.x)+3,GROUND-12,10,2);if(frame%20<12)text('ECA!',fox.x+8,GROUND-26,1,'#c9cf7a','center',PAL.k);}
     if(fox.slip&&frame%20<12)text('!',fox.x+8,GROUND-24,1,PAL.r);
   }
@@ -936,6 +984,8 @@ function render(){
   }
   // HUD
   for(let i=0;i<5;i++)ctx.drawImage(i<lives?HEART:HEART0,4+i*9,5);
+  if(fox.big&&state!=='title'){const f=fox.big/BIG_T; // barrinha dourada do poder
+    ctx.fillStyle=PAL.k;ctx.fillRect(3,13,46,4);ctx.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;ctx.fillRect(4,14,Math.ceil(44*f),2);}
   text(score,W-5,4,2,PAL.t,'right',PAL.k);
   if(state!=='title'){
     const bx=50,bw=50,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
@@ -1026,7 +1076,7 @@ function drawPyramid(list,chicks){
   // sombra da piramide
   if(n){g.fillStyle='rgba(30,60,30,.25)';for(const e of cells)if(e.L===0)g.fillRect(ox+e.x-5,oy+e.y-2,10,3);}
   // ovos
-  cells.forEach((e,i)=>g.drawImage(cols[i]>=0?RAIN_EGGS[cols[i]]:EGG,ox+e.x-4,oy+e.y-10));
+  cells.forEach((e,i)=>g.drawImage(cols[i]>=0?RAIN_EGGS[cols[i]]:cols[i]===-2?GOLD:EGG,ox+e.x-4,oy+e.y-10));
   // raposa no topo, sorrindo
   g.drawImage(FOX.s0[0],ox+fx-8,n?oy+fy-15:oy-15);
   // pintinhos (ovos que chocaram em vez de serem comidos)
@@ -1149,7 +1199,7 @@ window.__egg={reset,update,render,fox,keys,get items(){return items},get puddles
     g.drawImage(FOX.c0[0],o+4*u,o+6*u,16*u,15*u);g.drawImage(EGG,o+8*u,o-2*u+u,8*u*0.75|0,10*u*0.75|0);
     return c.toDataURL('image/png');},
   puddle(x){puddles.push({x,w:22,life:Infinity})},get score(){return score},get lvl(){return lvl},forceOver(){gameOver()},level,fallFrames,
-  get bird(){return bird},set combo(v){combo=v},hatchAt(x){hatchEgg({x,y:GROUND-40})},
+  get bird(){return bird},dropGold(x,y=-12){items.push({type:'egg',gold:true,x,y,vx:0,vy:1,state:'fall',t:0})},set combo(v){combo=v},hatchAt(x){hatchEgg({x,y:GROUND-40})},
   setBird(o){bird=o},set eaten(v){eaten=v},get eaten(){return eaten},set hatched(v){hatched=v},openPyr,pyramidCells,drawPyramid};
 })();
 </script>

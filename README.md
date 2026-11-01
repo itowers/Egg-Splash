@@ -31,6 +31,16 @@ Um ovo verde com manchas e cheirinho subindo. **Não coma!**
 - Nunca cai em cima de um ovo; enquanto há cheiro no chão, os ovos caem mais perto do anterior para continuar alcançáveis
 - Não aparece na Chuva de Ovos, e o fim da chuva limpa o cheiro
 
+## Ovo dourado
+Um ovo de ouro que brilha. **Coma!**
+- Aparece a partir de **20 pontos**, em 2% dos ovos (nunca enquanto a raposa já está gigante)
+- **Vale +5** e deixa a raposa **2x maior e invencível por 5 s** (barrinha dourada embaixo dos corações)
+- Gigante: a boca e o corpo ficam do dobro do tamanho; bolas que encostam saem voando sem tontura; o ovo podre se desfaz sem vômito nem cheiro; o cheiro no chão não deixa lenta; a galinha sai voando sem parar a raposa
+- Ovos normais que caem no chão continuam tirando vida
+- No último 1,5 s a raposa pisca entre os dois tamanhos, avisando que vai acabar
+- Se o dourado cair no chão, não tira vida
+- Na pirâmide de ovos, ele aparece dourado
+
 ## Pirâmide de ovos
 No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a raposa comeu empilhados numa pirâmide isométrica, com a raposa no topo:
 - A quantidade de ovos na imagem é **exatamente** a que a raposa comeu (ovos da Chuva de Ovos aparecem coloridos)
