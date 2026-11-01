@@ -23,6 +23,14 @@ Recompensa para quem está indo muito bem:
 - Se a raposa bater na galinha, **para** por ~0,4 s e a galinha **sai voando** da tela. Se ninguém encostar, ela voa sozinha depois de ~12 s
 - Depois que a galinha vai embora, há 20 s de intervalo até o próximo pintinho
 
+## Ovo podre
+Um ovo verde com manchas e cheirinho subindo. **Não coma!**
+- Aparece a partir de **15 pontos** (5% dos ovos, subindo até 12%). O primeiro cai sozinho, 30% mais devagar e com o aviso NÃO COMA!
+- **Se comer:** a raposa vomita e fica parada ~0,7 s. Não perde vida nem ganha ponto, mas o combo zera
+- **Se cair no chão:** não tira vida, mas deixa uma nuvem de **cheiro ruim** por ~6 s. Passando por ela, a raposa anda devagar (~55% da velocidade)
+- Nunca cai em cima de um ovo; enquanto há cheiro no chão, os ovos caem mais perto do anterior para continuar alcançáveis
+- Não aparece na Chuva de Ovos, e o fim da chuva limpa o cheiro
+
 ## Pirâmide de ovos
 No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a raposa comeu empilhados numa pirâmide isométrica, com a raposa no topo:
 - A quantidade de ovos na imagem é **exatamente** a que a raposa comeu (ovos da Chuva de Ovos aparecem coloridos)
