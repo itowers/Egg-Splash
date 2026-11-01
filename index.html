@@ -197,15 +197,27 @@ function text(s,x,y,sc=1,col=PAL.k,align='center',sh=null){
 }
 
 /* ---------- background: ciclo dia/noite + clima ---------- */
-// ordem do ciclo: dia -> por do sol -> noite -> amanhecer -> dia
-const TIMES=[
- {sky:'#9fd3e0',b1:'#b3dde4',b2:'#c6e6e6',cl:'#eef7f5',h1:'#a8cfa2',h2:'#7db37f',gt:'#7cbf6a',gr:'#4f8a4f',dirt:'#8a5a3c',dot:'#6e4630'}, // dia
- {sky:'#f0a266',b1:'#f4b67a',b2:'#f8cb92',cl:'#fbe0c4',h1:'#b39a72',h2:'#8a7d55',gt:'#a5a35a',gr:'#5f6a3a',dirt:'#7a4e34',dot:'#5e3a26'}, // por do sol
- {sky:'#1c2547',b1:'#232e58',b2:'#2b376a',cl:'#3b4777',h1:'#2e4648',h2:'#223636',gt:'#3d5e45',gr:'#1f3a2c',dirt:'#4a3428',dot:'#36251c'}, // noite
- {sky:'#e7a9b9',b1:'#eebcc8',b2:'#f3cfd5',cl:'#fbe6ea',h1:'#9cb39a',h2:'#74967a',gt:'#86b874',gr:'#46784a',dirt:'#7e5238',dot:'#62402c'}, // amanhecer
+// Dois relogios independentes:
+//  1) Ceu: o sol comeca no topo, desce pela direita e se poe atras das colinas; a lua faz o mesmo
+//     caminho a noite; o sol nasce pela esquerda e volta ao topo. A cor do ceu acompanha o sol.
+//  2) Clima: comeca limpo, as nuvens vao aumentando, chove e depois abre de novo.
+const TIMES=[ // cl = nuvem clara, rc = nuvem de chuva. Paletas vizinhas sao proximas, para a mistura ficar natural
+ {sky:'#9fd3e0',b1:'#b3dde4',b2:'#c6e6e6',cl:'#eef7f5',rc:'#aab6bd',h1:'#a8cfa2',h2:'#7db37f',gt:'#7cbf6a',gr:'#4f8a4f',dirt:'#8a5a3c',dot:'#6e4630'}, // 0 dia
+ {sky:'#a6d0dc',b1:'#d8dcb8',b2:'#f2dca4',cl:'#f7f1dc',rc:'#b0b4b0',h1:'#b4cf98',h2:'#88b274',gt:'#8cc064',gr:'#5a8a48',dirt:'#8a5a3a',dot:'#6e4630'}, // 1 tarde dourada
+ {sky:'#c7808c',b1:'#ee9a6c',b2:'#f8c27a',cl:'#fbd2b0',rc:'#a88488',h1:'#b0946c',h2:'#8a7650',gt:'#a59a58',gr:'#5f6438',dirt:'#764a32',dot:'#5a3826'}, // 2 por do sol
+ {sky:'#4c4580',b1:'#7c5488',b2:'#c06a7c',cl:'#6c5c90',rc:'#463e66',h1:'#55606a',h2:'#3e4a50',gt:'#4e6250',gr:'#2c4034',dirt:'#55392c',dot:'#3e2a20'}, // 3 crepusculo
+ {sky:'#1c2547',b1:'#232e58',b2:'#2b376a',cl:'#3b4777',rc:'#2e3658',h1:'#2e4648',h2:'#223636',gt:'#3d5e45',gr:'#1f3a2c',dirt:'#4a3428',dot:'#36251c'}, // 4 noite
+ {sky:'#38407a',b1:'#5c5890',b2:'#a77aa0',cl:'#5a5a8e',rc:'#3a3c66',h1:'#46585e',h2:'#344648',gt:'#4a6a52',gr:'#2a4434',dirt:'#523a2c',dot:'#3c2a20'}, // 5 pre-amanhecer
+ {sky:'#c4b0d4',b1:'#eebcc8',b2:'#f8d4bc',cl:'#fbe6ea',rc:'#b4a6b4',h1:'#9cb39a',h2:'#74967a',gt:'#86b874',gr:'#46784a',dirt:'#7e5238',dot:'#62402c'}, // 6 amanhecer
+ {sky:'#acd2e0',b1:'#cfe2e6',b2:'#ece8d8',cl:'#f4f8f4',rc:'#adb7bc',h1:'#a6cfa0',h2:'#7ab27c',gt:'#7cbf6a',gr:'#4e894e',dirt:'#8a5a3c',dot:'#6e4630'}, // 7 manha
 ];
-const PHASE=45*60;        // 45 s por fase -> ciclo completo de 3 min
-const FADE=.3,STEPS=8;    // transicao nos ultimos 30% da fase, em 8 degraus (visual 8-bit)
+const CYCLE=150*60;   // volta completa do ceu: 2,5 min
+const STEPS=8;        // transicoes de cor em 8 degraus (visual 8-bit)
+// [fracao do ciclo, paleta]: entre duas paletas diferentes a cor troca em degraus
+const SKYKEYS=[[0,0],[.28,0],[.38,1],[.44,1],[.50,2],[.54,2],[.60,3],[.66,4],[.76,4],[.80,5],[.85,6],[.89,6],[.94,7],[.98,0],[1,0]];
+// [fracao do ciclo, angulo do sol]: 0 = topo, PI/2 = se pondo a direita, 3PI/2 = nascendo a esquerda
+const SUNKEYS=[[0,0],[.38,1.0],[.56,1.78],[.80,2*Math.PI-1.78],[1,2*Math.PI]];
+const ORBIT={cx:72,cy:145,rx:55,ry:110}; // topo em y=35, abaixo do HUD
 function mk(){const c=document.createElement('canvas');c.width=W;c.height=H;return c;}
 function makeSky(p){const c=mk(),g=c.getContext('2d');
   g.fillStyle=p.sky;g.fillRect(0,0,W,H);
@@ -225,72 +237,101 @@ function makeLand(p){const c=mk(),g=c.getContext('2d');
   g.fillStyle=p.dot;
   for(let i=0;i<40;i++){g.fillRect((i*37)%W,GROUND+6+((i*13)%(H-GROUND-8)),2,1);}
   return c;}
-const SKIES=TIMES.map(makeSky),LANDS=TIMES.map(makeLand);
-function orb(r,col,sh){const c=document.createElement('canvas');c.width=c.height=r*2+1;const g=c.getContext('2d');
+// paletas intermediarias: cada degrau da transicao vira um fundo pre-renderizado (sem transparencia)
+function mixCol(A,B,f){const x=parseInt(A.slice(1),16),y=parseInt(B.slice(1),16);
+  return '#'+[16,8,0].map(sh=>Math.round((x>>sh&255)+((y>>sh&255)-(x>>sh&255))*f).toString(16).padStart(2,'0')).join('');}
+function mixPal(A,B,f){const o={};for(const k in A)o[k]=mixCol(A[k],B[k],f);return o;}
+const BG={};
+function bgFor(a,b,f){const key=a===b||!f?a+'':a+'-'+b+'-'+f;
+  if(!BG[key]){const p=key===a+''?TIMES[a]:mixPal(TIMES[a],TIMES[b],f);BG[key]={sky:makeSky(p),land:makeLand(p),pal:p};}
+  return BG[key];}
+for(let j=0;j<SKYKEYS.length-1;j++){const a=SKYKEYS[j][1],b=SKYKEYS[j+1][1];for(let k=0;k<=STEPS;k++)bgFor(a,b,k/STEPS);} // pre-renderiza tudo
+function orb(r,col){const c=document.createElement('canvas');c.width=c.height=r*2+1;const g=c.getContext('2d');
   for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++)if(x*x+y*y<=r*r+r){g.fillStyle=col;g.fillRect(x+r,y+r,1,1);}
-  if(sh){g.fillStyle=sh;[[-2,-1,2],[2,2,1],[-1,3,1],[3,-3,1]].forEach(([x,y,w])=>g.fillRect(x+r,y+r,w,w));}
   return c;}
-const SUN=orb(9,'#fbe9a6'),SUN_LOW=orb(9,'#f8c46c');
+const SUN=orb(9,'#fbe9a6'),SUN_LOW=orb(9,'#f8b45c');
 // lua crescente (nao pode parecer uma bola redonda e clara)
 const MOON=(()=>{const c=orb(6,'#c9d4ee'),g=c.getContext('2d');g.globalCompositeOperation='destination-out';
   for(let y=-6;y<=6;y++)for(let x=-6;x<=6;x++)if((x-3)*(x-3)+(y+2)*(y+2)<=30)g.fillRect(x+6,y+6,1,1);return c;})();
 const STARS=[];{let z=7;const rnd=()=>(z=(z*16807)%2147483647)/2147483647;
   for(let i=0;i<28;i++)STARS.push({x:Math.floor(rnd()*W),y:Math.floor(4+rnd()*100),b:rnd()<.25,ph:Math.floor(rnd()*60)});}
-const CLOUDS=[{x:14,y:40,v:.05},{x:70,y:62,v:.035},{x:100,y:96,v:.025}];
-let skyT=0;
-// clima: chuva de verdade (aleatoria) + ceu fechando como aviso antes da Chuva de Ovos
-const wx={raining:false,t:60*50,over:0};
-let drops=[];
+let skyT=0,clouds=[],drops=[];
 const q=(v,n=STEPS)=>Math.round(v*n)/n;
-function cyc(){return (skyT/PHASE)%TIMES.length;}
-function nightK(c){return c<1.7?0:c<2?(c-1.7)/.3:c<3?1:c<3.3?1-(c-3)/.3:0;}
-function layer(arr,c){const i=Math.floor(c),k=c-i,f=q(Math.max(0,(k-(1-FADE))/FADE));
-  ctx.drawImage(arr[i],0,0);
-  if(f>0){ctx.globalAlpha=f;ctx.drawImage(arr[(i+1)%arr.length],0,0);ctx.globalAlpha=1;}}
-function arc(u){return {x:Math.round(-10+u*(W+20)),y:Math.round(140-Math.sin(u*Math.PI)*92)};}
-function drawWorld(){
-  const c=cyc(),i=Math.floor(c),k=c-i,f=q(Math.max(0,(k-(1-FADE))/FADE)),ni=(i+1)%TIMES.length;
-  layer(SKIES,c);
-  // estrelas
-  const n=q(nightK(c)*(1-wx.over));
-  if(n>0){ctx.globalAlpha=n;ctx.fillStyle='#f4f1e0';
-    for(const s of STARS){if(s.b&&Math.floor((frame+s.ph)/30)%4===0)continue;ctx.fillRect(s.x,s.y,1,1);}
-    ctx.globalAlpha=1;}
-  // sol: nasce no amanhecer, se poe no fim do por do sol
-  const su=((c+1)%4)/3;
-  if((c+1)%4<3){const p=arc(su);ctx.globalAlpha=q(1-wx.over*.85);ctx.drawImage(i===0?SUN:SUN_LOW,p.x-9,p.y-9);ctx.globalAlpha=1;}
-  // lua
-  if(c>=1.6&&c<3.4){const p=arc((c-1.6)/1.8);ctx.globalAlpha=q(1-wx.over*.85);ctx.drawImage(MOON,p.x-6,p.y-6);ctx.globalAlpha=1;}
-  // nuvens (cor da fase atual, trocando no meio da transicao)
-  const cl=f>=.5?TIMES[ni].cl:TIMES[i].cl;
-  for(const o of CLOUDS){const x=Math.round(o.x),y=o.y;ctx.fillStyle=cl;
-    ctx.fillRect(x,y,22,4);ctx.fillRect(x+4,y-3,12,3);ctx.fillRect(x+9,y-5,6,2);}
-  layer(LANDS,c);
-  // ceu fechado (chuva / aviso)
-  const o=q(wx.over);
-  if(o>0){ctx.fillStyle='rgba(58,66,84,'+(o*.45)+')';ctx.fillRect(0,0,W,GROUND+4);}
+const ct=()=>(skyT%CYCLE)/CYCLE;
+function lerpKeys(K,t){for(let j=0;j<K.length-1;j++){const [t0,a]=K[j],[t1,b]=K[j+1];if(t<=t1)return a+(b-a)*(t-t0)/(t1-t0);}return K[K.length-1][1];}
+function skyMix(t){for(let j=0;j<SKYKEYS.length-1;j++){const [t0,a]=SKYKEYS[j],[t1,b]=SKYKEYS[j+1];
+  if(t<=t1)return {a,b,f:a===b?0:q((t-t0)/(t1-t0))};}return {a:0,b:0,f:0};}
+function nightK(t){return t<.58?0:t<.66?(t-.58)/.08:t<.76?1:t<.82?1-(t-.76)/.06:0;}
+function orbitPos(th){return {x:Math.round(ORBIT.cx+ORBIT.rx*Math.sin(th)),y:Math.round(ORBIT.cy-ORBIT.ry*Math.cos(th))};}
+
+/* clima: limpo -> nuvens aumentando -> chuva -> abrindo -> limpo ... */
+const wx={phase:'clear',t:0,len:1,cloud:0,rain:0};
+function wxGo(phase,secs){wx.phase=phase;wx.len=wx.t=Math.round(secs*60);}
+function resetWeather(){wxGo('clear',25+Math.random()*20);wx.cloud=0;wx.rain=0;clouds=[];drops=[];}
+resetWeather();
+function stepWeather(){
+  const k=1-wx.t/wx.len; // progresso da fase (0 -> 1)
+  if(wx.phase==='clear')wx.cloud=0;
+  else if(wx.phase==='build')wx.cloud=k;            // nuvens vao aumentando
+  else if(wx.phase==='rain')wx.cloud=1;
+  else if(wx.phase==='clearup')wx.cloud=1-k;        // ceu abrindo
+  const rainTarget=wx.phase==='rain'?1:0;
+  wx.rain+=Math.sign(rainTarget-wx.rain)*Math.min(Math.abs(rainTarget-wx.rain),1/90);
+  if(--wx.t>0)return;
+  if(wx.phase==='clear')wxGo('build',12+Math.random()*6);
+  else if(wx.phase==='build')wxGo('rain',12+Math.random()*8);
+  else if(wx.phase==='rain')wxGo('clearup',8+Math.random()*4);
+  else wxGo('clear',35+Math.random()*30);
 }
+function spawnCloud(){const s=wx.cloud>.55?(Math.random()<.7?2:1):wx.cloud>.25?(Math.random()<.5?1:0):0;
+  clouds.push({x:Math.round(-34+Math.random()*(W+20)),y:Math.round(16+Math.random()*84),s,v:.04+Math.random()*.04,a:0,out:false});}
 function updateWorld(){
-  for(const o of CLOUDS){o.x+=o.v*(1+wx.over*3);if(o.x>W+2)o.x=-24;}
-  let target=0;
-  if(state==='play'){
-    if(rainT>0){wx.raining=false;}
-    else{
-      if(--wx.t<=0){wx.raining=!wx.raining;wx.t=wx.raining?60*(12+Math.random()*8):60*(40+Math.random()*40);}
-      const left=RAIN_EVERY-timerT;
-      target=wx.raining?1:left<=180?1-left/180:0; // ceu fecha nos 3 s antes da Chuva de Ovos
-    }
-  }
-  wx.over+=Math.sign(target-wx.over)*Math.min(Math.abs(target-wx.over),1/60);
-  if(state==='play'&&wx.raining&&rainT===0)for(let j=0;j<2;j++)drops.push({x:Math.random()*(W+48),y:-4-Math.random()*20});
-  const dc=nightK(cyc())>.5?'#8fa6c8':'#dceaf2';
+  if(state==='play')stepWeather();
+  // nuvens: quantidade acompanha o clima, entram e saem com fade em degraus
+  const want=Math.round(wx.cloud*14),alive=clouds.filter(c=>!c.out);
+  if(alive.length<want&&frame%15===0)spawnCloud();
+  if(alive.length>want&&frame%15===0)alive[0].out=true;
+  for(const c of clouds){c.x+=c.v*(1+wx.cloud*2);if(c.x>W+4)c.x=-40;
+    c.a=c.out?c.a-1/40:Math.min(1,c.a+1/40);}
+  clouds=clouds.filter(c=>c.a>0||!c.out);
+  // chuva
+  const n=wx.rain*2.2;
+  for(let j=0;j<Math.floor(n)+(Math.random()<n%1?1:0);j++)drops.push({x:Math.random()*(W+48),y:-4-Math.random()*20});
+  const dc=nightK(ct())>.5?'#8fa6c8':'#dceaf2';
   for(const d of drops){d.x-=1.2;d.y+=4.5;
     if(d.y>=GROUND){d.dead=true;if(Math.random()<.3)parts.push({x:d.x,y:GROUND-1,vx:(Math.random()-.5)*.6,vy:-.7,life:6,c:dc});}}
   drops=drops.filter(d=>!d.dead&&d.x>-4);
 }
+function drawCloud(x,y,s){
+  if(s===0){ctx.fillRect(x,y,16,3);ctx.fillRect(x+3,y-2,8,2);}
+  else if(s===1){ctx.fillRect(x,y,22,4);ctx.fillRect(x+4,y-3,12,3);ctx.fillRect(x+9,y-5,6,2);}
+  else{ctx.fillRect(x,y,34,5);ctx.fillRect(x+5,y-4,16,4);ctx.fillRect(x+12,y-7,10,3);ctx.fillRect(x+22,y-3,8,3);}
+}
+function drawWorld(){
+  const t=ct(),m=skyMix(t),bgx=bgFor(m.a,m.b,m.f),pal=bgx.pal;
+  const cov=q(clamp((wx.cloud-.35)/.65,0,1)); // ceu so fecha depois que as nuvens ja chegaram
+  ctx.drawImage(bgx.sky,0,0);
+  // estrelas (somem com as nuvens)
+  const n=q(nightK(t)*(1-cov));
+  if(n>0){ctx.globalAlpha=n;ctx.fillStyle='#f4f1e0';
+    for(const s of STARS){if(s.b&&Math.floor((frame+s.ph)/30)%4===0)continue;ctx.fillRect(s.x,s.y,1,1);}
+    ctx.globalAlpha=1;}
+  const th=lerpKeys(SUNKEYS,t),dim=q(1-cov*.85);
+  // sol: amarelo no alto, laranja perto do horizonte
+  {const p=orbitPos(th);if(p.y<160){ctx.globalAlpha=dim;ctx.drawImage(Math.cos(th)>.45?SUN:SUN_LOW,p.x-9,p.y-9);ctx.globalAlpha=1;}}
+  // lua: lado oposto da orbita, so a noite
+  {const nk=q(nightK(t)),p=orbitPos(th+Math.PI);if(nk>0&&p.y<160){ctx.globalAlpha=Math.min(nk,dim);ctx.drawImage(MOON,p.x-6,p.y-6);ctx.globalAlpha=1;}}
+  // nuvens
+  ctx.fillStyle=wx.cloud>.65?pal.rc:pal.cl;
+  for(const c of clouds){const a=q(c.a,4);if(!a)continue;ctx.globalAlpha=a;drawCloud(Math.round(c.x),c.y,c.s);}
+  ctx.globalAlpha=1;
+  ctx.drawImage(bgx.land,0,0);
+  // ceu fechado escurece a paisagem (nao os itens)
+  if(cov>0){ctx.fillStyle='rgba(58,66,84,'+(cov*.4)+')';ctx.fillRect(0,0,W,GROUND+4);}
+}
 function drawDrops(){
   if(!drops.length)return;
-  ctx.fillStyle=nightK(cyc())>.5?'rgba(143,166,200,.8)':'rgba(220,234,242,.75)';
+  ctx.fillStyle=nightK(ct())>.5?'rgba(143,166,200,.8)':'rgba(220,234,242,.75)';
   for(const d of drops){const x=Math.round(d.x),y=Math.round(d.y);ctx.fillRect(x,y,1,2);ctx.fillRect(x-1,y+2,1,2);}
 }
 
@@ -369,7 +410,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){skyT=0;wx.raining=false;wx.t=60*(40+Math.random()*30);wx.over=0;drops=[];score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;
+function reset(){skyT=0;resetWeather();score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;
   Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
