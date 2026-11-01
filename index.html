@@ -36,6 +36,8 @@ button.on svg{transform:translateY(4px)}
   top:calc(env(safe-area-inset-top) + 14px);left:calc(env(safe-area-inset-left) + 14px)}
 #snd{position:absolute;z-index:5;width:44px;height:44px;
   top:calc(env(safe-area-inset-top) + 14px);right:calc(env(safe-area-inset-right) + 14px)}
+#spd{position:absolute;z-index:5;width:52px;height:44px;
+  top:calc(env(safe-area-inset-top) + 14px);right:calc(env(safe-area-inset-right) + 70px)}
 @media (orientation:landscape) and (min-aspect-ratio:5/4){
   #controls{position:absolute;left:0;right:0;height:auto;pointer-events:none;
     bottom:calc(env(safe-area-inset-bottom) + 24px);
@@ -50,6 +52,7 @@ button.on svg{transform:translateY(4px)}
     <svg viewBox="0 0 10 11" shape-rendering="crispEdges"><rect x="0" y="0" width="4" height="11" fill="#1b1b1f"/><rect x="6" y="0" width="4" height="11" fill="#1b1b1f"/><rect x="1" y="1" width="2" height="7" fill="#ebe6dc"/><rect x="7" y="1" width="2" height="7" fill="#ebe6dc"/><rect x="1" y="8" width="2" height="2" fill="#8a6670"/><rect x="7" y="8" width="2" height="2" fill="#8a6670"/></svg>
   </button>
   <button id="snd"></button>
+  <button id="spd"></button>
   <div id="stage"><canvas id="c"></canvas></div>
   <div id="controls">
     <div class="dpad">
@@ -639,8 +642,9 @@ function render(){
 }
 
 /* ---------- loop ---------- */
-let last=performance.now(),acc=0;
-function loop(t){acc+=Math.min(100,t-last);last=t;while(acc>=1000/60){update();acc-=1000/60;}render();requestAnimationFrame(loop);}
+let last=performance.now(),acc=0,speed=1;
+try{speed=localStorage.getItem('eggsplash-speed')==='2'?2:1}catch(e){}
+function loop(t){acc+=Math.min(100,t-last);last=t;while(acc>=1000/60){for(let i=0;i<speed;i++)update();acc-=1000/60;}render();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 
 const SND_SVG=m=>'<svg viewBox="0 0 11 11" shape-rendering="crispEdges"><polygon points="0,3 3,3 6,0 7,0 7,11 6,11 3,8 0,8" fill="#1b1b1f"/><polygon points="1,4 3.5,4 6,1.5 6,9.5 3.5,7 1,7" fill="#ebe6dc"/>'+
@@ -657,6 +661,7 @@ const KEYMAP={ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r',ArrowUp:'m',KeyW:'m
 addEventListener('keydown',e=>{
   if(e.code==='KeyP'||e.code==='Escape'){if(state==='play'){state='pause';sfx.pause();}else if(state==='pause'){state='play';sfx.resume();}return;}
   if(e.code==='KeyM'){toggleMute();return;}
+  if(e.code==='KeyX'){toggleSpeed();return;}
   const k=KEYMAP[e.code];if(k){keys[k]=true;e.preventDefault();}
   if(!e.repeat&&(k||e.code==='Enter'))act();
 });
@@ -676,6 +681,17 @@ const sndBtn=document.getElementById('snd');
 function drawSnd(){sndBtn.innerHTML=SND_SVG(muted);sndBtn.setAttribute('aria-label',muted?'Ligar som':'Desligar som');}
 function toggleMute(){unlockAudio();setMuted(!muted);drawSnd();if(!muted)tone(880,0,.06,'square',.05);}
 sndBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleMute();});drawSnd();
+// botao de velocidade 1x / 2x (o jogo todo roda 2 passos por frame: raposa, objetos, timers e ceu)
+const spdBtn=document.getElementById('spd');
+const GLYPH={'1':['.#.','##.','.#.','.#.','###'],'2':['##.','..#','.#.','#..','###'],'X':['#.#','#.#','.#.','#.#','#.#']};
+function SPD_SVG(fast){const t=fast?'2X':'1X';let r='';
+  [...t].forEach((ch,n)=>GLYPH[ch].forEach((row,y)=>[...row].forEach((c,x)=>{if(c==='#')r+=`<rect x="${3+n*4+x}" y="${2+y}" width="1" height="1" fill="#1b1b1f"/>`;})));
+  return '<svg viewBox="0 0 13 11" shape-rendering="crispEdges"><rect x="0" y="0" width="13" height="11" fill="#1b1b1f"/>'+
+    `<rect x="1" y="1" width="11" height="7" fill="${fast?'#f4c430':'#ebe6dc'}"/><rect x="1" y="8" width="11" height="2" fill="${fast?'#b0821a':'#8a6670'}"/>`+r+'</svg>';}
+function drawSpd(){spdBtn.innerHTML=SPD_SVG(speed===2);spdBtn.setAttribute('aria-label',speed===2?'Velocidade normal':'Velocidade 2x');spdBtn.setAttribute('aria-pressed',speed===2);}
+function toggleSpeed(){unlockAudio();speed=speed===2?1:2;try{localStorage.setItem('eggsplash-speed',speed)}catch(e){}
+  drawSpd();tone(speed===2?988:660,0,.05,'square',.04);if(speed===2)tone(1319,0,.05,'square',.04,.06);}
+spdBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleSpeed();});drawSpd();
 ['touchend','click'].forEach(t=>addEventListener(t,()=>unlockAudio(),{passive:true}));
 addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')state='pause';});
