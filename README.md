@@ -23,6 +23,13 @@ Recompensa para quem está indo muito bem:
 - Se a raposa bater na galinha, **para** por ~0,4 s e a galinha **sai voando** da tela. Se ninguém encostar, ela voa sozinha depois de ~12 s
 - Depois que a galinha vai embora, há 20 s de intervalo até o próximo pintinho
 
+## Pirâmide de ovos
+No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a raposa comeu empilhados numa pirâmide isométrica, com a raposa no topo:
+- A quantidade de ovos na imagem é **exatamente** a que a raposa comeu (ovos da Chuva de Ovos aparecem coloridos)
+- Pilha "bala de canhão": camadas quadradas completas embaixo e o que sobra centralizado no topo
+- Ovos que chocaram viram pintinhos ao lado da pirâmide (contam nos pontos, mas não foram comidos)
+- **SALVAR** abre o compartilhar do iPhone (Salvar Imagem, Mensagens etc.); no computador, baixa um PNG de ~1080 px. Segurar a imagem também salva
+
 ## Controles
 - ◀ ▶ andar · botão redondo (segurar) abrir a boca
 - Teclado: setas / A D, ↑ ou espaço para a boca, P pausa, M som
