@@ -146,18 +146,20 @@ const FOX={};
 for(const [name,head] of [['c',HEAD],['o',HEAD_OPEN],['s',HEAD_SMILE]])
   LEGS.forEach((l,i)=>{const rows=[...head,...BODY,...l];FOX[name+i]=[bake(rows,false),bake(rows,true)];});
 
+// ovo branquinho, sem pintas, com um brilho no alto
+const EGG_PAL={...PAL,w:'#f4f3ef',c:'#c9ced8',t:'#ffffff'};
 const EGG=bake([
 "...kk...",
 "..kwwk..",
-".kwwwck.",
-".kwswck.",
+".kwtwck.",
+".ktwwck.",
+"kwtwwwck",
 "kwwwwwck",
-"kwswwwck",
-"kwwwwsck",
+"kwwwwwck",
 "kwwwwwck",
 ".kwwwck.",
 "..kkkk..",
-]);
+],false,EGG_PAL);
 // ovo dourado: mesmo desenho do ovo, em ouro
 const GOLD=bake([
 "...kk...",
@@ -376,11 +378,11 @@ function updateFarm(){
     else if(it.hen>=0)stepTo(hens[it.hen],clamp(it.x-2,0,W-12),it.wait);}
 }
 // erros: ovo inteiro = ainda nao errou; casca quebrada = ovo que caiu (verde = ovo podre comido, variante B)
-const SHELL_OK=bake(["..kkk..",".kwwwk.","kwwwwck","kwwwwck","kwwwwck","kwwwwck",".kwwck.","..kkk.."]); // ovo inteiro
+const SHELL_OK=bake(["..kkk..",".kwtwk.","ktwwwck","kwwwwck","kwwwwck","kwwwwck",".kwwck.","..kkk.."],false,EGG_PAL); // ovo inteiro
 const CRACK_ROWS=["","","..k.k..",".kwkwk.","kwwyywk","kwyyywk",".kwwwk.","k.kkk.k"]; // ovo esborrachado (baixo e largo)
 const SHELL_BROKE=bake(CRACK_ROWS);
 const SHELL_ROT=bake(CRACK_ROWS,false,{...PAL,w:'#a3ad5e',y:'#6f7a34'});
-const MINI_EGG=bake([".kk.","kwwk","kwwk",".kk."]);
+const MINI_EGG=bake([".kk.","ktwk","kwwk",".kk."],false,EGG_PAL);
 const PILE=(()=>{const c=document.createElement('canvas');c.width=9;c.height=8;const g=c.getContext('2d');
   g.drawImage(MINI_EGG,0,4);g.drawImage(MINI_EGG,5,4);g.drawImage(MINI_EGG,2,0);return c;})(); // pilha de 3 ovos
 
@@ -685,13 +687,14 @@ function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-
     'POR FASE: '+[0,1,2,3].map(p=>n(x=>x.ph===p)).join('-'),'BOLAS NA RAPOSA: '+L.reduce((a,g)=>a+g.balls,0)];} // causa de cada casca quebrada no topo: 'egg' ou 'rot'
 let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
 try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
-const fox={x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,stink:false,big:0};
+const FAT_T=60; // depois de comer, a raposa fica gordinha por 1 s
+const fox={fat:0,x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,stink:false,big:0};
 const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
 function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;stinks=[];rotSeen=false;ballSeen=false;rotDrops=0;closePyr();
-  Object.assign(fox,{hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,stink:false,big:0});state='play';sfx.start();}
+  Object.assign(fox,{fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,stink:false,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
 const fallCache=new Map();
@@ -829,7 +832,7 @@ function splatRotten(it){
 
 /* ---------- ovo dourado ---------- */
 function eatGold(it){
-  it.dead=true;score+=GOLD_PTS;combo++;fox.chew=16;eaten.push(-2);
+  it.dead=true;score+=GOLD_PTS;combo++;fox.chew=16;fox.fat=FAT_T;eaten.push(-2);
   fox.big=BIG_T;fox.stun=0;fox.sick=0;fox.halt=0;fox.inv=0;sfx.power();
   burst(fox.x+8,GROUND-16,16,[PAL.y,'#fff3b0',PAL.t],1.8,2.2);
   if(bird&&bird.kind==='hen')henFly(0);
@@ -996,6 +999,7 @@ function update(){
   const leg=Math.floor(fox.walk/5)%2;if(dir&&!fox.onP&&leg!==prevLeg)sfx.step();prevLeg=leg;
   if(fox.slip&&frame%18===0)sfx.slip();
   if(fox.chew>0)fox.chew--;
+  if(fox.fat>0)fox.fat--;
   if(fox.slip&&frame%4===0)parts.push({x:fox.x+8-Math.sign(fox.vx)*6,y:GROUND-1,vx:-fox.vx*.3,vy:-.4,life:10,c:PAL.t});
 
   const body=fox.big?{x:fox.x-2,y:GROUND-28,w:20,h:28}:{x:fox.x+3,y:GROUND-14,w:10,h:14};
@@ -1019,7 +1023,7 @@ function update(){
         if(it.hatch&&!bird&&rainT===0&&it.y+h>=GROUND-34&&Math.abs(it.x+4-(fox.x+8))<16){hatchEgg(it);continue;}
         if(it.gold&&fox.mouth&&hit(it,w,h,mouthZ)){eatGold(it);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){
-          it.dead=true;score++;combo++;fox.chew=16;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
+          it.dead=true;score++;combo++;fox.chew=16;fox.fat=FAT_T;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
           burst(fox.x+8,GROUND-16,6,[PAL.y,PAL.t,PAL.w],1.2,1.6);continue;
         }else if(hit(it,w,h,body)){
           it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();
@@ -1077,7 +1081,12 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
   const open=mouth||(chew>0&&chew%8<4);
   const spr=FOX[(open?'o':'c')+legs][face<0?1:0];
   const X=Math.round(x),Y=GROUND-15;
-  ctx.drawImage(spr,X,Y);
+  // gordinha: a barriga incha rapido logo depois de engolir e desincha devagar ate o fim de 1 s
+  const f=state==='play'?fox.fat:0,b=f>50?(FAT_T-f)/10:f/50,e=Math.round(3*b);
+  if(e>0){ctx.drawImage(spr,0,0,16,9,X,Y,16,9);                       // cabeca
+    ctx.drawImage(spr,0,9,16,4,X-e,Y+9-Math.min(e,2),16+2*e,4+Math.min(e,2)); // barriga mais larga e mais alta
+    ctx.drawImage(spr,0,13,16,2,X,Y+13,16,2);}                          // patas
+  else ctx.drawImage(spr,X,Y);
   if(stun){
     // X eyes
     ctx.fillStyle=PAL.o;ctx.fillRect(X+2,Y+3,4,3);ctx.fillRect(X+10,Y+3,4,3);
@@ -1146,7 +1155,10 @@ function render(){
       if(it.type==='ball'&&it.state==='bounce'&&it.t>110&&frame%4<2)continue;
       const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?(VB?ROTTENS[it.ph]||ROTTEN:ROTTEN):(BALLS[it.ph]||BALL)[Math.floor((it.t+it.x)/8)%2];
       const wob=VB&&it.type==='rotten'&&it.ph>=3&&it.state==='fall'?(Math.floor(it.t/5)%2?1:-1)*(it.t%20<10?1:0):0; // B, ultima fase: tremidinha
-      ctx.drawImage(img,Math.round(it.x)+wob,Math.round(it.y));
+      const hw=it.hatch&&it.state==='fall'?(Math.floor(it.t/(it.y>90?3:6))%2?1:-1):0; // ovo que vai chocar: balanca, cada vez mais rapido
+      ctx.drawImage(img,Math.round(it.x)+wob+hw,Math.round(it.y));
+      if(it.hatch&&it.state==='fall'&&it.y>60){const ex=Math.round(it.x)+hw,ey=Math.round(it.y);ctx.fillStyle=PAL.k; // rachadura aparecendo
+        ctx.fillRect(ex+2,ey+4,1,1);ctx.fillRect(ex+3,ey+5,1,1);ctx.fillRect(ex+4,ey+4,1,1);if(it.y>100){ctx.fillRect(ex+5,ey+5,1,1);ctx.fillRect(ex+1,ey+5,1,1);}}
       if(it.gold&&frame%16<8){ctx.fillStyle=PAL.t;const gx=Math.round(it.x),gy=Math.round(it.y); // brilho
         ctx.fillRect(gx+9,gy+1,1,3);ctx.fillRect(gx+8,gy+2,3,1);ctx.fillRect(gx-2,gy+6,1,1);}
       if(it.type==='rotten'){ // fiozinhos de cheiro em cima do ovo podre
@@ -1218,8 +1230,9 @@ function render(){
     if(rainT>0){
       if(rainT>RAIN_LEN-20){ctx.fillStyle='rgba(255,236,160,'+((rainT-(RAIN_LEN-20))/40)+')';ctx.fillRect(0,0,W,H);}
       {const C=['255,79,216','79,216,255','255,225,79','125,255,79'];ctx.fillStyle='rgba('+C[Math.floor(frame/20)%4]+',.13)';ctx.fillRect(0,0,W,H);} // luz de balada (troca 3x por segundo, bem fraca)
-      text('CHUVA',W/2,66,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
-      text('DE OVOS!',W/2,79,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
+      if(rainT>RAIN_LEN-100){ // o nome aparece so no comeco (~1,7 s) e some
+        text('CHUVA',W/2,66,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
+        text('DE OVOS!',W/2,79,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);}
     }
   }
   if(state==='pause'){
