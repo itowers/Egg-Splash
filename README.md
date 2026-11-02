@@ -43,7 +43,7 @@ Recompensa para quem está indo muito bem:
 Um ovo verde com manchas e cheirinho subindo. **Não coma!**
 - Aparece a partir de **15 pontos** (5% dos ovos, subindo até 12%). O primeiro cai sozinho, 30% mais devagar e com o aviso NÃO COMA!
 - **Se comer:** a raposa vomita e fica parada ~0,7 s. Não perde vida nem ganha ponto, mas o combo zera
-- **Se cair no chão:** não tira vida, mas faz um **splash verde** igual ao do ovo normal (a raposa escorrega), que fica lá até a Chuva de Ovos
+- **Se cair no chão:** não tira vida, mas faz um **splash verde** que gruda: em cima dele a raposa anda **mais devagar** (menos da metade da velocidade, soltando gosma verde) em vez de escorregar. Fica lá até a Chuva de Ovos. Gigante não fica lenta
 - Nunca cai em cima de um ovo
 - Não aparece na Chuva de Ovos, e o fim da chuva limpa os splashes
 
