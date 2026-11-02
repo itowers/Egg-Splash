@@ -31,6 +31,15 @@ Um ovo verde com manchas e cheirinho subindo. **Não coma!**
 - Nunca cai em cima de um ovo; enquanto há cheiro no chão, os ovos caem mais perto do anterior para continuar alcançáveis
 - Não aparece na Chuva de Ovos, e o fim da chuva limpa o cheiro
 
+## Variante B: ovo podre no lugar da bola (teste)
+Abra o jogo com **`?variante=b`** no fim do link (fica salvo; `?variante=a` volta ao normal). A tela inicial mostra VARIANTE B.
+- O **ovo podre vira o obstáculo principal**, com a mesma curva da bola (0% → 50%) e as mesmas regras de sequência e de apresentação de fase
+- **Disfarce por cor:** verde-oliva (0–9) → cor de ovo com manchas (10–29) → 2 manchinhas (30–49) → só cor de ovo, com tremidinha (50+). Os **fiozinhos de cheiro nunca somem**
+- **Encostar no corpo:** a raposa fica 1 s parada vomitando (mesmo peso da bola)
+- **Comer:** perde 1 vida, vomita e o combo zera
+- **Cheiro no chão:** só 1 de cada 5 que caem, por 2 s, um de cada vez
+- **A bola volta a partir de 50 pts** como novidade (vermelha, sem disfarce), até 30% dos objetos ruins
+
 ## Ovo dourado
 Um ovo de ouro que brilha. **Coma!**
 - Aparece a partir de **20 pontos**, em 2% dos ovos (nunca enquanto a raposa já está gigante)
