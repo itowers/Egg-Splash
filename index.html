@@ -26,7 +26,7 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;borde
   box-shadow:6px 6px 0 rgba(0,0,0,.16);background:#9fd3e0}
 /* HUD fora da tela do jogo: faixa propria logo acima, com a mesma largura */
 #hud{border:0;box-shadow:none;background:none;margin-bottom:6px}
-#controls{height:calc(34px + 84px*var(--bs,1));flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px 8px}
+#controls{height:calc(34px + 84px*var(--bs,1));flex:none;align-self:center;max-width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 22px 8px}
 .dpad{display:flex;gap:14px}
 button{background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:none;outline:none}
 button svg{display:block;width:100%;height:100%;pointer-events:none}
@@ -43,7 +43,8 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
 #broar.ready .face{animation:roarpulse .5s steps(1) infinite}
 @keyframes roarwave{50%{visibility:visible}}
 @keyframes roarpulse{50%{fill:#ffe47a}}
-@media (max-width:340px){#broar{width:63px;height:66px}.dpad{gap:8px}}
+@media (max-width:390px){#controls{padding:0 12px 8px}.dpad{gap:8px}} /* SE/mini: com botoes 1,15x a fileira nao cabia */
+@media (max-width:340px){#broar{width:63px;height:66px}}
 #controls .dn{display:none}
 #controls button.on .up{display:none}
 #controls button.on .dn{display:inline}
@@ -1690,13 +1691,29 @@ drawTuneBtn();syncCtrl();
 
 /* ---------- fit ---------- */
 function fit(){
-  const st=document.getElementById('stage').getBoundingClientRect();
+  const ctl=document.getElementById('controls'),dp=document.querySelector('.dpad');
   const land=matchMedia('(orientation:landscape) and (min-aspect-ratio:5/4)').matches;
+  if(land)ctl.style.width=''; // paisagem: controles absolutos nos cantos (CSS)
+  const st=document.getElementById('stage').getBoundingClientRect();
   let aw=st.width-4,ah=st.height-34; // retrato: a moldura encosta nas bordas para o jogo ficar o maior possivel // o HUD (logo acima) divide a altura com o jogo
-  if(land)aw=st.width-2*Math.min(240,st.width*.28);
+  if(land){
+    /* paisagem: o jogo fica entre as colunas de botoes. Mede onde os botoes realmente estao (setas e pausa a esquerda;
+       boca, RUGIR e botoes do topo a direita) para a moldura nunca encostar neles (iPhone Duo fechado, 1,45:1, encostava) */
+    const R=id=>document.getElementById(id).getBoundingClientRect();
+    const l=Math.max(dp.getBoundingClientRect().right,R('pause').right)-st.left; // coordenadas relativas ao #stage (que ja desconta o notch)
+    const r=st.right-Math.min(R('bm').left,R('broar').left,document.querySelector('#top .right').getBoundingClientRect().left);
+    aw=st.width-2*(Math.max(l,r)+10);
+  }
   const s=Math.max(1,Math.min((aw-12)/W,(ah-12)/(H+HH)));
   cv.style.width=Math.floor(W*s)+'px';cv.style.height=Math.floor(H*s)+'px';
   hud.style.width=Math.floor(W*s)+'px';hud.style.height=Math.floor(HH*s)+'px'; // alinhado com a parte de dentro da moldura
+  if(!land){
+    /* retrato: a fileira de botoes acompanha a largura do jogo (com um minimo confortavel para o polegar), centrada.
+       Em tela larga (iPhone Duo aberto, ~0,7:1) as setas e a boca iam para as bordas, longe do jogo, com o RUGIR solto no meio */
+    const cs=getComputedStyle(ctl),need=dp.offsetWidth+document.getElementById('broar').offsetWidth+document.getElementById('bm').offsetWidth
+      +parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight)+24;
+    ctl.style.width=Math.min(st.width,Math.max(Math.floor(W*s)+12,360,need))+'px';
+  }
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
