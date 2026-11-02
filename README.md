@@ -24,7 +24,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e vira uma galinha que bloqueia, como a do combo. Ela **só vai para o poleiro quando a raposa encosta nela**. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
 - **Chuva de Ovos = festa das galinhas (7 s):** o fazendeiro cochila (Zzz), desce um globo de festa, a tela pisca em cores de balada (fraco, 3 trocas por segundo) e as galinhas dançam pelo poleiro botando os ovos coloridos
 - **Ovo dourado:** a galinha que vai botá-lo fica dourada
-- **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um (verde se foi um ovo podre comido, na variante B). Pegar um coração na festa conserta um
+- **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um. Pegar um coração na festa conserta um
 - **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge pela esquerda
 - **Telemetria local:** cada partida fica salva no aparelho (pontos e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial
 
@@ -42,23 +42,14 @@ Um ovo verde com manchas e cheirinho subindo. **Não coma!**
 - Aparece a partir de **15 pontos** (5% dos ovos, subindo até 12%). O primeiro cai sozinho, 30% mais devagar e com o aviso NÃO COMA!
 - **Se comer:** a raposa vomita e fica parada ~0,7 s. Não perde vida nem ganha ponto, mas o combo zera
 - **Se cair no chão:** não tira vida, mas faz um **splash verde** igual ao do ovo normal (a raposa escorrega), que fica lá até a Chuva de Ovos
-- Nunca cai em cima de um ovo; enquanto há cheiro no chão, os ovos caem mais perto do anterior para continuar alcançáveis
+- Nunca cai em cima de um ovo
 - Não aparece na Chuva de Ovos, e o fim da chuva limpa os splashes
-
-## Variante B: ovo podre no lugar da bola (teste)
-Abra o jogo com **`?variante=b`** no fim do link (fica salvo; `?variante=a` volta ao normal). A tela inicial mostra VARIANTE B.
-- O **ovo podre vira o obstáculo principal**, com a mesma curva da bola (0% → 50%) e as mesmas regras de sequência e de apresentação de fase
-- **Disfarce por cor:** verde-oliva (0–9) → cor de ovo com manchas (10–29) → 2 manchinhas (30–49) → só cor de ovo, com tremidinha (50+). Os **fiozinhos de cheiro nunca somem**
-- **Encostar no corpo:** a raposa fica 1 s parada vomitando (mesmo peso da bola)
-- **Comer:** perde 1 vida, vomita e o combo zera
-- **Cair no chão:** faz o mesmo **splash verde** da variante A (a raposa escorrega, fica até a Chuva de Ovos). Além disso, 1 de cada 5 deixa cheiro por 2 s, um de cada vez
-- **A bola volta a partir de 50 pts** como novidade (branquinha, jogada pelo fazendeiro), até 30% dos objetos ruins
 
 ## Ovo dourado
 Um ovo de ouro que brilha. **Coma!**
 - Aparece a partir de **20 pontos**, em 2% dos ovos (nunca enquanto a raposa já está gigante)
 - **Vale +5** e deixa a raposa **2x maior e invencível por 5 s** (barrinha dourada embaixo dos corações)
-- Gigante: a boca e o corpo ficam do dobro do tamanho; bolas que encostam saem voando sem tontura; o ovo podre se desfaz sem vômito nem cheiro; o cheiro no chão não deixa lenta; a galinha sai voando sem parar a raposa
+- Gigante: a boca e o corpo ficam do dobro do tamanho; bolas que encostam saem voando sem tontura; o ovo podre se desfaz sem vômito nem cheiro; a galinha sai voando sem parar a raposa
 - Ovos normais que caem no chão continuam tirando vida
 - No último 1,5 s a raposa pisca entre os dois tamanhos, avisando que vai acabar
 - Se o dourado cair no chão, não tira vida
