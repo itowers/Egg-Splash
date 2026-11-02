@@ -14,7 +14,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Queda:** valores acima × 0,9 desde a versão da fazenda (ver abaixo)
 - O 1º objeto é ovo e **o 2º já é a primeira bola do fazendeiro** (cai sozinha, 30% mais devagar, com o aviso DESVIE!); no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
 - **Bola:** bola de tênis **verde bem clarinho** com a costura branca, igual em todas as fases. Quem joga é sempre o fazendeiro: ver A fazenda
-- **Bola no chão:** funciona como a galinha. Quica uma vez e fica parada no chão. Se a raposa encosta, dá uma travada (~0,4 s, sem tontura) e a bola vai embora pulando de lado. Gigante: a bola vai embora sem travar a raposa
+- **Bola no chão:** quica pelo chão, pisca e some sozinha depois de ~2,5 s (sem travar a raposa)
 - **Engolir a bola:** se a raposa abre a boca e a bola cai nela, ela engole: fica tonta igual à pancada, mas não sobra bola no chão
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
@@ -35,7 +35,7 @@ A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão
 - O botão começa bloqueado (cinza) e enche de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
 - Cheio, o botão fica amarelo piscando, a barra do HUD pisca e aparece **RUJA!**. Na primeira vez da partida, a tela mostra **APERTE RUGIR!**
 - Não acumula: cheio, para de encher até a raposa rugir. Os ovos da própria chuva não enchem
-- **RAAAR!** a raposa abre a boca, saem ondas e começa a Chuva de Ovos. Dá para rugir até tonta. As bolas (inclusive as do chão) e os ovos podres somem, como antes. A galinha que estava bloqueando se assusta e voa para o poleiro; o pintinho dá um pulo para longe
+- **RAAAR!** a raposa abre a boca, saem ondas e começa a Chuva de Ovos. Dá para rugir até tonta. As bolas e os ovos podres somem, como antes. A galinha que estava bloqueando se assusta e voa para o poleiro; o pintinho dá um pulo para longe
 - Telemetria: cada rugido guarda os pontos, se a raposa estava tonta/parada e quanto tempo o botão ficou cheio antes do toque. O `?stats=1` mostra o total e a espera mediana
 
 ## Pintinho e galinha
