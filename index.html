@@ -410,6 +410,7 @@ function updateFarm(){
     farmer.x=clamp(farmer.x,0,W-13);
   }else if(hens.some(h=>h.home!=null)){for(const h of hens){if(h.home!=null)h.x=h.home;h.home=null;h.fy=null;}farmer.run=null;}
   for(const it of items){if(!(it.wait>0))continue;
+    if(it.pair)continue;
     if(it.thrown){stepTo(farmer,clamp(it.x-2,0,W-13),it.wait);if(it.wait===1)farmer.throwT=14;}
     else if(it.hen>=0)stepTo(hens[it.hen],clamp(it.x-2,0,W-12),it.wait);}
 }
@@ -528,10 +529,11 @@ function planWind(start,len){
   windPlan=windPlan.filter(k=>k[0]>=wt-900);
   let f=start,d=Math.random()<.5?-1:1,v=0;const end=start+len;windPlan.push([f,0]);
   const ramp=(to,dur)=>{f+=dur;v=to;windPlan.push([f,v]);};
-  ramp(d*WIND_MAX*(.7+Math.random()*.3),120);                       // entra soprando para um lado
+  const WM=WIND_MAX*(twistLvl>=2?1.6:1); // ventania (150+ ovos)
+  ramp(d*WM*(.7+Math.random()*.3),120);                       // entra soprando para um lado
   while(f<end-200){
     ramp(v,Math.round(150+Math.random()*180));                       // segura
-    d=-d;ramp(d*WIND_MAX*(.6+Math.random()*.4),Math.round(120+Math.random()*60)); // vira para o outro lado
+    d=-d;ramp(d*WM*(.6+Math.random()*.4),Math.round(120+Math.random()*60)); // vira para o outro lado
   }
   ramp(v,Math.max(0,end-f));ramp(0,150);                             // acalma quando a chuva para
 }
@@ -550,7 +552,7 @@ function stepWeather(){
   if(wx.phase==='clear'){wxGo('build',12+Math.random()*6);wx.next=Math.round((12+Math.random()*8)*60);planWind(wt+wx.len,wx.next);}
   else if(wx.phase==='build')wxGo('rain',wx.next/60);
   else if(wx.phase==='rain')wxGo('clearup',8+Math.random()*4);
-  else wxGo('clear',35+Math.random()*30);
+  else wxGo('clear',twistLvl>=2?12+Math.random()*10:35+Math.random()*30); // ventania: chuva com vento mais vezes
 }
 function spawnCloud(){const s=wx.cloud>.55?(Math.random()<.7?2:1):wx.cloud>.25?(Math.random()<.5?1:0):0;
   clouds.push({x:Math.round(-34+Math.random()*(W+20)),y:Math.round(16+Math.random()*84),s,v:.04+Math.random()*.04,a:0,out:false});}
@@ -686,13 +688,23 @@ let state='title',score=0,best=0,lives=3,frame=0,overT=0,newBest=false;
 let items=[],parts=[],puddles=[],spawnT=60,shake=0,combo=0,prevMouth=false,prevLeg=0;
 let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,lastEgg={x:W/2-4,arr:0},recent=[];
 let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1,ballGap=0;
+/* v2 (curva-de-dificuldade.md): pontos com multiplicador de combo (score continua = ovos e e o que move a curva),
+   novidades espacadas (NEW_GAP entre uma regra nova e a proxima) e reviravoltas depois dos 100 ovos. */
+let pts=0,maxCombo=0,multT=0,lastNew=-1e9,henSeen=false,henHint=0,goldSeen=false,twistLvl=0,twistT=0;
+const NEW_GAP=20*60;
+const newOK=()=>frame-lastNew>=NEW_GAP;
+function markNew(){lastNew=frame;}
+const mult=()=>combo>=20?3:combo>=10?2:1; // x2 com 10 ovos seguidos, x3 com 20
+function gain(n){pts+=n*mult();if(combo>maxCombo)maxCombo=combo;if(combo===10||combo===20){multT=70;sfx.record();}}
+const TWISTS=[null,['FAZENDEIRO BRAVO!','BOLAS EM DUPLA'],['VENTANIA!','VENTO MAIS FORTE'],['FAZENDEIRO FURIOSO!','MAIS BOLAS EM DUPLA']];
+const twistFor=s=>s>=200?3:s>=150?2:s>=100?1:0;
 const BALL_GAP=6*60; // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
 const RAIN_LEN=7*60; // Chuva de Ovos (7 s): so acontece quando a raposa ruge
 /* Rugido (ver README): o botao RUGIR libera com ROAR_EGGS ovos comidos desde a ultima chuva OU com ROAR_FLOOR de tempo
    (piso, para quem esta indo mal tambem ter o respiro). Nao acumula: cheio, para de encher ate a raposa rugir. */
 const ROAR_EGGS=20,ROAR_FLOOR=45*60,ROAR_ANIM=48;
 let roarEggs=0,roarT=0,roarFull=0,roarHint=0,roarSeen=false,roars=[];
-const roarP=()=>Math.min(1,Math.max(roarEggs/ROAR_EGGS,roarT/ROAR_FLOOR));
+const roarP=()=>{const p=Math.min(1,Math.max(roarEggs/ROAR_EGGS,roarT/ROAR_FLOOR));return !roarSeen&&p>=1&&!newOK()?.97:p;}; // o 1o rugido espera a novidade anterior assentar
 function roarAdd(n){if(rainT===0)roarEggs+=n;} // ovos da propria chuva nao enchem
 // Pintinho/galinha: recompensa por ir muito bem (ver README). Um passaro por vez.
 const HATCH_COMBO=8,HATCH_P=.3,HATCH_CD=20*60,CHICK_LIFE=8*60,GROW_T=40,HEN_LIFE=12*60,HALT_T=24,CHICK_FLEE=20;
@@ -711,7 +723,7 @@ let lostLog=[],ballHits=0;
 const STATS=/[?&]stats=1/i.test(location.search);
 function logLoss(c){lostLog.push({c,ph:phaseOf(score),s:score,busy:fox.stun>0||fox.sick>0||fox.halt>0});}
 function saveGame(){try{const L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]');
-  L.push({score,lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
+  L.push({score,pts,mc:maxCombo,tw:twistLvl,lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
 function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
   L=L.filter(g=>g.v!=='b'); // partidas antigas da variante B ficam de fora
   if(!L.length)return['SEM PARTIDAS AINDA'];
@@ -723,7 +735,7 @@ function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-
     (()=>{const R=L.flatMap(g=>g.roars||[]),w=R.map(r=>r.w).sort((a,b)=>a-b); // rugidos e quanto tempo o botao ficou cheio antes do toque
       return'RUGIDOS '+R.length+(w.length?'  ESPERA '+Math.round(w[Math.floor(w.length/2)]/60)+'S':'');})()];} // causa de cada casca quebrada no topo: 'egg' ou 'rot'
 let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
-try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
+try{best=+localStorage.getItem('eggsplash-pts')||+localStorage.getItem('eggsplash-best')||0}catch(e){} // recorde em pontos (antes: ovos)
 const FAT_T=60; // depois de comer, a raposa fica gordinha por 1 s
 // comer um ovo: o ovo entra na boca (6), a raposa morde e o pedaco de cima pula (2),
 // o pedaco cai na boca (3) e ela mastiga mostrando os dentes (o resto)
@@ -734,7 +746,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;closePyr();
+function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;closePyr();
   Object.assign(fox,{roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -772,7 +784,7 @@ function spawn(){
   const phaseIntro=spawned>=1&&L.phase>lastBallPhase;
   if(phaseIntro)type=BAD;                                        // cada fase apresenta seu disfarce logo no inicio
   if(type==='egg'&&spawned>=2&&ballGap>=BALL_GAP)type='ball'; // o fazendeiro nao para de jogar
-  if(type==='egg'&&spawned>=3&&((score>=ROT_FROM&&!rotSeen)||Math.random()<rotP(score)))type='rotten'; // ovo podre extra; o primeiro e garantido ao chegar em ROT_FROM
+  if(type==='egg'&&spawned>=3&&(rotSeen?Math.random()<rotP(score):score>=ROT_FROM&&newOK()))type='rotten'; // ovo podre extra; o primeiro e garantido ao chegar em ROT_FROM
   const intro=(phaseIntro&&type===BAD)||(type==='rotten'&&!rotSeen); // apresentacao:
   if(intro&&falling>0)return 6;                                  // cai sozinha...
   const fall=intro?Math.round(L.fall*1.3):L.fall,vmax=intro?vmaxFor(fall):L.vmax; // ...e 30% mais devagar
@@ -807,14 +819,24 @@ function spawn(){
     if(hen<0)return 6;}
   if(type==='egg'){lastEgg={x,arr};eggRun++;ballRun=0;}
   else if(type===BAD){ballRun++;eggRun=0;lastBallPhase=L.phase;}
-  else rotSeen=true; // ovo podre extra
+  else{if(!rotSeen)markNew();rotSeen=true;} // ovo podre extra
+  if(intro&&type===BAD&&L.phase===0)markNew(); // 1a bola da partida
   spawned++;if(thrown)ballGap=0;
   recent.push({type,x,arr});
-  const gold=type==='egg'&&score>=GOLD_FROM&&fox.big===0&&!items.some(i=>i.gold)&&Math.random()<GOLD_P;
+  const gold=type==='egg'&&score>=GOLD_FROM&&fox.big===0&&!items.some(i=>i.gold)&&(goldSeen||newOK())&&Math.random()<GOLD_P;
+  if(gold&&!goldSeen){goldSeen=true;markNew();}
   const perchHatch=hens.length<henTarget(score); // falta galinha no poleiro: choca ja (a galinha vai para o poleiro quando a raposa encosta nela)
-  const hatch=!gold&&type==='egg'&&!bird&&hatchCD===0&&!items.some(i=>i.hatch)&&
+  const hatch=!gold&&type==='egg'&&!bird&&hatchCD===0&&!items.some(i=>i.hatch)&&(henSeen||newOK())&&
     ((combo>=HATCH_COMBO&&Math.random()<HATCH_P)||perchHatch);
+  if(hatch&&!henSeen)markNew(); // 1o pintinho/galinha da partida
   items.push({type,x:sx,y:Y0,vx:0,vy:Math.min(.5,vmax),state:'fall',t:0,vmax,ph:L.phase,intro,hatch,gold,land:x,wait:LEAD,hen,thrown,perch:hatch&&perchHatch});
+  // depois dos 100 ovos o fazendeiro as vezes joga duas bolas juntas (afastadas o bastante para a raposa passar entre elas)
+  if(thrown&&!intro&&twistLvl>=1&&Math.random()<(twistLvl>=3?.7:.4))for(let k=0;k<10;k++){
+    const x2=clamp(x+(24+Math.random()*16)*(Math.random()<.5?-1:1),4,W-13);if(Math.abs(x2-x)<22)continue;
+    if(recent.some(r=>r.type==='egg'&&Math.abs(r.arr-arr)<32&&Math.abs(r.x-x2)<22))continue;
+    const sx2=spawnXFor(x2,vmax,tgt,wd,LEAD);if(sx2===null)continue;
+    recent.push({type,x:x2,arr});
+    items.push({type,x:sx2,y:Y0,vx:0,vy:Math.min(.5,vmax),state:'fall',t:0,vmax,ph:L.phase,intro:false,land:x2,wait:LEAD,hen:-1,thrown,pair:true});break;}
   return intro?L.interval+Math.round(fall*.6):L.interval;
 }
 // rugido: cada ovo colorido cai de uma galinha voando doida pela tela
@@ -849,7 +871,7 @@ function doRoar(){
 }
 function burst(x,y,n,colors,spd=1.5,up=1.5){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*spd*2,vy:-Math.random()*up-.3,
   life:25+Math.random()*20,c:colors[i%colors.length]});}
-function gameOver(){state='over';overT=0;saveGame();if(score>best){best=score;newBest=true;try{localStorage.setItem('eggsplash-best',best)}catch(e){}}sfx.over();if(newBest)sfx.record();}
+function gameOver(){state='over';overT=0;saveGame();if(pts>best){best=pts;newBest=true;try{localStorage.setItem('eggsplash-pts',best)}catch(e){}}sfx.over();if(newBest)sfx.record();}
 
 function breakEgg(it){
   it.dead=true;const cx=it.x+4;
@@ -876,7 +898,7 @@ function eatRotten(it){
 
 /* ---------- ovo dourado ---------- */
 function eatGold(it){
-  it.dead=true;score+=GOLD_PTS;combo++;roarAdd(GOLD_PTS);startEat(GOLD);fox.fat=FAT_T;eaten.push(-2);
+  it.dead=true;score+=GOLD_PTS;combo++;gain(GOLD_PTS);roarAdd(GOLD_PTS);startEat(GOLD);fox.fat=FAT_T;eaten.push(-2);
   fox.big=BIG_T;fox.stun=0;fox.sick=0;fox.halt=0;fox.inv=0;sfx.power();
   burst(fox.x+8,GROUND-16,16,[PAL.y,'#fff3b0',PAL.t],1.8,2.2);
   if(bird&&bird.kind==='hen')henFly(0);
@@ -893,7 +915,7 @@ function smashAway(it){
 /* ---------- pintinho -> galinha ---------- */
 // O ovo marcado choca sozinho perto do chao, com ou sem a raposa: conta como pego (+1) e sai um pintinho.
 function hatchEgg(it){
-  it.dead=true;score++;combo++;hatched++;roarAdd(1);sfx.hatch();
+  it.dead=true;score++;combo++;gain(1);hatched++;roarAdd(1);sfx.hatch();
   const cx=it.x+4,cy=it.y+5;
   burst(cx,cy,8,[PAL.w,PAL.c,PAL.t],1.2,1.4);
   bird={kind:'chick',x:clamp(cx-4,2,W-10),y:cy-4,vx:(cx<fox.x+8?-1:1)*.7,vy:-1.6,t:0,face:cx<fox.x+8?-1:1,ground:false,hopT:20,perch:!!it.perch};
@@ -929,6 +951,7 @@ function updateBird(){
       {const hb=henBox(b),fl=fox.x+3;if(fl+10>hb.x&&fl<hb.x+hb.w) // nasce sem encostar na raposa
         b.x=hb.x+hb.w/2<fl+5?(fl-hb.w-2>=0?fl-hb.w-3:fl+12):(fl+12<=W-12?fl+12:fl-hb.w-3);}
       burst(b.x+6,b.y+4,12,[PAL.t,PAL.w,PAL.r],1.4,1.6);sfx.cluck();
+      if(!henSeen){henSeen=true;henHint=180;markNew();} // 1a galinha que bloqueia: aviso EMPURRE!
     }
     return;
   }
@@ -998,10 +1021,13 @@ function update(){
       spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();lvl++;lvlT=60;}
   }else{
     ballGap++;roarT++;
-    if(roarP()>=1){if(roarFull===0){sfx.roarReady();if(!roarSeen){roarHint=150;roarSeen=true;}}roarFull++;} // cheio: avisa uma vez e conta a espera
+    if(roarP()>=1){if(roarFull===0){sfx.roarReady();if(!roarSeen){roarHint=150;roarSeen=true;markNew();}}roarFull++;} // cheio: avisa uma vez e conta a espera
     if(--spawnT<=0)spawnT=spawn();
   }
   if(roarHint>0)roarHint--;
+  if(henHint>0)henHint--;if(multT>0)multT--;if(twistT>0)twistT--;
+  if(rainT===0&&twistFor(score)>twistLvl){twistLvl=twistFor(score);twistT=180;sfx.record(); // reviravolta nova depois dos 100 ovos
+    if(twistLvl>=2&&wx.phase==='clear')wx.t=Math.min(wx.t,90);} // ventania: o tempo fecha logo
   if(fox.roar>0)fox.roar--;
 
   updateBird();
@@ -1067,7 +1093,7 @@ function update(){
         if(it.hatch&&!bird&&it.y+h>=GROUND-34){hatchEgg(it);continue;} // choca sempre, com ou sem a raposa por perto
         if(it.gold&&fox.mouth&&hit(it,w,h,mouthZ)){eatGold(it);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){
-          it.dead=true;score++;combo++;roarAdd(1);startEat(it.rain?RAIN_EGGS[it.col]:EGG);fox.fat=FAT_T;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
+          it.dead=true;score++;combo++;gain(1);roarAdd(1);startEat(it.rain?RAIN_EGGS[it.col]:EGG);fox.fat=FAT_T;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
           continue;
         }else if(hit(it,w,h,body)){
           it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();
@@ -1080,11 +1106,11 @@ function update(){
       }else if(fox.big&&(hit(it,w,h,body)||(fox.mouth&&hit(it,w,h,mouthZ)))){smashAway(it);
       }else if(fox.mouth&&hit(it,w,h,mouthZ)){ // engole a bola: mesmo efeito da pancada, mas a bola some
         it.dead=true;fox.chew=EAT_T;fox.eatImg=(BALLS[it.ph]||BALL)[0];fox.gulp=true;fox.fat=FAT_T;
-        if(fox.stun===0&&fox.inv===0){fox.stun=60;ballHits++;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;}
+        if(fox.stun===0&&fox.inv===0){fox.stun=60;ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;}
         continue;
       }else if(hit(it,w,h,body)){
         if(fox.stun===0&&fox.inv===0){
-          fox.stun=60;ballHits++;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
+          fox.stun=60;ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
           burst(fox.x+8,GROUND-14,5,[PAL.y,PAL.t],1.4,1.4);
         }
         it.state='bounce';it.t=0;it.b=1;it.vy=-2.2;it.vx=(it.x+4.5<fox.x+8?-1:1)*1.2;
@@ -1158,8 +1184,9 @@ function drawHud(){
     hc.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,1+i*9,3);}
   if(fox.big){const f=fox.big/BIG_T; // barrinha dourada do poder
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
-  text(score,W-1,3,2,PAL.t,'right',PAL.k);
-  hc.drawImage(PILE,W-1-textW(score,2)-11,5); // pontos = ovos que a raposa juntou
+  text(pts,W-1,3,2,PAL.t,'right',PAL.k);
+  {const px=W-1-textW(pts,2)-11,m=mult();hc.drawImage(PILE,px,5); // pontos (com o multiplicador do combo)
+    if(m>1)text('X'+m,px-3,6,1,m>2?PAL.o:PAL.y,'right',PAL.k);}
   // o medidor do rugido fica so no botao RUGIR (a barra "NIVEL" do HUD saiu: parecia nivel e repetia o botao)
   TX=null;
 }
@@ -1169,11 +1196,11 @@ function drawFarm(){
   ctx.fillStyle='#d6c19c';for(const h of hens)ctx.fillRect(Math.round(h.home!=null?h.home:h.x)-1,LEDGE_Y-2,14,2); // palha embaixo de cada galinha
   // fazendeiro atras da tabua: joga as bolas; corre assustado na Chuva de Ovos; acorda bravo no fim de jogo
   const scared=state==='play'&&rainT>0,over=state==='over';
-  const FX=Math.round(farmer.x),carry=items.find(i=>i.wait>0&&i.thrown);
+  const FX=Math.round(farmer.x),carry=items.find(i=>i.wait>0&&i.thrown&&!i.pair),pairC=items.some(i=>i.wait>0&&i.pair);
   const fy=LEDGE_Y-11+(scared?Math.floor(farmer.walk/3)%2:0)+(!scared&&!over&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
   ctx.save();ctx.beginPath();ctx.rect(0,0,W,LEDGE_Y+1);ctx.clip(); // atras da tabua
   ctx.drawImage(over?FARMER.angry:scared?FARMER.scared:FARMER.awake,FX,fy);ctx.restore();
-  if(carry){const bi=(BALLS[carry.ph]||BALL)[0];ctx.drawImage(bi,FX+2,fy-8);       // bola erguida, pronta para jogar
+  if(carry){const bi=(BALLS[carry.ph]||BALL)[0];ctx.drawImage(bi,FX+2,fy-8);if(pairC)ctx.drawImage(bi,FX+2,fy-16); // dupla: duas bolas empilhadas       // bola erguida, pronta para jogar
     ctx.fillStyle=FPAL.R;ctx.fillRect(FX+2,fy-1,2,4);ctx.fillRect(FX+9,fy-1,2,4);}
   else if(farmer.throwT>0){ctx.fillStyle=FPAL.R;ctx.fillRect(FX+1,fy+10,2,3);ctx.fillRect(FX+10,fy+10,2,3);} // bracos descendo do arremesso
   const goldHen=(items.find(i=>i.gold&&i.state==='fall'&&i.y<GROUND-60)||{}).hen;
@@ -1255,6 +1282,7 @@ function render(){
       else img=HEN[Math.floor(b.t/5)%2?2:3][f];
       const yy=b.kind==='grow'&&img===HEN[0][f]?GROUND-14:b.y;
       ctx.drawImage(img,Math.round(b.x),Math.round(yy));
+      if(b.kind==='hen'&&henHint>0&&frame%24<16)text('EMPURRE!',b.x+6,b.y-9,1,PAL.t,'center',PAL.k);
       if(b.kind==='chick'&&(b.t<50||b.t-b.scared<30))text('PIU!',b.x+4,b.y-8,1,PAL.y,'center',PAL.k);
     }
     if(!fox.hid){
@@ -1292,6 +1320,9 @@ function render(){
   }
   drawHud();
   if(state==='play'&&roarHint>0&&rainT===0&&frame%24<16)text('APERTE RUGIR!',W/2,98,1,PAL.y,'center',PAL.k);
+  if(state==='play'&&multT>0&&frame%16<11)text('COMBO X'+mult()+'!',W/2,88,1,mult()>2?PAL.o:PAL.y,'center',PAL.k);
+  if(state==='play'&&twistT>0&&rainT===0&&TWISTS[twistLvl]){text(TWISTS[twistLvl][0],W/2,62,1,frame%16<8?PAL.y:PAL.r,'center',PAL.k);
+    text(TWISTS[twistLvl][1],W/2,71,1,PAL.t,'center',PAL.k);}
   if(state!=='title'){
     if(rainT>0){
       if(rainT>RAIN_LEN-20){ctx.fillStyle='rgba(255,236,160,'+((rainT-(RAIN_LEN-20))/40)+')';ctx.fillRect(0,0,W,H);}
@@ -1311,13 +1342,14 @@ function render(){
     if(frame%30<20)text('!',Math.round(farmer.x)+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
     text('O FAZENDEIRO',W/2,40,1,PAL.r,'center',PAL.k);
     text('ACORDOU!',W/2,48,2,PAL.r,'center',PAL.k);
-    text('OVOS '+score,W/2,64,2,PAL.t,'center',PAL.k);
-    const m=MEDALS.find(m=>score>=m[0]);
-    if(m){drawMedal(W/2,88,m);text(m[1],W/2,100,1,m[2]);} // fundo escuro: sem sombra no texto pequeno
-    else text('SEM MEDALHA',W/2,86,1,PAL.g);
+    text('PONTOS '+pts,W/2,62,2,PAL.t,'center',PAL.k);
+    text('OVOS '+score+'  COMBO '+maxCombo,W/2,76,1,PAL.w);
+    const m=MEDALS.find(m=>score>=m[0]); // medalha continua por ovos (nao depende do multiplicador)
+    if(m){drawMedal(W/2,96,m);text(m[1],W/2,106,1,m[2]);} // fundo escuro: sem sombra no texto pequeno
+    else text('SEM MEDALHA',W/2,92,1,PAL.g);
     const nx=[...MEDALS].reverse().find(m=>score<m[0]);
-    if(nx)text(nx[1]+' COM '+nx[0],W/2,111,1,PAL.w);
-    text(newBest?'NOVO RECORDE!':'RECORDE '+best,W/2,122,1,PAL.y);
+    if(nx)text(nx[1]+' COM '+nx[0]+' OVOS',W/2,115,1,PAL.w);
+    text(newBest?'NOVO RECORDE!':'RECORDE '+best,W/2,125,1,PAL.y);
     if(overT>25&&Math.floor(frame/30)%2)text('TOQUE PARA JOGAR',W/2,142,1,PAL.t);
     // botao: ver a piramide de ovos
     ctx.fillStyle=PAL.k;ctx.fillRect(PB.x-1,PB.y-1,PB.w+2,PB.h+2);
@@ -1494,7 +1526,7 @@ function fit(){
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
-window.__egg={doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
+window.__egg={get pts(){return pts},get combo(){return combo},get twistLvl(){return twistLvl},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
   set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
