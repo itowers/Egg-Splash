@@ -1100,7 +1100,7 @@ function update(){
         if(it.type==='ball'){it.vx=0;it.vy=-Math.max(Math.abs(it.vy)*.7,1.1);it.b=(it.b||0)+1;sfx.bounce(Math.min(it.b,4));} // quica no lugar ate sumir
         else if(Math.abs(it.vy)<.9)it.vy=0;else{it.vy=-Math.abs(it.vy)*.55;it.b=(it.b||0)+1;sfx.bounce(Math.min(it.b,4));}
       }
-      if(it.type==='ball'&&(it.t>150||it.x<-12||it.x>W+4))it.dead=true; // quica e some depois de ~2,5 s
+      if(it.type==='ball'&&(it.t>60||it.x<-12||it.x>W+4))it.dead=true; // quica e some depois de ~1 s
     }
   }
   items=items.filter(i=>!i.dead);
@@ -1218,10 +1218,8 @@ function render(){
       if(it.wait>0)continue; // ainda na mao do fazendeiro / embaixo da galinha
       const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?ROTTEN:(BALLS[it.ph]||BALL)[Math.floor((it.t+it.x)/8)%2];
       const hw=it.hatch&&it.state==='fall'?(Math.floor(it.t/(it.y>90?3:6))%2?1:-1):0; // ovo que vai chocar: balanca, cada vez mais rapido
-      const fade=it.type==='ball'&&it.state==='bounce'&&it.t>60?Math.max(0,1-(it.t-60)/90):1; // vai sumindo aos poucos
-      if(fade<1)ctx.globalAlpha=fade;
+      if(it.type==='ball'&&it.state==='bounce'&&it.t>20&&frame%4<2)continue; // pisca antes de sumir, estilo Mario
       ctx.drawImage(img,Math.round(it.x)+hw,Math.round(it.y));
-      ctx.globalAlpha=1;
       if(it.hatch&&it.state==='fall'&&it.y>60){const ex=Math.round(it.x)+hw,ey=Math.round(it.y);ctx.fillStyle=PAL.k; // rachadura aparecendo
         ctx.fillRect(ex+2,ey+4,1,1);ctx.fillRect(ex+3,ey+5,1,1);ctx.fillRect(ex+4,ey+4,1,1);if(it.y>100){ctx.fillRect(ex+5,ey+5,1,1);ctx.fillRect(ex+1,ey+5,1,1);}}
       if(it.gold&&frame%16<8){ctx.fillStyle=PAL.t;const gx=Math.round(it.x),gy=Math.round(it.y); // brilho
