@@ -32,8 +32,8 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 
 ## Rugido
 A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão **RUGIR** (entre as setas e a boca; em paisagem, em cima da boca).
-- O botão começa bloqueado (cinza) e enche de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
-- Cheio, o botão fica amarelo piscando (o medidor fica só no botão; o HUD mostra apenas vidas e pontos). Na primeira vez da partida, a tela mostra **APERTE RUGIR!**
+- O botão é pixel art, da mesma família das setas e da boca: tem o rostinho da raposa e a palavra RUGIR. Começa bloqueado (cinza) e enche de dourado de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
+- Cheio, o botão fica amarelo piscando, a raposa do botão abre a boca e saem ondinhas do rugido; ao tocar, o botão afunda como os outros (o medidor fica só no botão; o HUD mostra apenas vidas e pontos). Na primeira vez da partida, a tela mostra **APERTE RUGIR!**
 - Não acumula: cheio, para de encher até a raposa rugir. Os ovos da própria chuva não enchem
 - **RAAAR!** a raposa abre a boca, saem ondas e começa a Chuva de Ovos. Dá para rugir até tonta. As bolas e os ovos podres somem, como antes. A galinha que estava bloqueando se assusta e voa para o poleiro; o pintinho dá um pulo para longe
 - Telemetria: cada rugido guarda os pontos, se a raposa estava tonta/parada e quanto tempo o botão ficou cheio antes do toque. O `?stats=1` mostra o total e a espera mediana
