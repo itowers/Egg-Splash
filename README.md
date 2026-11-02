@@ -13,20 +13,22 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - Na Chuva de Ovos, os corações perdidos caem espalhados pela chuva toda e pela tela inteira
 - **Queda:** valores acima × 0,9 desde a versão da fazenda (ver abaixo)
 - O 1º objeto é ovo e **o 2º já é a primeira bola do fazendeiro** (cai sozinha, 30% mais devagar, com o aviso DESVIE!); no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
+- **Primeira vez (nunca comeu um ovo):** o ovo que cai mostra **SEGURE A BOCA!**, o botão da boca fica pulando e o fazendeiro espera o 1º ovo comido para jogar a 1ª bola (no máximo 3 ovos). Fica salvo no aparelho; quem já tinha recorde não vê
+- **Ovos = ovos comidos fora da Chuva de Ovos.** A curva, as medalhas, as galinhas do poleiro e as reviravoltas andam só por eles (a chuva conta só pontos, ver A fazenda)
 - **Bola:** bola **vermelha** com a costura branca, igual em todas as fases. Quem joga é sempre o fazendeiro: ver A fazenda
 - **Bola no chão:** fica quicando no mesmo lugar (sem correr para o lado) e pisca e some em ~1 s, estilo Mario (sem travar a raposa)
 - **Engolir a bola:** se a raposa abre a boca e a bola cai nela, ela engole: fica tonta igual à pancada, mas não sobra bola no chão
-- A primeira bola de cada fase cai sozinha e 30% mais devagar
+- Só a **primeira bola da partida** é apresentada (DESVIE!). As apresentações aos 10, 30 e 50 ovos saíram: eram do tempo do disfarce e só quebravam o ritmo
 
 ## Aprender e continuar jogando (v2)
 - **Uma novidade por vez:** entre uma regra nova e a próxima passam pelo menos **20 s**. Isso vale para a 1ª bola, o 1º pintinho/galinha, o 1º rugido, o 1º ovo podre e o 1º dourado. Se a próxima já pode chegar (pela pontuação), ela espera o intervalo; o botão RUGIR fica quase cheio até lá
 - **Galinha que bloqueia:** na primeira vez da partida aparece o aviso **EMPURRE!** em cima dela
-- **Combo vale pontos:** com **10 ovos seguidos** cada ovo vale **x2**; com **20**, **x3** (aviso COMBO X2!/X3! e "X2" ao lado dos pontos). Ovo quebrado, ovo podre comido ou bola na raposa zeram o combo. A curva de dificuldade continua andando pelos **ovos**, não pelos pontos
+- **Combo vale pontos:** com **10 ovos seguidos** cada ovo vale **x2**; com **20**, **x3** (aviso COMBO X2!/X3! e "X2" ao lado dos pontos). Ovo quebrado, ovo podre comido ou bola na raposa zeram o combo. **A Chuva de Ovos não mexe no combo:** quem ruge com x2 ou x3 ganha esse multiplicador nos ovos da chuva. A curva de dificuldade continua andando pelos **ovos**, não pelos pontos
 - **Depois dos 100 ovos** a curva já está no piso, então o jogo muda de jeito:
   - **100 ovos — FAZENDEIRO BRAVO!:** 40% das bolas vêm em dupla, afastadas o bastante para a raposa passar entre elas (nunca em cima de ovo)
   - **150 ovos — VENTANIA!:** a chuva com vento vem bem mais vezes e o vento é 60% mais forte (o pouso continua calculado, então os ovos seguem alcançáveis)
   - **200 ovos — FAZENDEIRO FURIOSO!:** 70% das bolas em dupla, com a ventania
-- **Recorde em pontos:** o fim de jogo mostra PONTOS, ovos e o maior combo. As medalhas continuam por ovos (10/25/50/100)
+- **Recorde em pontos:** o fim de jogo mostra PONTOS, ovos (+ os da chuva, à parte) e o maior combo. As medalhas continuam por ovos fora da chuva (10/25/50/100)
 
 ## A fazenda (por que as coisas acontecem)
 - **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta e bota
@@ -35,10 +37,11 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - O tempo de queda conta a partir do momento em que o objeto é solto. Como a galinha e o fazendeiro avisam antes, a queda é **10% mais curta** que a da curva original (3,0 s → 2,7 s; piso 1,6 s → 1,44 s)
 - **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e vira uma galinha que bloqueia, como a do combo. Ela **só vai para o poleiro quando a raposa encosta nela**. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
 - **Chuva de Ovos = rugido da raposa (7 s):** só acontece quando a raposa ruge (ver Rugido). As galinhas saem do poleiro voando doidas pela tela e os ovos coloridos caem de onde elas estiverem; o fazendeiro corre assustado de um lado para o outro e não joga bola. No fim, as galinhas voltam para o lugar delas no poleiro
+- **A chuva conta só pontos:** cada ovo da chuva vale 1 ponto × o multiplicador do combo de quem entrou nela. Não conta como ovo (não acelera a curva nem conta para medalhas, galinhas e reviravoltas) e não mexe no combo. Na pirâmide, os ovos da chuva continuam aparecendo (coloridos)
 - **Ovo dourado:** a galinha que vai botá-lo fica dourada
 - **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um. Pegar um coração na Chuva de Ovos conserta um
-- **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge pela esquerda
-- **Telemetria local:** cada partida fica salva no aparelho (ovos, pontos, maior combo, reviravolta alcançada e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial
+- **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge pela esquerda. A tela fica **1,5 s** parada e depois **tocar no jogo** começa outra partida; setas, boca e RUGIR não reiniciam (para ninguém pular a medalha, o recorde e a pirâmide apertando os botões no susto)
+- **Telemetria local:** cada partida fica salva no aparelho (ovos, ovos da chuva, pontos, maior combo, reviravolta alcançada, se foi em 2X e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial (só partidas em que a chuva conta só pontos e sem 2X)
 
 ## Rugido
 A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão **RUGIR** (entre as setas e a boca; em paisagem, em cima da boca).
@@ -88,16 +91,16 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 - O nome **CHUVA DE OVOS!** aparece só no começo da chuva (~1,7 s) e some
 
 ## Controles
-- ◀ ▶ andar · botão redondo (segurar) abrir a boca · **RUGIR** quando estiver cheio
-- Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, M som
+- ◀ ▶ andar (dá para **deslizar o dedo** de uma seta para a outra sem levantar) · botão redondo (segurar) abrir a boca · **RUGIR** quando estiver cheio
+- Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, M som, Enter jogar de novo (X = 2X, só no modo de teste)
 
 ## Ajustes de teste
 Menu para testar a jogabilidade e comparar versões. Só aparece no **modo de teste**; fora dele o jogo usa sempre o padrão.
-- **Ligar:** abrir com `?debug=1` (fica salvo no aparelho; `?debug=0` desliga) ou, pelo ícone da Tela de Início, **tocar 5 vezes no botão de pausa** na tela inicial (o mesmo gesto desliga). Aparece o botão de ajustes ao lado do 1X e a tela inicial mostra o ajuste em uso
+- **Ligar:** abrir com `?debug=1` (fica salvo no aparelho; `?debug=0` desliga) ou, pelo ícone da Tela de Início, **tocar 5 vezes no botão de pausa** na tela inicial (o mesmo gesto desliga). Aparecem o botão de ajustes e o **1X/2X** (fora do modo de teste o jogo roda sempre em 1X) e a tela inicial mostra o ajuste em uso
 - **Os valores só mudam entre partidas.** Abrir o menu no meio pausa o jogo, e o que mudar vale na próxima (controles constantes durante a partida)
 - **Controle:** tipo (setas, **arrastar** = o dedo em qualquer lugar da tela move a raposa como um trackpad, **lados** = segurar a metade esquerda/direita da tela), boca (segurar ou alternar), velocidade, velocidade de boca aberta, aceleração, frenagem, boca mais generosa (px a mais na área de pegar) e tamanho dos botões
 - **Punições:** tontura da bola, parada na galinha, vômito do ovo podre, velocidade no splash verde
 - **Curva:** queda (× a curva, padrão 0,9), teto de bolas, máximo sem bola, bolas miradas e erro da mira
 - **Ritmo:** rugido (ovos e tempo), intervalo entre novidades, combo x2/x3, % de duplas aos 100 e aos 200 ovos
 - **Presets:** ATUAL, ÁGIL, PESADA, SUAVE. A regra de alcance acompanha a velocidade da raposa (raposa mais lenta = ovos sorteados mais perto)
-- **Comparar:** cada partida guarda na telemetria o que estava diferente do padrão (`cfg`). O fim do menu mostra uma tabela por ajuste: partidas, mediana de ovos e pontos, % acima de 50, bolas na raposa por partida e % dos ovos perdidos com a raposa tonta/parada
+- **Comparar:** cada partida guarda na telemetria o que estava diferente do padrão (`cfg`). O fim do menu mostra uma tabela por ajuste: partidas, mediana de ovos e pontos, % acima de 50, bolas na raposa por partida e % dos ovos perdidos com a raposa tonta/parada. Partidas em 2X aparecem separadas (2X) e as de antes da chuva só contar pontos aparecem como (ANTES)
