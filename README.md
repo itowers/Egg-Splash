@@ -13,14 +13,14 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - Na Chuva de Ovos, os corações perdidos caem espalhados pela chuva toda e pela tela inteira
 - **Queda:** valores acima × 0,9 desde a versão da fazenda (ver abaixo)
 - O 1º objeto é ovo e **o 2º já é a primeira bola do fazendeiro** (cai sozinha, 30% mais devagar, com o aviso DESVIE!); no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
-- **Bola:** bola de tênis **verde bem clarinho** com a costura branca, igual em todas as fases. Quem joga é sempre o fazendeiro: ver A fazenda
+- **Bola:** bola **vermelha** com a costura branca, igual em todas as fases. Quem joga é sempre o fazendeiro: ver A fazenda
 - **Bola no chão:** fica quicando no mesmo lugar (sem correr para o lado) e pisca e some em ~1 s, estilo Mario (sem travar a raposa)
 - **Engolir a bola:** se a raposa abre a boca e a bola cai nela, ela engole: fica tonta igual à pancada, mas não sobra bola no chão
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
 ## A fazenda (por que as coisas acontecem)
 - **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta e bota
-- **O fazendeiro** joga as bolas para espantar a raposa. A bola é uma **bola de tênis verde-clarinha**. A tela inicial avisa: "FAZENDEIRO JOGA EM VOCÊ!". Ele anda com a bola erguida e joga lá de cima, uma por vez, o jogo todo. Começa a jogar logo no início e **nunca fica mais de 6 s sem jogar** (fora da Chuva de Ovos)
+- **O fazendeiro** joga as bolas para espantar a raposa. A bola é **vermelha** com costura branca. A tela inicial avisa: "FAZENDEIRO JOGA EM VOCÊ!". Ele anda com a bola erguida e joga lá de cima, uma por vez, o jogo todo. Começa a jogar logo no início e **nunca fica mais de 6 s sem jogar** (fora da Chuva de Ovos)
 - **Mira:** o fazendeiro mira onde a raposa está quando pega a bola. No começo 1 em cada 3 bolas, com erro de ±30 px; vai até 2 em cada 3, com ±8 px. Mirada ou não, a bola nunca cai em cima de um ovo
 - O tempo de queda conta a partir do momento em que o objeto é solto. Como a galinha e o fazendeiro avisam antes, a queda é **10% mais curta** que a da curva original (3,0 s → 2,7 s; piso 1,6 s → 1,44 s)
 - **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e vira uma galinha que bloqueia, como a do combo. Ela **só vai para o poleiro quando a raposa encosta nela**. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
@@ -33,7 +33,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 ## Rugido
 A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão **RUGIR** (entre as setas e a boca; em paisagem, em cima da boca).
 - O botão começa bloqueado (cinza) e enche de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
-- Cheio, o botão fica amarelo piscando, a barra do HUD pisca e aparece **RUJA!**. Na primeira vez da partida, a tela mostra **APERTE RUGIR!**
+- Cheio, o botão fica amarelo piscando (o medidor fica só no botão; o HUD mostra apenas vidas e pontos). Na primeira vez da partida, a tela mostra **APERTE RUGIR!**
 - Não acumula: cheio, para de encher até a raposa rugir. Os ovos da própria chuva não enchem
 - **RAAAR!** a raposa abre a boca, saem ondas e começa a Chuva de Ovos. Dá para rugir até tonta. As bolas e os ovos podres somem, como antes. A galinha que estava bloqueando se assusta e voa para o poleiro; o pintinho dá um pulo para longe
 - Telemetria: cada rugido guarda os pontos, se a raposa estava tonta/parada e quanto tempo o botão ficou cheio antes do toque. O `?stats=1` mostra o total e a espera mediana
@@ -73,7 +73,7 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 - **SALVAR** abre o compartilhar do iPhone (Salvar Imagem, Mensagens etc.); no computador, baixa um PNG de ~1080 px. Segurar a imagem também salva
 
 ## Visual
-- Ovo branquinho, sem pintas, com um brilho no alto (a bola é de tênis, verde-clarinha)
+- Ovo branquinho, sem pintas, com um brilho no alto (a bola é vermelha)
 - Depois de comer um ovo, a raposa fica **gordinha** por 1 s (a barriga incha e desincha)
 - O nome **CHUVA DE OVOS!** aparece só no começo da chuva (~1,7 s) e some
 
