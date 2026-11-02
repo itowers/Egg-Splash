@@ -316,6 +316,45 @@ const HEN_ROWS=[[...HEN_TOP,
 ]];
 const HEN=HEN_ROWS.map(r=>[bake(r,false),bake(r,true)]);
 
+/* ---------- fazenda: galinheiro, fazendeiro, toca e cascas (ver curva-de-dificuldade.md) ----------
+   Da sentido a cada regra: as galinhas do poleiro botam os ovos; o fazendeiro joga as bolas (e pinta
+   cada vez melhor = fases de disfarce); na Chuva de Ovos ele cochila; os pontos sao a pilha de ovos na
+   toca; cada ovo que quebra vira uma casca no topo; com 5 cascas o fazendeiro acorda e a raposa foge. */
+const LEDGE_Y=33; // topo da tabua do poleiro
+const HEN_SIT=[...HEN_TOP,".kwwwkwwwwk.","kwwwwccwwwk.","kwwwwwcwwwk.",".kwwwwwwwk..","..kkkkkkk..."];
+const HENS_SIT=[bake(HEN_SIT,false),bake(HEN_SIT,true)];
+const HEN_GOLD=[bake(HEN_SIT,false,{...PAL,w:'#f4c430',c:'#b8861a'}),bake(HEN_SIT,true,{...PAL,w:'#f4c430',c:'#b8861a'})];
+const HEN_SPOTS=[{x:2,f:0},{x:20,f:0},{x:108,f:1},{x:126,f:1}]; // longe dos numeros do HUD
+const FARMER_TOP=[
+"....hhhhh....",
+"....hHHHh....",
+"..hhhhhhhhh..",
+"...kffffffk..",
+];
+const FARMER_BOT=[
+"...kffffffk..",
+"...kbbbbbbk..",
+"....kbbbbk...",
+"..kRRuRRuRRk.",
+".kRRRuuuuRRRk",
+".kRk.uuuu.kRk",
+".kfk.uuuu.kfk",
+];
+const FPAL={...PAL,h:'#e8c15a',H:'#b8902e',f:'#f2c08a',b:'#8a5a3a',R:'#d84a3a',u:'#2f5aa8'};
+const FARMER={
+  awake:bake([...FARMER_TOP,"...kfkffkfk..",...FARMER_BOT],false,FPAL),
+  sleep:bake([...FARMER_TOP,"...kkkffkkk..",...FARMER_BOT],false,FPAL),
+  angry:bake([...FARMER_TOP,"...kkfffkkk..","...kfkffkfk..",...FARMER_BOT.slice(1)],false,FPAL)};
+const FARMER_X=88;
+// erros: casca inteira (cinza) = ainda nao errou; casca quebrada = ovo que caiu (verde = ovo podre comido, variante B)
+const SHELL_OK=bake(["..kkk..",".kgggk.","kgggggk","kgggggk","kgggggk","kgggggk",".kgggk.","..kkk.."]);
+const CRACK_ROWS=["..yyy..",".yyyyy.","kykykyk","kwkwkwk","kwwwwwk","kwwwwwk",".kwwwk.","..kkk.."]; // meia casca quebrada com a gema
+const SHELL_BROKE=bake(CRACK_ROWS);
+const SHELL_ROT=bake(CRACK_ROWS,false,{...PAL,w:'#a3ad5e',y:'#6f7a34'});
+const MINI_EGG=bake([".kk.","kwwk","kwwk",".kk."]);
+const PILE=(()=>{const c=document.createElement('canvas');c.width=9;c.height=8;const g=c.getContext('2d');
+  g.drawImage(MINI_EGG,0,4);g.drawImage(MINI_EGG,5,4);g.drawImage(MINI_EGG,2,0);return c;})(); // pilha de 3 ovos
+
 /* ---------- pixel font 3x5 ---------- */
 const F={A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",
 F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",
@@ -601,6 +640,7 @@ const BAD=VB?'rotten':'ball';
 const B_HIT_T=60,B_EAT_T=40,B_STINK_EVERY=5,B_STINK_LIFE=2*60,B_BALL_FROM=50;
 const bBallShare=s=>s<B_BALL_FROM?0:Math.min(.3,.1+(s-B_BALL_FROM)*.004);
 let ballSeen=false,rotDrops=0;
+let losses=[]; // causa de cada casca quebrada no topo: 'egg' ou 'rot'
 let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
 try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
 const fox={x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,stink:false,big:0};
@@ -608,7 +648,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;stinks=[];rotSeen=false;ballSeen=false;rotDrops=0;closePyr();
+function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];stinks=[];rotSeen=false;ballSeen=false;rotDrops=0;closePyr();
   Object.assign(fox,{x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,stink:false,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -698,7 +738,7 @@ function breakEgg(it){
   if(it.gold){burst(cx,GROUND-2,10,[PAL.y,'#b8861a','#fff3b0'],1.3,1.6);sfx.heartLost();return;} // perder o dourado nao tira vida
   if(it.rain||rainT>0){const c=it.rain?EGG_COLS[it.col]:[PAL.w,PAL.c];burst(cx,GROUND-2,5,[c[0],c[1]],1.2,1.4);burst(cx,GROUND-2,3,[PAL.y],.8,1);sfx.splat();
     puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rain:true,col:it.rain?it.col:null});return;}
-  lives--;combo=0;shake=5;sfx.crack();if(lives>0)sfx.hurt();
+  lives--;losses.push('egg');combo=0;shake=5;sfx.crack();if(lives>0)sfx.hurt();
   puddles.push({x:Math.round(cx-11),w:22,life:Infinity}); // puddles stay until the next egg rain ends
   burst(cx,GROUND-2,6,[PAL.w,PAL.c],1.4,1.8);burst(cx,GROUND-2,5,[PAL.y],1,1.2);
   if(lives<=0)gameOver();
@@ -718,7 +758,7 @@ function breakRotten(it){
 // comeu: vomita e fica parado um instante (sem perder vida, mas zera o combo e nao conta ponto)
 function eatRotten(it){
   it.dead=true;combo=0;fox.sick=VB?B_EAT_T:SICK_T;fox.vx=0;fox.chew=0;shake=3;sfx.vomit();
-  if(VB){lives--;shake=5;if(lives>0)sfx.hurt();else gameOver();} // B: comer o obstaculo principal custa uma vida
+  if(VB){lives--;losses.push('rot');shake=5;if(lives>0)sfx.hurt();else gameOver();} // B: comer o obstaculo principal custa uma vida
 }
 // B: ovo podre que encosta no corpo tem o mesmo peso da bola (60 frames parada), mas vomitando em vez de tonta
 function splatRotten(it){
@@ -890,7 +930,7 @@ function update(){
     it.t++;
     if(it.type==='heart'){
       if(it.state==='fall'){it.y+=1;it.x=it.bx+Math.sin(it.t/12)*3;if(it.y+8>=GROUND){it.dead=true;burst(it.x+4,GROUND-2,8,[PAL.r,PAL.p,PAL.t],1.2,1.4);sfx.heartLost();continue;}}
-      if(hit(it,9,8,body)||hit(it,9,8,mouthZ)){it.dead=true;lives=Math.min(5,lives+1);sfx.heart();
+      if(hit(it,9,8,body)||hit(it,9,8,mouthZ)){it.dead=true;if(lives<5)losses.pop();lives=Math.min(5,lives+1);sfx.heart();
         burst(it.x+4,it.y+4,10,[PAL.r,PAL.t,PAL.p],1.4,1.6);}
       continue;
     }
@@ -969,10 +1009,33 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
     for(let i=0;i<3;i++){const a=frame*.12+i*2.094;ctx.drawImage(STAR,Math.round(X+6+Math.cos(a)*8),Math.round(Y-5+Math.sin(a)*2.5));}
   }
 }
+function drawFarm(){
+  // toca no canto esquerdo, com a pilha de ovos crescendo com os pontos
+  const tc='#3e2610';ctx.fillStyle=tc;ctx.fillRect(1,GROUND-11,14,11);ctx.fillRect(3,GROUND-13,10,2);
+  ctx.fillStyle='#120a04';ctx.fillRect(4,GROUND-9,8,9);ctx.fillRect(5,GROUND-10,6,1);
+  if(state!=='title'){const n=Math.min(6,Math.ceil(score/10)),P=[[15,-4],[20,-4],[25,-4],[17.5,-7],[22.5,-7],[20,-10]];
+    for(let i=0;i<n;i++)ctx.drawImage(MINI_EGG,Math.round(P[i][0]),GROUND+P[i][1]);}
+  // poleiro: tabua com palha, galinhas chocando
+  ctx.fillStyle='#d6c19c';for(const h of HEN_SPOTS)ctx.fillRect(h.x-1,LEDGE_Y-2,14,2);
+  ctx.fillStyle='#8b5a2b';ctx.fillRect(0,LEDGE_Y,W,3);ctx.fillStyle='#5e3b1a';ctx.fillRect(0,LEDGE_Y+3,W,1);
+  const goldUp=items.some(i=>i.gold&&i.state==='fall');
+  HEN_SPOTS.forEach((h,i)=>{const bob=Math.floor((frame+i*23)/40)%3===0?1:0;
+    ctx.drawImage((goldUp&&i===1?HEN_GOLD:HENS_SIT)[h.f],h.x,LEDGE_Y-12+bob);});
+  // fazendeiro atras da tabua: joga as bolas; cochila na Chuva de Ovos; acorda bravo no fim de jogo
+  const sleeping=state==='play'&&rainT>0,over=state==='over';
+  const fy=LEDGE_Y-11+(!sleeping&&!over&&Math.floor(frame/50)%4===0?1:0);
+  ctx.drawImage(over?FARMER.angry:sleeping?FARMER.sleep:FARMER.awake,FARMER_X,fy);
+  if(!sleeping){ // lata de tinta: a cor e o disfarce da fase atual
+    const ph=state==='play'?level().phase:0,pc=BALL_PALS[ph];
+    ctx.fillStyle=PAL.k;ctx.fillRect(FARMER_X+13,LEDGE_Y-5,6,5);ctx.fillStyle='#9aa3ad';ctx.fillRect(FARMER_X+14,LEDGE_Y-4,4,4);
+    ctx.fillStyle=pc.w;ctx.fillRect(FARMER_X+14,LEDGE_Y-4,4,2);ctx.fillStyle=pc.r;ctx.fillRect(FARMER_X+16,LEDGE_Y-3,1,1);}
+  else for(let i=0;i<2;i++){if(Math.floor((frame+i*40)/40)%2)text('Z',FARMER_X-3-i*4,LEDGE_Y-7-i*4,1,PAL.t,'center',PAL.k);} // Zzz entre o relogio e o fazendeiro
+}
 function render(){
   ctx.save();
   if(shake)ctx.translate(Math.round((Math.random()-.5)*shake*.6),Math.round((Math.random()-.5)*shake*.6));
   drawWorld();
+  drawFarm();
   for(const p of puddles){
     if(p.life<120&&Math.floor(p.life/6)%2)continue;
     const pc=p.col!=null?EGG_COLS[p.col]:[PAL.w,PAL.c];
@@ -1038,10 +1101,13 @@ function render(){
     return;
   }
   // HUD
-  for(let i=0;i<5;i++)ctx.drawImage(i<lives?HEART:HEART0,4+i*9,5);
+  // cascas: da esquerda para a direita, as quebradas primeiro
+  for(let i=0;i<5;i++){const lost=i<5-lives,why=losses[i];
+    ctx.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,4+i*9,4);}
   if(fox.big&&state!=='title'){const f=fox.big/BIG_T; // barrinha dourada do poder
     ctx.fillStyle=PAL.k;ctx.fillRect(3,13,46,4);ctx.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;ctx.fillRect(4,14,Math.ceil(44*f),2);}
   text(score,W-5,4,2,PAL.t,'right',PAL.k);
+  ctx.drawImage(PILE,W-5-(String(score).length*8-2)-11,6); // pontos = ovos na toca
   if(state!=='title'){
     const bx=50,bw=50,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
     // nivel em cima do tempo: sobe a cada Chuva de Ovos que termina e pisca amarelo ao subir
@@ -1057,8 +1123,8 @@ function render(){
     text(secs,bx+bw/2,by+8,1,PAL.t,'center',PAL.k);
     if(rainT>0){
       if(rainT>RAIN_LEN-20){ctx.fillStyle='rgba(255,236,160,'+((rainT-(RAIN_LEN-20))/40)+')';ctx.fillRect(0,0,W,H);}
-      text('CHUVA',W/2,30,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
-      text('DE OVOS!',W/2,43,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
+      text('CHUVA',W/2,42,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
+      text('DE OVOS!',W/2,55,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
     }
   }
   if(state==='pause'){
@@ -1068,8 +1134,11 @@ function render(){
   }
   if(state==='over'){
     ctx.fillStyle='rgba(27,27,31,.6)';ctx.fillRect(0,0,W,H);
-    text('FIM DE JOGO',W/2,34,2,PAL.r,'center',PAL.k);
-    text('OVOS '+score,W/2,54,2,PAL.t,'center',PAL.k);
+    ctx.drawImage(FARMER.angry,FARMER_X,LEDGE_Y-11); // o fazendeiro acordou de vez (fica claro, por cima do escuro)
+    if(frame%30<20)text('!',FARMER_X+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
+    text('O FAZENDEIRO',W/2,40,1,PAL.r,'center',PAL.k);
+    text('ACORDOU!',W/2,47,2,PAL.r,'center',PAL.k);
+    text('OVOS '+score,W/2,64,2,PAL.t,'center',PAL.k);
     const m=MEDALS.find(m=>score>=m[0]);
     if(m){drawMedal(W/2,88,m);text(m[1],W/2,100,1,m[2],'center',PAL.k);}
     else text('SEM MEDALHA',W/2,86,1,PAL.g,'center',PAL.k);

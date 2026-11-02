@@ -15,6 +15,15 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Disfarce da bola:** vermelha (0–9) → cor do ovo com listra vermelha (10–29) → listra sutil (30–49) → sem listra, só a forma (50+)
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
+## A fazenda (por que as coisas acontecem)
+- **Galinhas no poleiro** no topo da tela: é delas que vêm os ovos
+- **O fazendeiro** fica atrás do poleiro e joga as bolas para espantar a raposa. A lata de tinta do lado dele mostra a cor do disfarce da fase atual
+- **Chuva de Ovos:** o fazendeiro cochila (Zzz), por isso só caem ovos e corações
+- **Ovo dourado:** enquanto ele cai, uma das galinhas fica dourada
+- **Pontos** = ovos levados para a **toca** (canto esquerdo, a pilha cresce a cada 10 ovos)
+- **Erros** = **cascas** no topo: cada ovo que quebra no chão vira uma casca quebrada (verde se foi um ovo podre comido, na variante B). Pegar um coração na Chuva conserta uma casca
+- **Fim de jogo:** com 5 cascas quebradas, **o fazendeiro acorda** e a raposa foge com o que juntou
+
 ## Pintinho e galinha
 Recompensa para quem está indo muito bem:
 - Com **8 ovos seguidos** sem quebrar nenhum, cada ovo novo tem 30% de chance de ser especial (um por vez)
