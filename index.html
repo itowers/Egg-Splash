@@ -23,7 +23,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 #stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
 canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;border:6px solid var(--ink);
-  box-shadow:10px 10px 0 rgba(0,0,0,.16);background:#9fd3e0}
+  box-shadow:6px 6px 0 rgba(0,0,0,.16);background:#9fd3e0}
 /* HUD fora da tela do jogo: faixa propria logo acima, com a mesma largura */
 #hud{border:0;box-shadow:none;background:none;margin-bottom:6px}
 #controls{height:118px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px 8px}
@@ -35,7 +35,7 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
 #br svg{transform:scaleX(-1)}
 .mouth{width:84px;height:84px}
 /* botao RUGIR: enche de baixo para cima (--p) e pisca quando libera a Chuva de Ovos */
-#broar{width:66px;height:58px;border:4px solid var(--ink);font:11px/1 Silkscreen,ui-monospace,Menlo,monospace;color:#7a756c;
+#broar{width:66px;height:58px;border:4px solid var(--ink);font:13px/1 Silkscreen,ui-monospace,Menlo,monospace;color:#4a463f;
   background:linear-gradient(to top,#d9b44a var(--p,0%),#c9c3b8 var(--p,0%));box-shadow:inset 0 -4px 0 rgba(0,0,0,.18);padding-bottom:4px}
 #broar.ready{color:var(--ink);background:#f4c430;box-shadow:inset 0 -4px 0 #b0821a;animation:roarpulse .5s steps(1) infinite}
 #broar.ready:active{box-shadow:none;transform:translateY(3px)}
@@ -245,8 +245,9 @@ const BALL_ROWS=[[
 ".kyyyYwk.",
 "..kkkkk..",
 ]];
-// a bola do fazendeiro e sempre a mesma em todas as fases: bola de tenis verde-clarinha
-const BALL_TENNIS={...PAL,y:'#e2f39a',Y:'#b5cc62',w:'#ffffff'};
+// a bola do fazendeiro e sempre a mesma em todas as fases: vermelha com costura branca
+// (era verde-clarinha e se confundia com o ovo podre verde-oliva)
+const BALL_TENNIS={...PAL,y:'#e8402f',Y:'#a8261b',w:'#ffffff'};
 const BALL_PALS=[BALL_TENNIS,BALL_TENNIS,BALL_TENNIS,BALL_TENNIS];
 const BALLS=BALL_PALS.map(p=>BALL_ROWS.map(r=>bake(r,false,p)));
 const BALL=BALLS[1];
@@ -1156,17 +1157,7 @@ function drawHud(){
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
   text(score,W-1,3,2,PAL.t,'right',PAL.k);
   hc.drawImage(PILE,W-1-textW(score,2)-11,5); // pontos = ovos que a raposa juntou
-  // barra do rugido: enche com os ovos comidos (ou com o tempo); na Chuva de Ovos mostra o tempo que falta
-  const ready=rainT===0&&roarP()>=1,bx=51,bw=40,by=9,f=rainT>0?rainT/RAIN_LEN:roarP();
-  text('NÍVEL '+lvl,bx+bw/2,3,1,lvlT>0&&frame%10<5?PAL.y:PAL.t,'center',PAL.k);
-  hc.fillStyle=PAL.k;hc.fillRect(bx-1,by-1,bw+2,7);
-  hc.fillStyle='#6b2a1f';hc.fillRect(bx,by,bw,5);
-  hc.fillStyle=rainT>0?(frame%10<5?PAL.y:PAL.t):(ready&&frame%20<10?PAL.t:PAL.y);
-  hc.fillRect(bx,by,Math.ceil(bw*f),5);
-  hc.fillStyle='rgba(255,255,255,.45)';hc.fillRect(bx,by,Math.ceil(bw*f),1);
-  hc.drawImage(ready||rainT>0?ROAR_ICON:ROAR_OFF,bx+bw+4,by-2+(ready&&frame%20<10?-1:0));
-  if(rainT>0)text(Math.ceil(rainT/60),bx+bw/2,by+8,1,PAL.t,'center',PAL.k);
-  else if(ready&&frame%20<14)text('RUJA!',bx+bw/2,by+8,1,PAL.y,'center',PAL.k);
+  // o medidor do rugido fica so no botao RUGIR (a barra "NIVEL" do HUD saiu: parecia nivel e repetia o botao)
   TX=null;
 }
 // rostinho da raposa no fim da barra do rugido: cinza enchendo, laranja e balancando quando libera
@@ -1229,7 +1220,7 @@ function render(){
           ctx.fillRect(Math.round(it.x)+dx+o,Math.round(it.y)-3,1,1);ctx.fillRect(Math.round(it.x)+dx+1-o,Math.round(it.y)-5,1,1);}
         if(it.intro&&it.state==='fall')text('NÃO COMA!',it.x+4,it.y-13,1,'#c9cf7a','center',PAL.k);
       }
-      if(it.type==='ball'&&it.intro&&it.state==='fall')text('DESVIE!',it.x+4,it.y+12,1,BALL_TENNIS.y,'center',PAL.k);
+      if(it.type==='ball'&&it.intro&&it.state==='fall')text('DESVIE!',it.x+4,it.y+12,1,PAL.t,'center',PAL.k);
     }
     if(bird){const b=bird,f=b.face<0?1:0;let img;
       if(b.kind==='chick')img=CHICK[b.ground?0:1][f];
@@ -1274,7 +1265,7 @@ function render(){
     return;
   }
   drawHud();
-  if(state==='play'&&roarHint>0&&rainT===0&&frame%24<16){text('APERTE RUGIR!',W/2,96,1,PAL.y,'center',PAL.k);text('CHUVA DE OVOS',W/2,104,1,PAL.t,'center',PAL.k);}
+  if(state==='play'&&roarHint>0&&rainT===0&&frame%24<16)text('APERTE RUGIR!',W/2,98,1,PAL.y,'center',PAL.k);
   if(state!=='title'){
     if(rainT>0){
       if(rainT>RAIN_LEN-20){ctx.fillStyle='rgba(255,236,160,'+((rainT-(RAIN_LEN-20))/40)+')';ctx.fillRect(0,0,W,H);}
@@ -1469,7 +1460,7 @@ addEventListener('blur',()=>{for(const k in keys)keys[k]=false;for(const k in to
 function fit(){
   const st=document.getElementById('stage').getBoundingClientRect();
   const land=matchMedia('(orientation:landscape) and (min-aspect-ratio:5/4)').matches;
-  let aw=st.width-28,ah=st.height-34; // o HUD (logo acima) divide a altura com o jogo
+  let aw=st.width-4,ah=st.height-34; // retrato: a moldura encosta nas bordas para o jogo ficar o maior possivel // o HUD (logo acima) divide a altura com o jogo
   if(land)aw=st.width-2*Math.min(240,st.width*.28);
   const s=Math.max(1,Math.min((aw-12)/W,(ah-12)/(H+HH)));
   cv.style.width=Math.floor(W*s)+'px';cv.style.height=Math.floor(H*s)+'px';
