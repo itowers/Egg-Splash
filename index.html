@@ -214,31 +214,31 @@ const ROTTEN=bake([
 ".kwwbck.",
 "..kkkk..",
 ],false,{...PAL,w:'#a3ad5e',c:'#6f7a34',b:'#5c4426'});
+// bola de tenis verde bem clarinho, com a costura branca; os 2 quadros alternam a costura (parece girar)
 const BALL_ROWS=[[
 "..kkkkk..",
-".kwwwwwk.",
-"kwwwwwwck",
-"kwwwwwwck",
-"krrrrrrrk",
-"kwwwwwwck",
-"kwwwwwwck",
-".kwwwwck.",
+".kwyyyyk.",
+"kyywyyyYk",
+"kyyywyyYk",
+"kyyywyyYk",
+"kyyywyyYk",
+"kyywyyyYk",
+".kwyyyYk.",
 "..kkkkk..",
 ],[
 "..kkkkk..",
-".kwwrwwk.",
-"kwwwrwwck",
-"kwwwrwwck",
-"kwwwrwwck",
-"kwwwrwwck",
-"kwwwrwwck",
-".kwwrwck.",
+".kyyyywk.",
+"kyyywyyYk",
+"kyywyyyYk",
+"kyywyyyYk",
+"kyywyyyYk",
+"kyyywyyYk",
+".kyyyYwk.",
 "..kkkkk..",
 ]];
-// disfarce progressivo: fase 1 bola vermelha, fase 2 cor do ovo + listra vermelha, fase 3 listra sutil, fase 4 sem listra (so a forma)
-// a bola do fazendeiro e sempre a mesma: branquinha (sem listra), em todas as fases
-const BALL_WHITE={...PAL,w:'#ffffff',c:'#c4c8d0',r:'#ffffff'};
-const BALL_PALS=[BALL_WHITE,BALL_WHITE,BALL_WHITE,BALL_WHITE];
+// a bola do fazendeiro e sempre a mesma em todas as fases: bola de tenis verde-clarinha
+const BALL_TENNIS={...PAL,y:'#e2f39a',Y:'#b5cc62',w:'#ffffff'};
+const BALL_PALS=[BALL_TENNIS,BALL_TENNIS,BALL_TENNIS,BALL_TENNIS];
 const BALLS=BALL_PALS.map(p=>BALL_ROWS.map(r=>bake(r,false,p)));
 const BALL=BALLS[1];
 const HEART=bake([".kk.kk.","krrkrrk","krrrrrk",".krrrk.","..krk..","...k..."]);
@@ -658,7 +658,7 @@ let state='title',score=0,best=0,lives=3,frame=0,overT=0,newBest=false;
 let items=[],parts=[],puddles=[],spawnT=60,shake=0,combo=0,prevMouth=false,prevLeg=0;
 let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,timerT=0,lastEgg={x:W/2-4,arr:0},recent=[];
 let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1,ballGap=0;
-const BALL_GAP=8*60; // A: o fazendeiro nunca fica mais de 8 s sem jogar (fora da Chuva de Ovos)
+const BALL_GAP=6*60; // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
 const RAIN_EVERY=30*60,RAIN_LEN=7*60; // Chuva de Ovos = festa das galinhas (7 s)
 // Pintinho/galinha: recompensa por ir muito bem (ver README). Um passaro por vez.
 const HATCH_COMBO=8,HATCH_P=.3,HATCH_CD=20*60,CHICK_LIFE=8*60,GROW_T=40,HEN_LIFE=12*60,HALT_T=24,CHICK_FLEE=20;
@@ -729,12 +729,13 @@ function spawn(){
   const L=level();
   const falling=items.filter(i=>!i.rain&&i.type!=='heart'&&i.state==='fall').length;
   if(falling>=Math.min(L.maxOn,Math.max(1,hens.length-1)))return 6; // mais galinhas = mais ovos ao mesmo tempo
-  let type=spawned<3?'egg':Math.random()<L.ballP?BAD:'egg';    // os 3 primeiros sao sempre ovos
+  // o 1o objeto e ovo e o 2o ja e a primeira bola do fazendeiro (apresentada sozinha e mais devagar)
+  let type=spawned<1?'egg':spawned<3?(spawned===1?'ball':'egg'):Math.random()<L.ballP?BAD:'egg';
   if(type===BAD&&ballRun>=3)type='egg';                          // no maximo 3 ruins seguidos
   if(type==='egg'&&spawned>=3&&score>=20&&eggRun>=6)type=BAD;    // depois de 20, no maximo 6 ovos seguidos
-  const phaseIntro=spawned>=4&&L.phase>lastBallPhase;
+  const phaseIntro=spawned>=1&&L.phase>lastBallPhase;
   if(phaseIntro)type=BAD;                                        // cada fase apresenta seu disfarce logo no inicio
-  if(type==='egg'&&spawned>=4&&ballGap>=BALL_GAP)type='ball'; // o fazendeiro nao para de jogar
+  if(type==='egg'&&spawned>=2&&ballGap>=BALL_GAP)type='ball'; // o fazendeiro nao para de jogar
   if(type==='egg'&&spawned>=3&&((score>=ROT_FROM&&!rotSeen)||Math.random()<rotP(score)))type='rotten'; // ovo podre extra; o primeiro e garantido ao chegar em ROT_FROM
   const intro=(phaseIntro&&type===BAD)||(type==='rotten'&&!rotSeen); // apresentacao:
   if(intro&&falling>0)return 6;                                  // cai sozinha...
@@ -1187,6 +1188,7 @@ function render(){
           ctx.fillRect(Math.round(it.x)+dx+o,Math.round(it.y)-3,1,1);ctx.fillRect(Math.round(it.x)+dx+1-o,Math.round(it.y)-5,1,1);}
         if(it.intro&&it.state==='fall')text('NÃO COMA!',it.x+4,it.y-13,1,'#c9cf7a','center',PAL.k);
       }
+      if(it.type==='ball'&&it.intro&&it.state==='fall')text('DESVIE!',it.x+4,it.y+12,1,BALL_TENNIS.y,'center',PAL.k);
     }
     if(bird){const b=bird,f=b.face<0?1:0;let img;
       if(b.kind==='chick')img=CHICK[b.ground?0:1][f];
@@ -1216,7 +1218,7 @@ function render(){
     text('SPLASH',W/2,56,3,PAL.o,'center',PAL.k);
     ctx.drawImage(EGG,30,82);text('COMA O OVO',44,85,1,PAL.k,'left');
     ctx.drawImage(BALLS[0][0],30,98);text('DESVIE DA BOLA',44,100,1,PAL.k,'left');
-    text('O FAZENDEIRO ESTÁ DE OLHO',W/2,110,1,PAL.d);
+    text('O FAZENDEIRO JOGA EM VOCÊ!',W/2,110,1,PAL.d);
 
     if(Math.floor(frame/30)%2)text('TOQUE PARA COMEÇAR',W/2,120,1,PAL.k);
     if(best)text('RECORDE '+best,W/2,130,1,PAL.d);
