@@ -224,7 +224,9 @@ const BALL_ROWS=[[
 "..kkkkk..",
 ]];
 // disfarce progressivo: fase 1 bola vermelha, fase 2 cor do ovo + listra vermelha, fase 3 listra sutil, fase 4 sem listra (so a forma)
-const BALL_PALS=[{...PAL,w:'#e8604c',c:'#b03a2a',r:'#ffffff'},PAL,{...PAL,r:'#e2cfae'},{...PAL,r:PAL.w}];
+// a bola do fazendeiro e sempre a mesma: branquinha (sem listra), em todas as fases
+const BALL_WHITE={...PAL,w:'#ffffff',c:'#c4c8d0',r:'#ffffff'};
+const BALL_PALS=[BALL_WHITE,BALL_WHITE,BALL_WHITE,BALL_WHITE];
 const BALLS=BALL_PALS.map(p=>BALL_ROWS.map(r=>bake(r,false,p)));
 const BALL=BALLS[1];
 const HEART=bake([".kk.kk.","krrkrrk","krrrrrk",".krrrk.","..krk..","...k..."]);
@@ -316,10 +318,9 @@ const HEN_ROWS=[[...HEN_TOP,
 ]];
 const HEN=HEN_ROWS.map(r=>[bake(r,false),bake(r,true)]);
 
-/* ---------- fazenda: galinheiro, fazendeiro, toca e cascas (ver curva-de-dificuldade.md) ----------
-   Da sentido a cada regra: as galinhas do poleiro botam os ovos; o fazendeiro joga as bolas (e pinta
-   cada vez melhor = fases de disfarce); na Chuva de Ovos ele cochila; os pontos sao a pilha de ovos na
-   toca; cada ovo que quebra vira uma casca no topo; com 5 cascas o fazendeiro acorda e a raposa foge. */
+/* ---------- fazenda: galinheiro, fazendeiro e cascas (ver curva-de-dificuldade.md) ----------
+   Da sentido a cada regra: as galinhas do poleiro botam os ovos; o fazendeiro joga as bolas (sempre
+   brancas; da fase 2 em diante ele as esconde nos ninhos); na Chuva de Ovos ele cochila; cada ovo que quebra vira uma casca no topo; com 5 cascas o fazendeiro acorda e a raposa foge. */
 const LEDGE_Y=33; // topo da tabua do poleiro
 const HEN_SIT=[...HEN_TOP,".kwwwkwwwwk.","kwwwwccwwwk.","kwwwwwcwwwk.",".kwwwwwwwk..","..kkkkkkk..."];
 const HENS_SIT=[bake(HEN_SIT,false),bake(HEN_SIT,true)];
@@ -939,8 +940,8 @@ function update(){
   if(state!=='pause')updateWorld();
   for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.life--;if(p.y>GROUND){p.y=GROUND;p.vx*=.5;p.vy=0;}}
   parts=parts.filter(p=>p.life>0);
-  if(state==='over'){overT++; // a raposa foge para a toca com o que juntou
-    if(!fox.hid){Object.assign(fox,{stun:0,sick:0,halt:0,big:0,mouth:false,face:-1,vx:-1.4});fox.x+=fox.vx;fox.walk++;if(fox.x<2)fox.hid=true;}
+  if(state==='over'){overT++; // a raposa foge pela esquerda com o que juntou
+    if(!fox.hid){Object.assign(fox,{stun:0,sick:0,halt:0,big:0,mouth:false,face:-1,vx:-1.4});fox.x+=fox.vx;fox.walk++;if(fox.x<-18)fox.hid=true;}
     return;}
   if(state!=='play')return;
   if(shake>0)shake--;if(lvlT>0)lvlT--;
@@ -1097,11 +1098,6 @@ function drawDisco(){const y=discoY();if(y===null)return;const cx=W/2;
   for(let i=0;i<10;i++){const a=frame*.03+i*.63,r=30+((i*37)%90); // bolinhas de luz pela tela
     ctx.fillStyle=C[i%4];ctx.fillRect(Math.round(cx+Math.cos(a)*r*1.1),Math.round(y+20+Math.abs(Math.sin(a*1.3))*r),2,2);}}
 function drawFarm(){
-  // toca no canto esquerdo, com a pilha de ovos crescendo com os pontos
-  const tc='#3e2610';ctx.fillStyle=tc;ctx.fillRect(1,GROUND-11,14,11);ctx.fillRect(3,GROUND-13,10,2);
-  ctx.fillStyle='#120a04';ctx.fillRect(4,GROUND-9,8,9);ctx.fillRect(5,GROUND-10,6,1);
-  if(state!=='title'){const n=Math.min(10,Math.ceil(score/10)),P=[[15,-4],[19,-4],[23,-4],[27,-4],[17,-7],[21,-7],[25,-7],[19,-10],[23,-10],[21,-13]];
-    for(let i=0;i<n;i++)ctx.drawImage(MINI_EGG,Math.round(P[i][0]),GROUND+P[i][1]);}
   // poleiro: tabua com palha, galinhas chocando
     ctx.fillStyle='#8b5a2b';ctx.fillRect(0,LEDGE_Y,W,3);ctx.fillStyle='#5e3b1a';ctx.fillRect(0,LEDGE_Y+3,W,1);
   ctx.fillStyle='#d6c19c';for(const h of hens)ctx.fillRect(Math.round(h.x)-1,LEDGE_Y-2,14,2); // palha embaixo de cada galinha
@@ -1121,12 +1117,7 @@ function drawFarm(){
     const party=state==='play'&&rainT>0;
     const up=lay&&lay.wait<6?2:0,bob=party?Math.floor(frame/6+i)%2*2:Math.floor((frame+i*23)/40)%3===0?1:0; // botando: levanta um pouco; na festa: danca
     ctx.drawImage((goldHen===i||(lay&&lay.gold)?HEN_GOLD:HENS_SIT)[party?Math.floor(frame/12+i)%2:h.f],Math.round(h.x),LEDGE_Y-12+bob-up);});
-  if(!sleeping){ // lata de tinta: a cor e o disfarce da fase atual
-    const ph=state==='play'?level().phase:0,pc=BALL_PALS[ph];
-    const cx=FX+(farmer.f?-6:13);
-    ctx.fillStyle=PAL.k;ctx.fillRect(cx,LEDGE_Y-5,6,5);ctx.fillStyle='#9aa3ad';ctx.fillRect(cx+1,LEDGE_Y-4,4,4);
-    ctx.fillStyle=pc.w;ctx.fillRect(cx+1,LEDGE_Y-4,4,2);ctx.fillStyle=pc.r;ctx.fillRect(cx+3,LEDGE_Y-3,1,1);}
-  else for(let i=0;i<2;i++){if(Math.floor((frame+i*40)/40)%2)text('Z',FX-3-i*4,LEDGE_Y-7-i*4,1,PAL.t,'center',PAL.k);} // Zzz entre o relogio e o fazendeiro
+  if(sleeping)for(let i=0;i<2;i++){if(Math.floor((frame+i*40)/40)%2)text('Z',FX-3-i*4,LEDGE_Y-7-i*4,1,PAL.t,'center',PAL.k);} // Zzz entre o relogio e o fazendeiro
 }
 function render(){
   ctx.save();
@@ -1212,7 +1203,7 @@ function render(){
   if(fox.big&&state!=='title'){const f=fox.big/BIG_T; // barrinha dourada do poder
     ctx.fillStyle=PAL.k;ctx.fillRect(3,13,46,4);ctx.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;ctx.fillRect(4,14,Math.ceil(44*f),2);}
   text(score,W-5,4,2,PAL.t,'right',PAL.k);
-  ctx.drawImage(PILE,W-5-(String(score).length*8-2)-11,6); // pontos = ovos na toca
+  ctx.drawImage(PILE,W-5-(String(score).length*8-2)-11,6); // pontos = ovos que a raposa juntou
   if(state!=='title'){
     const bx=50,bw=50,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
     // nivel em cima do tempo: sobe a cada Chuva de Ovos que termina e pisca amarelo ao subir
