@@ -346,11 +346,22 @@ const FARMER={
   angry:bake([...FARMER_TOP,"...kkfffkkk..","...kfkffkfk..",...FARMER_BOT.slice(1)],false,FPAL)};
 const FARMER_X=88;
 const Y0=LEDGE_Y-8;            // altura de onde a galinha bota e o fazendeiro solta a bola
-const LEAD_EGG=24,LEAD_BALL=40; // frames para a galinha/o fazendeiro chegar ao ponto antes de soltar
-const HEN_HOME=[4,26,48,70,104,126];
-const hens=HEN_HOME.map((x,i)=>({x,f:i<3?0:1,walk:0}));
+const LEAD_EGG=12,LEAD_BALL=40; // frames para a galinha/o fazendeiro chegar ao ponto antes de soltar
+/* Galinhas do poleiro: comecam poucas e aumentam junto com a dificuldade. Cada nova chega do chao:
+   um pintinho vira galinha e, quando ela sai voando, vai para o poleiro (se tiver lugar).
+   Se faltam galinhas para a pontuacao atual, o proximo ovo ja nasce para chocar (sem precisar de combo). */
+const HENS_START=[40,96],HENS_MAX=7;
+const aimP=s=>.33+.34*(1-Math.exp(-s/40)); // 1 em 3 bolas miradas no comeco, ate 2 em 3
+const aimErr=s=>8+22*Math.exp(-s/30);       // erro da mira: +-30 px no comeco, +-8 px no fim
+const henTarget=s=>s<5?2:s<15?3:s<30?4:s<50?5:s<100?6:7;
+let hens=[];
+// lugar livre no poleiro: o meio do maior vao entre as galinhas
+function perchSpot(){const xs=[-12,...hens.map(h=>h.x).sort((a,b)=>a-b),W];let best=0,bx=W/2-6;
+  for(let i=0;i<xs.length-1;i++){const g=xs[i+1]-xs[i];if(g>best){best=g;bx=(xs[i]+xs[i+1])/2;}}
+  return clamp(Math.round(bx),2,W-14);}
 const farmer={x:FARMER_X,f:1,walk:0,throwT:0};
-function resetFarm(){hens.forEach((h,i)=>{h.x=HEN_HOME[i];h.f=i<3?0:1;});farmer.x=FARMER_X;farmer.throwT=0;}
+function resetFarm(){hens=HENS_START.map((x,i)=>({x,f:i,walk:0}));farmer.x=FARMER_X;farmer.throwT=0;}
+resetFarm();
 // cada um anda ate o ponto do proximo objeto e chega um pouco antes de solta-lo
 function stepTo(a,tx,wait){const d=tx-a.x;if(Math.abs(d)<.3){a.x=tx;return;}
   const v=Math.sign(d)*Math.min(Math.abs(d),Math.max(.4,Math.abs(d)/Math.max(1,wait-6)));a.x+=v;a.f=d<0?1:0;a.walk++;}
@@ -704,19 +715,22 @@ function spawn(){
   const fall=intro?Math.round(L.fall*1.3):L.fall,vmax=intro?vmaxFor(fall):L.vmax; // ...e 30% mais devagar
   // quem solta: bola = o fazendeiro (um arremesso por vez); ovo e ovo podre = a galinha livre mais perto
   if(type==='ball'&&items.some(i=>i.wait>0&&i.type==='ball'))return 6;
-  const LEAD=type==='ball'?LEAD_BALL:LEAD_EGG; // frames ate o objeto ser solto (a galinha/o fazendeiro vai ate la)
+  const LEAD=type==='ball'?LEAD_BALL:LEAD_EGG+Math.ceil(W/(2*hens.length)/1.6); // frames ate o objeto ser solto (a galinha/o fazendeiro vai ate la)
   const arr=frame+LEAD+fallFrames(vmax,type!=='ball'?GROUND-26:GROUND-23);
   recent=recent.filter(r=>r.arr>frame-20);
   // x = onde vai CAIR (as regras valem para o pouso); sx = onde nasce, ja descontando o vento
   const tgt=type!=='ball'?GROUND-26:GROUND-23,wd=type!=='ball'?8:9;
   let x=0,sx=0,ok=false;
+  // o fazendeiro mira onde a raposa esta AGORA (quando pega a bola); a mira melhora com a pontuacao
+  const aim=type==='ball'&&Math.random()<aimP(score)?fox.x+8-4.5+(Math.random()*2-1)*aimErr(score):null;
   for(let i=0;i<24&&!ok;i++){
     if(type==='egg'){
       const reach=Math.max(8,(stinks.length?.8:1.2)*(arr-lastEgg.arr)); // com cheiro no chao a raposa pode estar lenta
       x=clamp(lastEgg.x+(Math.random()*2-1)*reach,4,W-12);
       ok=!recent.some(r=>r.type!=='egg'&&Math.abs(r.arr-arr)<32&&Math.abs(r.x-x)<20);
     }else{
-      x=4+Math.random()*(W-(type==='ball'?17:16)); // bola e ovo podre: nunca em cima de um ovo
+      if(aim!==null)x=clamp(aim+(i?(i%2?1:-1)*Math.ceil(i/2)*5:0),4,W-13); // mirando: se cair num ovo, desvia aos poucos
+      else x=4+Math.random()*(W-(type==='ball'?17:16)); // bola e ovo podre: nunca em cima de um ovo
       ok=!recent.some(r=>r.type==='egg'&&Math.abs(r.arr-arr)<32&&Math.abs(r.x-x)<22);
     }
     if(ok){sx=spawnXFor(x,vmax,tgt,wd,LEAD);ok=sx!==null;}
@@ -732,7 +746,8 @@ function spawn(){
   spawned++;
   recent.push({type,x,arr});
   const gold=type==='egg'&&score>=GOLD_FROM&&fox.big===0&&!items.some(i=>i.gold)&&Math.random()<GOLD_P;
-  const hatch=!gold&&type==='egg'&&!bird&&hatchCD===0&&combo>=HATCH_COMBO&&!items.some(i=>i.hatch)&&Math.random()<HATCH_P;
+  const hatch=!gold&&type==='egg'&&!bird&&hatchCD===0&&!items.some(i=>i.hatch)&&
+    ((combo>=HATCH_COMBO&&Math.random()<HATCH_P)||hens.length<henTarget(score)); // falta galinha no poleiro: choca ja
   items.push({type,x:sx,y:Y0,vx:0,vy:Math.min(.5,vmax),state:'fall',t:0,vmax,ph:VB&&type==='ball'?0:L.phase,intro,hatch,gold,land:x,wait:LEAD,hen});
   return intro?L.interval+Math.round(fall*.6):L.interval;
 }
@@ -859,6 +874,15 @@ function updateBird(){
     return;
   }
   if(b.kind==='fly'){
+    if(b.perch!=null){ // voa ate o lugar livre no poleiro e vira mais uma galinha botando
+      const tx=b.perch,ty=LEDGE_Y-12,dx=tx-b.x,dy=ty-b.y;
+      if(b.t>20){b.vx+=(clamp(dx*.05,-1.4,1.4)-b.vx)*.15;b.vy+=(clamp(dy*.05,-1.6,1.2)-b.vy)*.15;b.face=dx<0?-1:1;}
+      else b.vy=Math.max(b.vy-.06,-2.4);
+      b.x+=b.vx;b.y+=b.vy;if(b.t%8===0)sfx.flap();
+      if(b.t>20&&Math.abs(dx)<1.5&&Math.abs(dy)<1.5){hens.push({x:tx,f:b.face<0?1:0,walk:0});sfx.cluck();
+        burst(tx+6,LEDGE_Y-6,8,[PAL.t,PAL.w,PAL.c],1,1);bird=null;
+        hatchCD=hens.length<henTarget(score)?6*60:HATCH_CD;}
+      return;}
     b.vy=Math.max(b.vy-.06,-2.4);b.x+=b.vx;b.y+=b.vy;
     if(b.t%8===0)sfx.flap();
     if(b.t%5===0)parts.push({x:b.x+6,y:b.y+8,vx:(Math.random()-.5)*.6,vy:.3,life:30,c:Math.random()<.5?PAL.t:PAL.w});
@@ -867,7 +891,7 @@ function updateBird(){
 }
 function henFly(dir){
   const b=bird;const d=dir||(b.x+6<fox.x+8?-1:1);
-  Object.assign(b,{kind:'fly',t:0,vx:d*1.1,vy:-1.4,face:d});
+  Object.assign(b,{kind:'fly',t:0,vx:d*1.1,vy:-1.4,face:d,perch:hens.length<HENS_MAX?perchSpot():null});
   burst(b.x+6,b.y+6,14,[PAL.t,PAL.w,PAL.c],1.6,1.8);
 }
 // a raposa nao atravessa a galinha: bate, para, e a galinha sai voando
@@ -1041,7 +1065,7 @@ function drawFarm(){
     for(let i=0;i<n;i++)ctx.drawImage(MINI_EGG,Math.round(P[i][0]),GROUND+P[i][1]);}
   // poleiro: tabua com palha, galinhas chocando
     ctx.fillStyle='#8b5a2b';ctx.fillRect(0,LEDGE_Y,W,3);ctx.fillStyle='#5e3b1a';ctx.fillRect(0,LEDGE_Y+3,W,1);
-  ctx.fillStyle='#d6c19c';for(const x of HEN_HOME)ctx.fillRect(x-1,LEDGE_Y-2,14,2); // ninhos de palha
+  ctx.fillStyle='#d6c19c';for(const h of hens)ctx.fillRect(Math.round(h.x)-1,LEDGE_Y-2,14,2); // palha embaixo de cada galinha
   const goldHen=(items.find(i=>i.gold&&i.state==='fall'&&i.y<GROUND-60)||{}).hen;
   hens.forEach((h,i)=>{const lay=items.find(it=>it.wait>0&&it.hen===i);
     const up=lay&&lay.wait<10?2:0,bob=Math.floor((frame+i*23)/40)%3===0?1:0; // botando: levanta um pouco
@@ -1348,7 +1372,7 @@ function fit(){
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
-window.__egg={reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
+window.__egg={get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
   set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;

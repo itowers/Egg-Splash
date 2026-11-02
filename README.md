@@ -18,6 +18,8 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 ## A fazenda (por que as coisas acontecem)
 - **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta com um **!** e bota
 - **O fazendeiro** anda atrás do poleiro com a bola erguida e joga lá de cima (uma bola por vez). A lata de tinta do lado dele mostra a cor do disfarce da fase atual
+- **Mira:** o fazendeiro mira onde a raposa está quando ele pega a bola. No começo mira 1 em cada 3 bolas, com erro de ±30 px; vai até 2 em cada 3, com erro de ±8 px. As outras ele joga ao acaso. Mirada ou não, a bola nunca cai em cima de um ovo (se a mira cairia num ovo, ele desvia)
+- **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Cada nova vem do chão: o pintinho vira galinha e, quando ela sai voando, vai para o poleiro. Se faltam galinhas para a pontuação, o próximo ovo já nasce para chocar, sem precisar de combo
 - O tempo de queda da curva conta a partir do momento em que o objeto é solto; antes disso ele não cai nem encosta na raposa
 - **Chuva de Ovos:** o fazendeiro cochila (Zzz), por isso só caem ovos e corações
 - **Ovo dourado:** enquanto ele cai, uma das galinhas fica dourada
