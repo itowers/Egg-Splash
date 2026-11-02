@@ -20,9 +20,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #app{position:fixed;inset:0;display:flex;flex-direction:column;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-#stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+#stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
 canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;border:6px solid var(--ink);
   box-shadow:10px 10px 0 rgba(0,0,0,.16);background:#9fd3e0}
+/* HUD fora da tela do jogo: faixa propria logo acima, com a mesma largura */
+#hud{border:0;box-shadow:none;background:none;margin-bottom:6px}
 #controls{height:118px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px 8px}
 .dpad{display:flex;gap:14px}
 button{background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:none;outline:none}
@@ -69,7 +71,7 @@ button.on svg{transform:translateY(4px)}
   </button>
   <div class="right"><button id="spd"></button><button id="snd"></button></div>
   </div>
-  <div id="stage"><canvas id="c"></canvas></div>
+  <div id="stage"><canvas id="hud"></canvas><canvas id="c"></canvas></div>
   <div id="controls">
     <div class="dpad">
       <button id="bl" class="arrow" aria-label="Esquerda"><svg viewBox="0 0 18 24" shape-rendering="crispEdges"><polygon points="16,1 12,1 1,10.5 1,13.5 12,23 16,23" fill="#1b1b1f"/><polygon points="14,3 12,3 3.5,11 3.5,13 14,13" fill="#ebe6dc"/><polygon points="3.5,13 14,13 14,21 12.5,21" fill="#8a6670"/></svg></button>
@@ -87,6 +89,8 @@ button.on svg{transform:translateY(4px)}
 const W=144,H=192,GROUND=172;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 cv.width=W;cv.height=H;ctx.imageSmoothingEnabled=false;
+const HH=22,hud=document.getElementById('hud'),hc=hud.getContext('2d'); // HUD: faixa de W x HH acima do jogo
+hud.width=W;hud.height=HH;hc.imageSmoothingEnabled=false;
 
 /* ---------- palette & sprites ---------- */
 const PAL={k:'#1b1b1f',o:'#e8792b',d:'#b0521f',w:'#f6ecd8',p:'#e65a6e',s:'#9b6a43',c:'#d6c19c',
@@ -1093,6 +1097,38 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
     for(let i=0;i<3;i++){const a=frame*.12+i*2.094;ctx.drawImage(STAR,Math.round(X+6+Math.cos(a)*8),Math.round(Y-5+Math.sin(a)*2.5));}
   }
 }
+// HUD (fora da tela do jogo): cascas | nivel + tempo ate a festa + globo | pontos
+function drawHud(){
+  hc.clearRect(0,0,W,HH);TX=hc;
+  // cascas: da esquerda para a direita, as quebradas primeiro
+  for(let i=0;i<5;i++){const lost=i<5-lives,why=losses[i];
+    hc.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,1+i*9,3);}
+  if(fox.big){const f=fox.big/BIG_T; // barrinha dourada do poder
+    hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
+  text(score,W-1,3,2,PAL.t,'right',PAL.k);
+  hc.drawImage(PILE,W-1-(String(score).length*8-2)-11,5); // pontos = ovos que a raposa juntou
+  // tempo ate a festa das galinhas (Chuva de Ovos); o globo de festa marca o fim da barra
+  const bx=51,bw=40,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
+  text('NIVEL '+lvl,bx+bw/2+6,1,1,lvlT>0&&frame%10<5?PAL.y:PAL.t,'center',PAL.k);
+  hc.fillStyle=PAL.k;hc.fillRect(bx-1,by-1,bw+2,7);
+  hc.fillStyle='#6b2a1f';hc.fillRect(bx,by,bw,5);
+  const low=rainT===0&&RAIN_EVERY-timerT<=180;
+  hc.fillStyle=rainT>0?(frame%10<5?PAL.y:PAL.t):(low&&frame%20<10?PAL.t:PAL.y);
+  hc.fillRect(bx,by,Math.ceil(bw*f),5);
+  hc.fillStyle='rgba(255,255,255,.45)';hc.fillRect(bx,by,Math.ceil(bw*f),1);
+  drawDiscoIcon(bx+bw+8,by+2,rainT>0||low);
+  const secs=Math.ceil((rainT>0?rainT:RAIN_EVERY-timerT)/60);
+  text(secs,bx+bw/2,by+8,1,PAL.t,'center',PAL.k);
+  TX=null;
+}
+// globinho de festa do HUD: espelhinhos giram mais rapido quando a festa esta chegando ou acontecendo
+function drawDiscoIcon(cx,cy,hot){
+  hc.fillStyle=PAL.k;hc.fillRect(cx,cy-8,1,3); // fio
+  for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++){const d=x*x+y*y;if(d>20)continue;
+    if(d>12){hc.fillStyle=PAL.k;hc.fillRect(cx+x,cy+y,1,1);continue;}
+    const on=((x+y+Math.floor(frame/(hot?4:12)))&3)===0;
+    hc.fillStyle=on?PAL.t:((x+y)&1?'#9aa3ad':'#d8dde8');hc.fillRect(cx+x,cy+y,1,1);}
+}
 // globo de festa: desce no comeco da Chuva de Ovos e sobe no fim
 function discoY(){if(!(state==='play'&&rainT>0))return null;const k=RAIN_LEN-rainT;
   return Math.round(-14+Math.min(1,k/40,rainT/40)*64);}
@@ -1202,29 +1238,11 @@ function render(){
     drawFox(W/2-8,false,Math.floor(frame/45)%2===1,0,0,1,false);
     if(STATS){ctx.fillStyle='rgba(27,27,31,.9)';ctx.fillRect(4,150,W-8,40);
       statsLines().forEach((l,i)=>text(l,W/2,152+i*6,1,PAL.t));}
+    hc.clearRect(0,0,W,HH);
     return;
   }
-  // HUD
-  // cascas: da esquerda para a direita, as quebradas primeiro
-  for(let i=0;i<5;i++){const lost=i<5-lives,why=losses[i];
-    ctx.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,4+i*9,4);}
-  if(fox.big&&state!=='title'){const f=fox.big/BIG_T; // barrinha dourada do poder
-    ctx.fillStyle=PAL.k;ctx.fillRect(3,13,46,4);ctx.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;ctx.fillRect(4,14,Math.ceil(44*f),2);}
-  text(score,W-5,4,2,PAL.t,'right',PAL.k);
-  ctx.drawImage(PILE,W-5-(String(score).length*8-2)-11,6); // pontos = ovos que a raposa juntou
+  drawHud();
   if(state!=='title'){
-    const bx=50,bw=50,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
-    // nivel em cima do tempo: sobe a cada Chuva de Ovos que termina e pisca amarelo ao subir
-    text('NIVEL '+lvl,bx+bw/2,2,1,lvlT>0&&frame%10<5?PAL.y:PAL.t,'center',PAL.k);
-    ctx.fillStyle=PAL.k;ctx.fillRect(bx-1,by-1,bw+2,7);
-    ctx.fillStyle='#6b2a1f';ctx.fillRect(bx,by,bw,5);
-    const low=rainT===0&&RAIN_EVERY-timerT<=180;
-    ctx.fillStyle=rainT>0?(frame%10<5?PAL.y:PAL.t):(low&&frame%20<10?PAL.t:PAL.y);
-    ctx.fillRect(bx,by,Math.ceil(bw*f),5);
-    ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillRect(bx,by,Math.ceil(bw*f),1);
-    ctx.drawImage(EGG,bx+bw+3,by-3);
-    const secs=Math.ceil((rainT>0?rainT:RAIN_EVERY-timerT)/60);
-    text(secs,bx+bw/2,by+8,1,PAL.t,'center',PAL.k);
     if(rainT>0){
       if(rainT>RAIN_LEN-20){ctx.fillStyle='rgba(255,236,160,'+((rainT-(RAIN_LEN-20))/40)+')';ctx.fillRect(0,0,W,H);}
       {const C=['255,79,216','79,216,255','255,225,79','125,255,79'];ctx.fillStyle='rgba('+C[Math.floor(frame/20)%4]+',.13)';ctx.fillRect(0,0,W,H);} // luz de balada (troca 3x por segundo, bem fraca)
@@ -1415,10 +1433,11 @@ addEventListener('blur',()=>{for(const k in keys)keys[k]=false;for(const k in to
 function fit(){
   const st=document.getElementById('stage').getBoundingClientRect();
   const land=matchMedia('(orientation:landscape) and (min-aspect-ratio:5/4)').matches;
-  let aw=st.width-28,ah=st.height-28;
+  let aw=st.width-28,ah=st.height-34; // o HUD (logo acima) divide a altura com o jogo
   if(land)aw=st.width-2*Math.min(240,st.width*.28);
-  const s=Math.max(1,Math.min((aw-12)/W,(ah-12)/H));
+  const s=Math.max(1,Math.min((aw-12)/W,(ah-12)/(H+HH)));
   cv.style.width=Math.floor(W*s)+'px';cv.style.height=Math.floor(H*s)+'px';
+  hud.style.width=Math.floor(W*s)+'px';hud.style.height=Math.floor(HH*s)+'px'; // alinhado com a parte de dentro da moldura
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
