@@ -689,10 +689,10 @@ function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-
 let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
 try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
 const FAT_T=60; // depois de comer, a raposa fica gordinha por 1 s
-// comer um ovo: o ovo entra na boca (6), NHAC! a raposa morde e o pedaco de cima pula (2),
+// comer um ovo: o ovo entra na boca (6), a raposa morde e o pedaco de cima pula (2),
 // o pedaco cai na boca (3) e ela mastiga mostrando os dentes (o resto)
 const EAT_T=24,EAT_BITE=EAT_T-6,EAT_DROP=EAT_BITE-2,EAT_CHEW=EAT_DROP-3;
-function startEat(img){fox.chew=EAT_T;fox.eatImg=img;}
+function startEat(img){fox.chew=EAT_T;fox.eatImg=img;fox.gulp=false;}
 const fox={eatImg:null,fat:0,x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,big:0};
 const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1026,7 +1026,11 @@ function update(){
           it.dead=true;sfx.smash();burst(it.x+4,it.y+5,8,['#a3ad5e','#6f7a34',PAL.y],1.5,1.5);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){eatRotten(it);continue;}
         else if(hit(it,w,h,body)){it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();}
-      }else if(fox.big&&hit(it,w,h,body)){smashAway(it);
+      }else if(fox.big&&(hit(it,w,h,body)||(fox.mouth&&hit(it,w,h,mouthZ)))){smashAway(it);
+      }else if(fox.mouth&&hit(it,w,h,mouthZ)){ // engole a bola: mesmo efeito da pancada, mas a bola some
+        it.dead=true;fox.chew=EAT_T;fox.eatImg=(BALLS[it.ph]||BALL)[0];fox.gulp=true;fox.fat=FAT_T;
+        if(fox.stun===0&&fox.inv===0){fox.stun=60;ballHits++;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;}
+        continue;
       }else if(hit(it,w,h,body)){
         if(fox.stun===0&&fox.inv===0){
           fox.stun=60;ballHits++;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
@@ -1041,14 +1045,19 @@ function update(){
           it.vx=(Math.random()<.5?-1:1)*(.5+Math.random()*.5);it.b=0;sfx.bounce(0);}
       }
     }else{
-      it.vy+=.12;it.y+=it.vy;it.x+=it.vx+windAt(wt)*.5;
+      if(it.type==='ball'&&!it.kick&&it.y+h>=GROUND-.5&&it.vy===0){ // parada (ou rolando) no chao
+        if(hit(it,w,h,body)){it.kick=true;it.vx=(it.x+4.5<fox.x+8?-1:1)*2.6;sfx.bounce(1);}
+        else{it.vx*=.92;if(Math.abs(it.vx)<.05)it.vx=0;it.x=clamp(it.x+it.vx,0,W-w);continue;}
+      }
+      it.vy+=.12;it.y+=it.vy;it.x+=it.vx+(it.kick?0:windAt(wt)*.5);
+      if(it.type==='ball'&&!it.kick)it.x=clamp(it.x,0,W-w);
       if(it.y+h>=GROUND){
         if(it.type==='egg'){breakEgg(it);continue;}
         if(it.type==='rotten'){breakRotten(it);continue;}
         it.y=GROUND-h;
         if(Math.abs(it.vy)<.9)it.vy=0;else{it.vy=-Math.abs(it.vy)*.55;it.b=(it.b||0)+1;sfx.bounce(Math.min(it.b,4));}
       }
-      if(it.type==='ball'&&(it.t>150||it.x<-12||it.x>W+4))it.dead=true;
+      if(it.type==='ball'&&(it.x<-12||it.x>W+4))it.dead=true; // so some quando sai da tela (depois do toque da raposa)
     }
   }
   items=items.filter(i=>!i.dead);
@@ -1072,7 +1081,8 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
   // animacao de comer (ver EAT_T): enquanto o ovo entra e cai na boca ela fica aberta; segurando a boca, nao mastiga
   let head=mouth?'o':'c',egg=null,ey=0;
   if(chew>0&&fox.eatImg){
-    if(chew>EAT_BITE){head='o';egg=fox.eatImg;ey=Y-11+Math.round((EAT_T-chew)/(EAT_T-EAT_BITE)*8);}
+    if(fox.gulp){if(chew>EAT_BITE){head='o';egg=fox.eatImg;ey=Y-11+Math.round((EAT_T-chew)/(EAT_T-EAT_BITE)*8);}}
+    else if(chew>EAT_BITE){head='o';egg=fox.eatImg;ey=Y-11+Math.round((EAT_T-chew)/(EAT_T-EAT_BITE)*8);}
     else if(chew>EAT_DROP){head='m';egg=bitten(fox.eatImg);ey=Y-9;}
     else if(chew>EAT_CHEW){head='o';egg=bitten(fox.eatImg);ey=Y-9+Math.round((EAT_DROP-chew+1)/(EAT_DROP-EAT_CHEW)*7);}
     else if(!mouth)head=Math.floor(chew/3)%2?'m':'c';}
@@ -1085,7 +1095,6 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
     ctx.drawImage(spr,0,13,16,2,X,Y+13,16,2);}                          // patas
   else ctx.drawImage(spr,X,Y);
   if(egg&&head!=='o')ctx.drawImage(egg,X+8-(egg.width>>1),ey);
-  if(chew>EAT_CHEW&&chew<=EAT_BITE+1&&state==='play')text('NHAC!',X+8,Y-17,1,PAL.y,'center',PAL.k);
   if(stun){
     // X eyes
     ctx.fillStyle=PAL.o;ctx.fillRect(X+2,Y+3,4,3);ctx.fillRect(X+10,Y+3,4,3);
@@ -1175,7 +1184,6 @@ function render(){
   if(state!=='title'){
     for(const it of items){
       if(it.wait>0)continue; // ainda na mao do fazendeiro / embaixo da galinha
-      if(it.type==='ball'&&it.state==='bounce'&&it.t>110&&frame%4<2)continue;
       const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?ROTTEN:(BALLS[it.ph]||BALL)[Math.floor((it.t+it.x)/8)%2];
       const hw=it.hatch&&it.state==='fall'?(Math.floor(it.t/(it.y>90?3:6))%2?1:-1):0; // ovo que vai chocar: balanca, cada vez mais rapido
       ctx.drawImage(img,Math.round(it.x)+hw,Math.round(it.y));
