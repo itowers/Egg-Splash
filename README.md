@@ -18,10 +18,10 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 
 ## A fazenda (por que as coisas acontecem)
 - **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta e bota
-- **O fazendeiro** joga as bolas para espantar a raposa. A bola é sempre **branquinha**. Ele anda com a bola erguida e joga lá de cima, uma por vez, o jogo todo
+- **O fazendeiro** joga as bolas para espantar a raposa. A bola é sempre **branquinha**. Ele anda com a bola erguida e joga lá de cima, uma por vez, o jogo todo. **Nunca fica mais de 8 s sem jogar** (fora da Chuva de Ovos)
 - **Mira:** o fazendeiro mira onde a raposa está quando pega a bola. No começo 1 em cada 3 bolas, com erro de ±30 px; vai até 2 em cada 3, com ±8 px. Mirada ou não, a bola nunca cai em cima de um ovo
 - O tempo de queda conta a partir do momento em que o objeto é solto. Como a galinha e o fazendeiro avisam antes, a queda é **10% mais curta** que a da curva original (3,0 s → 2,7 s; piso 1,6 s → 1,44 s)
-- **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e a galinha **voa direto para o poleiro, sem bloquear**. O bloqueio fica só para o pintinho do combo de 8. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
+- **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e vira uma galinha que bloqueia, como a do combo. Ela **só vai para o poleiro quando a raposa encosta nela**. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
 - **Chuva de Ovos = festa das galinhas (7 s):** o fazendeiro cochila (Zzz), desce um globo de festa, a tela pisca em cores de balada (fraco, 3 trocas por segundo) e as galinhas dançam pelo poleiro botando os ovos coloridos
 - **Ovo dourado:** a galinha que vai botá-lo fica dourada
 - **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um (verde se foi um ovo podre comido, na variante B). Pegar um coração na festa conserta um
@@ -34,16 +34,16 @@ Recompensa para quem está indo muito bem:
 - Esse ovo desce **balançando** (cada vez mais rápido) e vai rachando, avisando que vai chocar
 - Quando esse ovo chega perto da raposa, ele **choca** no ar: conta como pego (+1) e sai um **pintinho** que fica pulando pelo chão (não atrapalha) e sempre foge da raposa quando ela chega perto — encurralado na parede, pula por cima dela
 - Depois de ~8 s o pintinho vira **galinha**, que anda até ficar colada do lado da raposa e bloqueia a passagem
-- Se a raposa bater na galinha, **para** por ~0,4 s e a galinha **sai voando** da tela. Se ninguém encostar, ela voa sozinha depois de ~12 s
+- Se a raposa bater na galinha, **para** por ~0,4 s e a galinha **voa para o poleiro** (se tiver lugar). Se ninguém encostar, ela vai embora sozinha depois de ~12 s (e não vai para o poleiro)
 - Depois que a galinha vai embora, há 20 s de intervalo até o próximo pintinho
 
 ## Ovo podre
 Um ovo verde com manchas e cheirinho subindo. **Não coma!**
 - Aparece a partir de **15 pontos** (5% dos ovos, subindo até 12%). O primeiro cai sozinho, 30% mais devagar e com o aviso NÃO COMA!
 - **Se comer:** a raposa vomita e fica parada ~0,7 s. Não perde vida nem ganha ponto, mas o combo zera
-- **Se cair no chão:** não tira vida, mas deixa uma nuvem de **cheiro ruim** por ~6 s. Passando por ela, a raposa anda devagar (~55% da velocidade)
+- **Se cair no chão:** não tira vida, mas faz um **splash verde** igual ao do ovo normal (a raposa escorrega), que fica lá até a Chuva de Ovos
 - Nunca cai em cima de um ovo; enquanto há cheiro no chão, os ovos caem mais perto do anterior para continuar alcançáveis
-- Não aparece na Chuva de Ovos, e o fim da chuva limpa o cheiro
+- Não aparece na Chuva de Ovos, e o fim da chuva limpa os splashes
 
 ## Variante B: ovo podre no lugar da bola (teste)
 Abra o jogo com **`?variante=b`** no fim do link (fica salvo; `?variante=a` volta ao normal). A tela inicial mostra VARIANTE B.
