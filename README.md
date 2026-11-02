@@ -14,7 +14,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Queda:** valores acima × 0,9 desde a versão da fazenda (ver abaixo)
 - O 1º objeto é ovo e **o 2º já é a primeira bola do fazendeiro** (cai sozinha, 30% mais devagar, com o aviso DESVIE!); no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
 - **Bola:** bola de tênis **verde bem clarinho** com a costura branca, igual em todas as fases. Quem joga é sempre o fazendeiro: ver A fazenda
-- **Bola no chão:** não some. Fica parada no chão até a raposa encostar; aí sai rolando de lado para fora da tela (sem deixar a raposa tonta)
+- **Bola no chão:** funciona como a galinha. Quica uma vez e fica parada no chão. Se a raposa encosta, dá uma travada (~0,4 s, sem tontura) e a bola vai embora pulando de lado. Gigante: a bola vai embora sem travar a raposa
 - **Engolir a bola:** se a raposa abre a boca e a bola cai nela, ela engole: fica tonta igual à pancada, mas não sobra bola no chão
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
