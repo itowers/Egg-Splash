@@ -18,7 +18,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 ## Pintinho e galinha
 Recompensa para quem está indo muito bem:
 - Com **8 ovos seguidos** sem quebrar nenhum, cada ovo novo tem 30% de chance de ser especial (um por vez)
-- Quando esse ovo chega perto da raposa, ele **choca** no ar: conta como pego (+1) e sai um **pintinho** que fica pulando pelo chão (não atrapalha)
+- Quando esse ovo chega perto da raposa, ele **choca** no ar: conta como pego (+1) e sai um **pintinho** que fica pulando pelo chão (não atrapalha) e sempre foge da raposa quando ela chega perto — encurralado na parede, pula por cima dela
 - Depois de ~8 s o pintinho vira **galinha**, que anda até ficar colada do lado da raposa e bloqueia a passagem
 - Se a raposa bater na galinha, **para** por ~0,4 s e a galinha **sai voando** da tela. Se ninguém encostar, ela voa sozinha depois de ~12 s
 - Depois que a galinha vai embora, há 20 s de intervalo até o próximo pintinho
