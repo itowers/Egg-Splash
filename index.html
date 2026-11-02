@@ -320,7 +320,7 @@ const HEN=HEN_ROWS.map(r=>[bake(r,false),bake(r,true)]);
 
 /* ---------- fazenda: galinheiro, fazendeiro e cascas (ver curva-de-dificuldade.md) ----------
    Da sentido a cada regra: as galinhas do poleiro botam os ovos; o fazendeiro joga as bolas (sempre
-   brancas; da fase 2 em diante ele as esconde nos ninhos); na Chuva de Ovos ele cochila; cada ovo que quebra vira uma casca no topo; com 5 cascas o fazendeiro acorda e a raposa foge. */
+   brancas, mirando na raposa); na Chuva de Ovos ele cochila; cada ovo que quebra vira uma casca no topo; com 5 cascas o fazendeiro acorda e a raposa foge. */
 const LEDGE_Y=33; // topo da tabua do poleiro
 const HEN_SIT=[...HEN_TOP,".kwwwkwwwwk.","kwwwwccwwwk.","kwwwwwcwwwk.",".kwwwwwwwk..","..kkkkkkk..."];
 const HENS_SIT=[bake(HEN_SIT,false),bake(HEN_SIT,true)];
@@ -733,8 +733,8 @@ function spawn(){
   if(intro&&falling>0)return 6;                                  // cai sozinha...
   const fall=intro?Math.round(L.fall*1.3):L.fall,vmax=intro?vmaxFor(fall):L.vmax; // ...e 30% mais devagar
   // quem solta: bola = o fazendeiro (um arremesso por vez); ovo e ovo podre = a galinha livre mais perto
-  // so a bola vermelha (sem disfarce) e jogada por ele; a pintada ele esconde num ninho e sai igual a um ovo
-  const thrown=type==='ball'&&(VB||L.phase===0);
+  // toda bola e jogada pelo fazendeiro (uma por vez)
+  const thrown=type==='ball';
   if(thrown&&items.some(i=>i.wait>0&&i.thrown))return 6;
   const LEAD=thrown?LEAD_BALL:LEAD_EGG+Math.ceil(W/(2*hens.length)/1.6); // frames ate o objeto ser solto (a galinha/o fazendeiro vai ate la)
   const arr=frame+LEAD+fallFrames(vmax,type!=='ball'?GROUND-26:GROUND-23);
@@ -1104,9 +1104,7 @@ function drawFarm(){
   // fazendeiro atras da tabua: joga as bolas; cochila na Chuva de Ovos; acorda bravo no fim de jogo
   const sleeping=state==='play'&&rainT>0,over=state==='over';
   const FX=Math.round(farmer.x),carry=items.find(i=>i.wait>0&&i.thrown);
-  // escondido (so o chapeu e os olhos) quando as bolas estao pintadas: ele as esconde nos ninhos
-  const hide=state==='play'&&!VB&&!carry&&!sleeping&&farmer.throwT===0&&level().phase>0;
-  const fy=hide?LEDGE_Y-5:LEDGE_Y-11+(!sleeping&&!over&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
+  const fy=LEDGE_Y-11+(!sleeping&&!over&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
   ctx.save();ctx.beginPath();ctx.rect(0,0,W,LEDGE_Y+1);ctx.clip(); // atras da tabua
   ctx.drawImage(over?FARMER.angry:sleeping?FARMER.sleep:FARMER.awake,FX,fy);ctx.restore();
   if(carry){const bi=(BALLS[carry.ph]||BALL)[0];ctx.drawImage(bi,FX+2,fy-8);       // bola erguida, pronta para jogar

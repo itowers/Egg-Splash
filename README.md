@@ -13,12 +13,12 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - Na Chuva de Ovos, os corações perdidos caem espalhados pela chuva toda e pela tela inteira
 - **Queda:** valores acima × 0,9 desde a versão da fazenda (ver abaixo)
 - Os 3 primeiros objetos são sempre ovos; no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
-- **Bola:** sempre branquinha, da mesma cor em todas as fases (a diferença para o ovo é a forma). As fases (0–9, 10–29, 30–49, 50+) mudam quem solta a bola: ver A fazenda
+- **Bola:** sempre branquinha, da mesma cor em todas as fases (a diferença para o ovo é a forma). Quem joga é sempre o fazendeiro: ver A fazenda
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
 ## A fazenda (por que as coisas acontecem)
 - **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta e bota
-- **O fazendeiro** joga as bolas para espantar a raposa. A bola é sempre **branquinha**. Na primeira fase (0–9 pts) ele anda com a bola erguida e joga lá de cima (uma por vez). Dos 10 pts em diante ele se esconde atrás da tábua (só aparecem o chapéu e os olhos) e põe as bolas nos ninhos: elas saem da galinha como um ovo, e só a forma entrega. Na variante B as bolas são sempre jogadas por ele
+- **O fazendeiro** joga as bolas para espantar a raposa. A bola é sempre **branquinha**. Ele anda com a bola erguida e joga lá de cima, uma por vez, o jogo todo
 - **Mira:** o fazendeiro mira onde a raposa está quando pega a bola. No começo 1 em cada 3 bolas, com erro de ±30 px; vai até 2 em cada 3, com ±8 px. Mirada ou não, a bola nunca cai em cima de um ovo
 - O tempo de queda conta a partir do momento em que o objeto é solto. Como a galinha e o fazendeiro avisam antes, a queda é **10% mais curta** que a da curva original (3,0 s → 2,7 s; piso 1,6 s → 1,44 s)
 - **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e a galinha **voa direto para o poleiro, sem bloquear**. O bloqueio fica só para o pintinho do combo de 8. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
