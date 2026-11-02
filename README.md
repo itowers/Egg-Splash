@@ -32,7 +32,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 Recompensa para quem está indo muito bem:
 - Com **8 ovos seguidos** sem quebrar nenhum, cada ovo novo tem 30% de chance de ser especial (um por vez)
 - Esse ovo desce **balançando** (cada vez mais rápido) e vai rachando, avisando que vai chocar
-- Quando esse ovo chega perto da raposa, ele **choca** no ar: conta como pego (+1) e sai um **pintinho** que fica pulando pelo chão (não atrapalha) e sempre foge da raposa quando ela chega perto — encurralado na parede, pula por cima dela
+- Quando esse ovo chega perto do chão, ele **choca** no ar, **com ou sem a raposa por perto** (não precisa abrir a boca): conta como pego (+1) e sai um **pintinho** que fica pulando pelo chão (não atrapalha) e sempre foge da raposa quando ela chega perto — encurralado na parede, pula por cima dela
 - Depois de ~8 s o pintinho vira **galinha**, que anda até ficar colada do lado da raposa e bloqueia a passagem
 - Se a raposa bater na galinha, **para** por ~0,4 s e a galinha **voa para o poleiro** (se tiver lugar). Se ninguém encostar, ela vai embora sozinha depois de ~12 s (e não vai para o poleiro)
 - Depois que a galinha vai embora, há 20 s de intervalo até o próximo pintinho
@@ -51,7 +51,7 @@ Abra o jogo com **`?variante=b`** no fim do link (fica salvo; `?variante=a` volt
 - **Disfarce por cor:** verde-oliva (0–9) → cor de ovo com manchas (10–29) → 2 manchinhas (30–49) → só cor de ovo, com tremidinha (50+). Os **fiozinhos de cheiro nunca somem**
 - **Encostar no corpo:** a raposa fica 1 s parada vomitando (mesmo peso da bola)
 - **Comer:** perde 1 vida, vomita e o combo zera
-- **Cheiro no chão:** só 1 de cada 5 que caem, por 2 s, um de cada vez
+- **Cair no chão:** faz o mesmo **splash verde** da variante A (a raposa escorrega, fica até a Chuva de Ovos). Além disso, 1 de cada 5 deixa cheiro por 2 s, um de cada vez
 - **A bola volta a partir de 50 pts** como novidade (branquinha, jogada pelo fazendeiro), até 30% dos objetos ruins
 
 ## Ovo dourado

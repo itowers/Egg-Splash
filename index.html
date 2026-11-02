@@ -841,14 +841,13 @@ function breakEgg(it){
 }
 
 /* ---------- ovo podre ---------- */
-// cai no chao: nao tira vida; em A deixa um splash verde que fica ate a Chuva de Ovos (em B, as vezes uma nuvem de cheiro)
+// cai no chao: nao tira vida; deixa um splash verde que fica ate a Chuva de Ovos (em B, as vezes tambem uma nuvem de cheiro)
 function breakRotten(it){
   it.dead=true;const cx=it.x+4;sfx.rotten();
   burst(cx,GROUND-2,7,['#a3ad5e','#6f7a34','#5c4426'],1.3,1.6);
-  if(VB){ // B: so 1 de cada 5 deixa cheiro, curto, e nunca mais de uma nuvem
-    if(++rotDrops%B_STINK_EVERY||stinks.length)return;
-    stinks.push({x:Math.round(cx-STINK_W/2),w:STINK_W,life:B_STINK_LIFE});return;}
-  puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rot:true}); // A: splash igual ao do ovo normal (escorrega), fica ate a Chuva de Ovos
+  puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rot:true}); // A e B: splash igual ao do ovo normal (escorrega), fica ate a Chuva de Ovos
+  if(VB&&!(++rotDrops%B_STINK_EVERY)&&!stinks.length) // B: alem do splash, 1 de cada 5 deixa cheiro, curto, e nunca mais de uma nuvem
+    stinks.push({x:Math.round(cx-STINK_W/2),w:STINK_W,life:B_STINK_LIFE});
 }
 // comeu: vomita e fica parado um instante (sem perder vida, mas zera o combo e nao conta ponto)
 function eatRotten(it){
@@ -878,7 +877,7 @@ function smashAway(it){
 }
 
 /* ---------- pintinho -> galinha ---------- */
-// O ovo marcado choca quando chega perto da boca da raposa: conta como pego (+1) e sai um pintinho.
+// O ovo marcado choca sozinho perto do chao, com ou sem a raposa: conta como pego (+1) e sai um pintinho.
 function hatchEgg(it){
   it.dead=true;score++;combo++;hatched++;sfx.hatch();
   const cx=it.x+4,cy=it.y+5;
@@ -1050,7 +1049,7 @@ function update(){
       it.vy=Math.min(it.vy+.025,it.vmax||L.vmax);it.y+=it.vy;
       it.x=clamp(it.x+windAt(wt),0,W-w); // vento (mesma conta de landX)
       if(it.type==='egg'){
-        if(it.hatch&&!bird&&rainT===0&&it.y+h>=GROUND-34&&Math.abs(it.x+4-(fox.x+8))<16){hatchEgg(it);continue;}
+        if(it.hatch&&!bird&&it.y+h>=GROUND-34){hatchEgg(it);continue;} // choca sempre, com ou sem a raposa por perto
         if(it.gold&&fox.mouth&&hit(it,w,h,mouthZ)){eatGold(it);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){
           it.dead=true;score++;combo++;startEat(it.rain?RAIN_EGGS[it.col]:EGG);fox.fat=FAT_T;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
