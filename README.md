@@ -11,9 +11,23 @@ Jogo 8-bit para iPhone: a raposa come os ovos e desvia das bolas.
 A curva segue o princípio de ensinar uma coisa por vez (*Design for How People Learn*, Julie Dirksen):
 - **Queda:** 3,0 s → 1,6 s · **Intervalo:** 1,6 s → 0,7 s · **Bolas:** 0% → 50% (curvas exponenciais com teto)
 - Na Chuva de Ovos, os corações perdidos caem espalhados pela chuva toda e pela tela inteira
+- **Queda:** valores acima × 0,9 desde a versão da fazenda (ver abaixo)
 - Os 3 primeiros objetos são sempre ovos; no máximo 3 bolas seguidas; objetos na tela limitados por faixa (1 → 4)
 - **Disfarce da bola:** vermelha (0–9) → cor do ovo com listra vermelha (10–29) → listra sutil (30–49) → sem listra, só a forma (50+)
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
+
+## A fazenda (por que as coisas acontecem)
+- **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta e bota
+- **O fazendeiro** joga as bolas para espantar a raposa. Na fase da bola vermelha ele anda com a bola erguida e joga lá de cima (uma por vez). Quando as bolas passam a ser **pintadas** (disfarce), ele se esconde atrás da tábua (só aparecem o chapéu e os olhos) e põe as bolas nos ninhos: elas saem da galinha **igual a um ovo**, sem pista. A lata de tinta do lado dele mostra a cor do disfarce da fase. Na variante B as bolas são sempre vermelhas e jogadas por ele
+- **Mira:** o fazendeiro mira onde a raposa está quando pega a bola. No começo 1 em cada 3 bolas, com erro de ±30 px; vai até 2 em cada 3, com ±8 px. Mirada ou não, a bola nunca cai em cima de um ovo
+- O tempo de queda conta a partir do momento em que o objeto é solto. Como a galinha e o fazendeiro avisam antes, a queda é **10% mais curta** que a da curva original (3,0 s → 2,7 s; piso 1,6 s → 1,44 s)
+- **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e a galinha **voa direto para o poleiro, sem bloquear**. O bloqueio fica só para o pintinho do combo de 8. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
+- **Chuva de Ovos = festa das galinhas (7 s):** o fazendeiro cochila (Zzz), desce um globo de festa, a tela pisca em cores de balada (fraco, 3 trocas por segundo) e as galinhas dançam pelo poleiro botando os ovos coloridos
+- **Ovo dourado:** a galinha que vai botá-lo fica dourada
+- **Pontos** = ovos levados para a **toca** (canto esquerdo; a pilha cresce a cada 10 ovos, até 10)
+- **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um (verde se foi um ovo podre comido, na variante B). Pegar um coração na festa conserta um
+- **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge para a toca
+- **Telemetria local:** cada partida fica salva no aparelho (pontos e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial
 
 ## Pintinho e galinha
 Recompensa para quem está indo muito bem:
