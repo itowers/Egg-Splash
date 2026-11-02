@@ -24,11 +24,19 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Mira:** o fazendeiro mira onde a raposa está quando pega a bola. No começo 1 em cada 3 bolas, com erro de ±30 px; vai até 2 em cada 3, com ±8 px. Mirada ou não, a bola nunca cai em cima de um ovo
 - O tempo de queda conta a partir do momento em que o objeto é solto. Como a galinha e o fazendeiro avisam antes, a queda é **10% mais curta** que a da curva original (3,0 s → 2,7 s; piso 1,6 s → 1,44 s)
 - **Mais galinhas com a dificuldade:** o poleiro começa com 2 galinhas e vai até 7 (3 aos 5 pts, 4 aos 15, 5 aos 30, 6 aos 50, 7 aos 100). Se faltam galinhas, o próximo ovo choca sem precisar de combo; o pintinho cresce em metade do tempo e vira uma galinha que bloqueia, como a do combo. Ela **só vai para o poleiro quando a raposa encosta nela**. Cada galinha a mais permite mais um objeto caindo ao mesmo tempo (até o limite da curva)
-- **Chuva de Ovos = festa das galinhas (7 s):** o fazendeiro cochila (Zzz), desce um globo de festa, a tela pisca em cores de balada (fraco, 3 trocas por segundo) e as galinhas dançam pelo poleiro botando os ovos coloridos
+- **Chuva de Ovos = rugido da raposa (7 s):** só acontece quando a raposa ruge (ver Rugido). As galinhas saem do poleiro voando doidas pela tela e os ovos coloridos caem de onde elas estiverem; o fazendeiro corre assustado de um lado para o outro e não joga bola. No fim, as galinhas voltam para o lugar delas no poleiro
 - **Ovo dourado:** a galinha que vai botá-lo fica dourada
-- **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um. Pegar um coração na festa conserta um
+- **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um. Pegar um coração na Chuva de Ovos conserta um
 - **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge pela esquerda
 - **Telemetria local:** cada partida fica salva no aparelho (pontos e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial
+
+## Rugido
+A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão **RUGIR** (entre as setas e a boca; em paisagem, em cima da boca).
+- O botão começa bloqueado (cinza) e enche de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
+- Cheio, o botão fica amarelo piscando, a barra do HUD pisca e aparece **RUJA!**. Na primeira vez da partida, a tela mostra **APERTE RUGIR!**
+- Não acumula: cheio, para de encher até a raposa rugir. Os ovos da própria chuva não enchem
+- **RAAAR!** a raposa abre a boca, saem ondas e começa a Chuva de Ovos. Dá para rugir até tonta. As bolas (inclusive as do chão) e os ovos podres somem, como antes. A galinha que estava bloqueando se assusta e voa para o poleiro; o pintinho dá um pulo para longe
+- Telemetria: cada rugido guarda os pontos, se a raposa estava tonta/parada e quanto tempo o botão ficou cheio antes do toque. O `?stats=1` mostra o total e a espera mediana
 
 ## Pintinho e galinha
 Recompensa para quem está indo muito bem:
@@ -70,5 +78,5 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 - O nome **CHUVA DE OVOS!** aparece só no começo da chuva (~1,7 s) e some
 
 ## Controles
-- ◀ ▶ andar · botão redondo (segurar) abrir a boca
-- Teclado: setas / A D, ↑ ou espaço para a boca, P pausa, M som
+- ◀ ▶ andar · botão redondo (segurar) abrir a boca · **RUGIR** quando estiver cheio
+- Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, M som

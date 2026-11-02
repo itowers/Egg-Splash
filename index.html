@@ -34,6 +34,13 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
 .arrow{width:60px;height:84px}
 #br svg{transform:scaleX(-1)}
 .mouth{width:84px;height:84px}
+/* botao RUGIR: enche de baixo para cima (--p) e pisca quando libera a Chuva de Ovos */
+#broar{width:66px;height:58px;border:4px solid var(--ink);font:11px/1 Silkscreen,ui-monospace,Menlo,monospace;color:#7a756c;
+  background:linear-gradient(to top,#d9b44a var(--p,0%),#c9c3b8 var(--p,0%));box-shadow:inset 0 -4px 0 rgba(0,0,0,.18);padding-bottom:4px}
+#broar.ready{color:var(--ink);background:#f4c430;box-shadow:inset 0 -4px 0 #b0821a;animation:roarpulse .5s steps(1) infinite}
+#broar.ready:active{box-shadow:none;transform:translateY(3px)}
+@keyframes roarpulse{50%{background:#ffe47a}}
+@media (max-width:340px){#broar{width:52px}.dpad{gap:8px}}
 #controls .dn{display:none}
 #controls button.on .up{display:none}
 #controls button.on .dn{display:inline}
@@ -63,6 +70,7 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
     bottom:calc(env(safe-area-inset-bottom) + 24px);
     padding:0 calc(env(safe-area-inset-right) + 30px) 0 calc(env(safe-area-inset-left) + 30px)}
   #controls button{pointer-events:auto}
+  #broar{position:absolute;right:calc(env(safe-area-inset-right) + 39px);bottom:98px} /* em cima do botao da boca, fora da tela do jogo */
 }
 </style>
 </head>
@@ -80,6 +88,7 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
       <button id="bl" class="arrow" aria-label="Esquerda"><svg viewBox="0 0 20 28" shape-rendering="crispEdges"><g class="up"><rect x="13" y="0" width="6" height="1" fill="#1b1b1f"/><rect x="12" y="1" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="1" width="4" height="1" fill="#ebe6dc"/><rect x="18" y="1" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="2" width="5" height="1" fill="#ebe6dc"/><rect x="18" y="2" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="3" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="3" width="6" height="1" fill="#ebe6dc"/><rect x="18" y="3" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="4" width="1" height="1" fill="#ffffff"/><rect x="11" y="4" width="7" height="1" fill="#ebe6dc"/><rect x="18" y="4" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="5" width="1" height="1" fill="#ffffff"/><rect x="10" y="5" width="8" height="1" fill="#ebe6dc"/><rect x="18" y="5" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="6" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="6" width="1" height="1" fill="#ffffff"/><rect x="9" y="6" width="9" height="1" fill="#ebe6dc"/><rect x="18" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="7" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="7" width="1" height="1" fill="#ffffff"/><rect x="8" y="7" width="10" height="1" fill="#ebe6dc"/><rect x="18" y="7" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="8" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="8" width="2" height="1" fill="#ffffff"/><rect x="7" y="8" width="11" height="1" fill="#ebe6dc"/><rect x="18" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="9" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="9" width="2" height="1" fill="#ffffff"/><rect x="6" y="9" width="12" height="1" fill="#ebe6dc"/><rect x="18" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="10" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="10" width="2" height="1" fill="#ffffff"/><rect x="5" y="10" width="13" height="1" fill="#ebe6dc"/><rect x="18" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="11" width="2" height="1" fill="#ffffff"/><rect x="4" y="11" width="14" height="1" fill="#ebe6dc"/><rect x="18" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="12" width="16" height="1" fill="#ebe6dc"/><rect x="18" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="13" width="1" height="1" fill="#8a6670"/><rect x="3" y="13" width="15" height="1" fill="#ebe6dc"/><rect x="18" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="14" width="2" height="1" fill="#8a6670"/><rect x="4" y="14" width="14" height="1" fill="#ebe6dc"/><rect x="18" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="15" width="3" height="1" fill="#8a6670"/><rect x="5" y="15" width="13" height="1" fill="#ebe6dc"/><rect x="18" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="16" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="16" width="4" height="1" fill="#8a6670"/><rect x="7" y="16" width="11" height="1" fill="#ebe6dc"/><rect x="18" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="17" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="17" width="4" height="1" fill="#8a6670"/><rect x="8" y="17" width="10" height="1" fill="#ebe6dc"/><rect x="18" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="18" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="18" width="4" height="1" fill="#8a6670"/><rect x="9" y="18" width="9" height="1" fill="#ebe6dc"/><rect x="18" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="19" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="19" width="3" height="1" fill="#8a6670"/><rect x="10" y="19" width="8" height="1" fill="#ebe6dc"/><rect x="18" y="19" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="20" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="20" width="4" height="1" fill="#8a6670"/><rect x="12" y="20" width="6" height="1" fill="#ebe6dc"/><rect x="18" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="21" width="4" height="1" fill="#8a6670"/><rect x="13" y="21" width="5" height="1" fill="#ebe6dc"/><rect x="18" y="21" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="22" width="4" height="1" fill="#8a6670"/><rect x="14" y="22" width="4" height="1" fill="#ebe6dc"/><rect x="18" y="22" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="23" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="23" width="6" height="1" fill="#8a6670"/><rect x="18" y="23" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="24" width="5" height="1" fill="#8a6670"/><rect x="18" y="24" width="1" height="1" fill="#1b1b1f"/><rect x="12" y="25" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="25" width="4" height="1" fill="#8a6670"/><rect x="18" y="25" width="1" height="1" fill="#1b1b1f"/><rect x="13" y="26" width="6" height="1" fill="#1b1b1f"/></g><g class="dn"><rect x="13" y="0" width="6" height="1" fill="#1b1b1f"/><rect x="12" y="1" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="1" width="4" height="1" fill="#3d2f35"/><rect x="18" y="1" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="2" width="5" height="1" fill="#3d2f35"/><rect x="18" y="2" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="3" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="3" width="6" height="1" fill="#3d2f35"/><rect x="18" y="3" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="4" width="4" height="1" fill="#3d2f35"/><rect x="14" y="4" width="4" height="1" fill="#8a6670"/><rect x="18" y="4" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="5" width="4" height="1" fill="#3d2f35"/><rect x="13" y="5" width="1" height="1" fill="#8a6670"/><rect x="14" y="5" width="4" height="1" fill="#d4cdc0"/><rect x="18" y="5" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="6" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="6" width="4" height="1" fill="#3d2f35"/><rect x="12" y="6" width="1" height="1" fill="#8a6670"/><rect x="13" y="6" width="5" height="1" fill="#d4cdc0"/><rect x="18" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="7" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="7" width="3" height="1" fill="#3d2f35"/><rect x="10" y="7" width="2" height="1" fill="#8a6670"/><rect x="12" y="7" width="6" height="1" fill="#d4cdc0"/><rect x="18" y="7" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="8" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="8" width="4" height="1" fill="#3d2f35"/><rect x="9" y="8" width="1" height="1" fill="#8a6670"/><rect x="10" y="8" width="8" height="1" fill="#d4cdc0"/><rect x="18" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="9" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="9" width="4" height="1" fill="#3d2f35"/><rect x="8" y="9" width="1" height="1" fill="#8a6670"/><rect x="9" y="9" width="9" height="1" fill="#d4cdc0"/><rect x="18" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="10" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="10" width="4" height="1" fill="#3d2f35"/><rect x="7" y="10" width="1" height="1" fill="#8a6670"/><rect x="8" y="10" width="10" height="1" fill="#d4cdc0"/><rect x="18" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="11" width="3" height="1" fill="#3d2f35"/><rect x="5" y="11" width="2" height="1" fill="#8a6670"/><rect x="7" y="11" width="11" height="1" fill="#d4cdc0"/><rect x="18" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="12" width="2" height="1" fill="#3d2f35"/><rect x="4" y="12" width="1" height="1" fill="#8a6670"/><rect x="5" y="12" width="13" height="1" fill="#d4cdc0"/><rect x="18" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="13" width="1" height="1" fill="#3d2f35"/><rect x="3" y="13" width="1" height="1" fill="#8a6670"/><rect x="4" y="13" width="14" height="1" fill="#d4cdc0"/><rect x="18" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="14" width="1" height="1" fill="#8a6670"/><rect x="3" y="14" width="15" height="1" fill="#d4cdc0"/><rect x="18" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="15" width="16" height="1" fill="#d4cdc0"/><rect x="18" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="16" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="16" width="15" height="1" fill="#d4cdc0"/><rect x="18" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="17" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="17" width="14" height="1" fill="#d4cdc0"/><rect x="18" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="18" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="18" width="13" height="1" fill="#d4cdc0"/><rect x="18" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="19" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="19" width="11" height="1" fill="#d4cdc0"/><rect x="18" y="19" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="20" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="20" width="10" height="1" fill="#d4cdc0"/><rect x="18" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="21" width="9" height="1" fill="#d4cdc0"/><rect x="18" y="21" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="22" width="8" height="1" fill="#d4cdc0"/><rect x="18" y="22" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="23" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="23" width="6" height="1" fill="#d4cdc0"/><rect x="18" y="23" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="24" width="5" height="1" fill="#d4cdc0"/><rect x="18" y="24" width="1" height="1" fill="#1b1b1f"/><rect x="12" y="25" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="25" width="4" height="1" fill="#d4cdc0"/><rect x="18" y="25" width="1" height="1" fill="#1b1b1f"/><rect x="13" y="26" width="6" height="1" fill="#1b1b1f"/></g></svg></button>
       <button id="br" class="arrow" aria-label="Direita"><svg viewBox="0 0 20 28" shape-rendering="crispEdges"><g class="up"><rect x="13" y="0" width="6" height="1" fill="#1b1b1f"/><rect x="12" y="1" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="1" width="4" height="1" fill="#ebe6dc"/><rect x="18" y="1" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="2" width="5" height="1" fill="#ebe6dc"/><rect x="18" y="2" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="3" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="3" width="6" height="1" fill="#ebe6dc"/><rect x="18" y="3" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="4" width="1" height="1" fill="#ffffff"/><rect x="11" y="4" width="7" height="1" fill="#ebe6dc"/><rect x="18" y="4" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="5" width="1" height="1" fill="#ffffff"/><rect x="10" y="5" width="8" height="1" fill="#ebe6dc"/><rect x="18" y="5" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="6" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="6" width="1" height="1" fill="#ffffff"/><rect x="9" y="6" width="9" height="1" fill="#ebe6dc"/><rect x="18" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="7" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="7" width="1" height="1" fill="#ffffff"/><rect x="8" y="7" width="10" height="1" fill="#ebe6dc"/><rect x="18" y="7" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="8" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="8" width="2" height="1" fill="#ffffff"/><rect x="7" y="8" width="11" height="1" fill="#ebe6dc"/><rect x="18" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="9" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="9" width="2" height="1" fill="#ffffff"/><rect x="6" y="9" width="12" height="1" fill="#ebe6dc"/><rect x="18" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="10" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="10" width="2" height="1" fill="#ffffff"/><rect x="5" y="10" width="13" height="1" fill="#ebe6dc"/><rect x="18" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="11" width="2" height="1" fill="#ffffff"/><rect x="4" y="11" width="14" height="1" fill="#ebe6dc"/><rect x="18" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="12" width="16" height="1" fill="#ebe6dc"/><rect x="18" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="13" width="1" height="1" fill="#8a6670"/><rect x="3" y="13" width="15" height="1" fill="#ebe6dc"/><rect x="18" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="14" width="2" height="1" fill="#8a6670"/><rect x="4" y="14" width="14" height="1" fill="#ebe6dc"/><rect x="18" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="15" width="3" height="1" fill="#8a6670"/><rect x="5" y="15" width="13" height="1" fill="#ebe6dc"/><rect x="18" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="16" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="16" width="4" height="1" fill="#8a6670"/><rect x="7" y="16" width="11" height="1" fill="#ebe6dc"/><rect x="18" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="17" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="17" width="4" height="1" fill="#8a6670"/><rect x="8" y="17" width="10" height="1" fill="#ebe6dc"/><rect x="18" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="18" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="18" width="4" height="1" fill="#8a6670"/><rect x="9" y="18" width="9" height="1" fill="#ebe6dc"/><rect x="18" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="19" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="19" width="3" height="1" fill="#8a6670"/><rect x="10" y="19" width="8" height="1" fill="#ebe6dc"/><rect x="18" y="19" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="20" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="20" width="4" height="1" fill="#8a6670"/><rect x="12" y="20" width="6" height="1" fill="#ebe6dc"/><rect x="18" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="21" width="4" height="1" fill="#8a6670"/><rect x="13" y="21" width="5" height="1" fill="#ebe6dc"/><rect x="18" y="21" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="22" width="4" height="1" fill="#8a6670"/><rect x="14" y="22" width="4" height="1" fill="#ebe6dc"/><rect x="18" y="22" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="23" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="23" width="6" height="1" fill="#8a6670"/><rect x="18" y="23" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="24" width="5" height="1" fill="#8a6670"/><rect x="18" y="24" width="1" height="1" fill="#1b1b1f"/><rect x="12" y="25" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="25" width="4" height="1" fill="#8a6670"/><rect x="18" y="25" width="1" height="1" fill="#1b1b1f"/><rect x="13" y="26" width="6" height="1" fill="#1b1b1f"/></g><g class="dn"><rect x="13" y="0" width="6" height="1" fill="#1b1b1f"/><rect x="12" y="1" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="1" width="4" height="1" fill="#3d2f35"/><rect x="18" y="1" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="2" width="5" height="1" fill="#3d2f35"/><rect x="18" y="2" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="3" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="3" width="6" height="1" fill="#3d2f35"/><rect x="18" y="3" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="4" width="4" height="1" fill="#3d2f35"/><rect x="14" y="4" width="4" height="1" fill="#8a6670"/><rect x="18" y="4" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="5" width="4" height="1" fill="#3d2f35"/><rect x="13" y="5" width="1" height="1" fill="#8a6670"/><rect x="14" y="5" width="4" height="1" fill="#d4cdc0"/><rect x="18" y="5" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="6" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="6" width="4" height="1" fill="#3d2f35"/><rect x="12" y="6" width="1" height="1" fill="#8a6670"/><rect x="13" y="6" width="5" height="1" fill="#d4cdc0"/><rect x="18" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="7" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="7" width="3" height="1" fill="#3d2f35"/><rect x="10" y="7" width="2" height="1" fill="#8a6670"/><rect x="12" y="7" width="6" height="1" fill="#d4cdc0"/><rect x="18" y="7" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="8" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="8" width="4" height="1" fill="#3d2f35"/><rect x="9" y="8" width="1" height="1" fill="#8a6670"/><rect x="10" y="8" width="8" height="1" fill="#d4cdc0"/><rect x="18" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="9" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="9" width="4" height="1" fill="#3d2f35"/><rect x="8" y="9" width="1" height="1" fill="#8a6670"/><rect x="9" y="9" width="9" height="1" fill="#d4cdc0"/><rect x="18" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="10" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="10" width="4" height="1" fill="#3d2f35"/><rect x="7" y="10" width="1" height="1" fill="#8a6670"/><rect x="8" y="10" width="10" height="1" fill="#d4cdc0"/><rect x="18" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="11" width="3" height="1" fill="#3d2f35"/><rect x="5" y="11" width="2" height="1" fill="#8a6670"/><rect x="7" y="11" width="11" height="1" fill="#d4cdc0"/><rect x="18" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="12" width="2" height="1" fill="#3d2f35"/><rect x="4" y="12" width="1" height="1" fill="#8a6670"/><rect x="5" y="12" width="13" height="1" fill="#d4cdc0"/><rect x="18" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="13" width="1" height="1" fill="#3d2f35"/><rect x="3" y="13" width="1" height="1" fill="#8a6670"/><rect x="4" y="13" width="14" height="1" fill="#d4cdc0"/><rect x="18" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="14" width="1" height="1" fill="#8a6670"/><rect x="3" y="14" width="15" height="1" fill="#d4cdc0"/><rect x="18" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="15" width="16" height="1" fill="#d4cdc0"/><rect x="18" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="16" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="16" width="15" height="1" fill="#d4cdc0"/><rect x="18" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="17" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="17" width="14" height="1" fill="#d4cdc0"/><rect x="18" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="18" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="18" width="13" height="1" fill="#d4cdc0"/><rect x="18" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="4" y="19" width="3" height="1" fill="#1b1b1f"/><rect x="7" y="19" width="11" height="1" fill="#d4cdc0"/><rect x="18" y="19" width="1" height="1" fill="#1b1b1f"/><rect x="6" y="20" width="2" height="1" fill="#1b1b1f"/><rect x="8" y="20" width="10" height="1" fill="#d4cdc0"/><rect x="18" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="21" width="9" height="1" fill="#d4cdc0"/><rect x="18" y="21" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="10" y="22" width="8" height="1" fill="#d4cdc0"/><rect x="18" y="22" width="1" height="1" fill="#1b1b1f"/><rect x="9" y="23" width="3" height="1" fill="#1b1b1f"/><rect x="12" y="23" width="6" height="1" fill="#d4cdc0"/><rect x="18" y="23" width="1" height="1" fill="#1b1b1f"/><rect x="11" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="13" y="24" width="5" height="1" fill="#d4cdc0"/><rect x="18" y="24" width="1" height="1" fill="#1b1b1f"/><rect x="12" y="25" width="2" height="1" fill="#1b1b1f"/><rect x="14" y="25" width="4" height="1" fill="#d4cdc0"/><rect x="18" y="25" width="1" height="1" fill="#1b1b1f"/><rect x="13" y="26" width="6" height="1" fill="#1b1b1f"/></g></svg></button>
     </div>
+    <button id="broar" aria-label="Rugir" aria-disabled="true">RUGIR</button>
     <button id="bm" class="mouth" aria-label="Abrir a boca"><svg viewBox="0 0 28 28" shape-rendering="crispEdges"><g class="up"><rect x="11" y="-1" width="5" height="1" fill="#1b1b1f"/><rect x="8" y="0" width="4" height="1" fill="#1b1b1f"/><rect x="12" y="0" width="2" height="1" fill="#ffffff"/><rect x="14" y="0" width="1" height="1" fill="#ebe6dc"/><rect x="15" y="0" width="4" height="1" fill="#1b1b1f"/><rect x="6" y="1" width="3" height="1" fill="#1b1b1f"/><rect x="9" y="1" width="4" height="1" fill="#ffffff"/><rect x="13" y="1" width="2" height="1" fill="#ebe6dc"/><rect x="15" y="1" width="2" height="1" fill="#ffffff"/><rect x="17" y="1" width="1" height="1" fill="#ebe6dc"/><rect x="18" y="1" width="3" height="1" fill="#1b1b1f"/><rect x="5" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="7" y="2" width="3" height="1" fill="#ffffff"/><rect x="10" y="2" width="10" height="1" fill="#ebe6dc"/><rect x="20" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="3" width="2" height="1" fill="#1b1b1f"/><rect x="6" y="3" width="2" height="1" fill="#ffffff"/><rect x="8" y="3" width="13" height="1" fill="#ebe6dc"/><rect x="21" y="3" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="4" width="2" height="1" fill="#ffffff"/><rect x="7" y="4" width="15" height="1" fill="#ebe6dc"/><rect x="22" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="2" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="5" width="2" height="1" fill="#ffffff"/><rect x="6" y="5" width="17" height="1" fill="#ebe6dc"/><rect x="23" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="2" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="6" width="2" height="1" fill="#ffffff"/><rect x="5" y="6" width="19" height="1" fill="#ebe6dc"/><rect x="24" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="7" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="7" width="1" height="1" fill="#ffffff"/><rect x="4" y="7" width="5" height="1" fill="#ebe6dc"/><rect x="9" y="7" width="9" height="1" fill="#1b1b1f"/><rect x="18" y="7" width="6" height="1" fill="#ebe6dc"/><rect x="24" y="7" width="2" height="1" fill="#1b1b1f"/><rect x="1" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="8" width="2" height="1" fill="#ffffff"/><rect x="4" y="8" width="3" height="1" fill="#ebe6dc"/><rect x="7" y="8" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="8" width="2" height="1" fill="#ffffff"/><rect x="11" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="12" y="8" width="3" height="1" fill="#ffffff"/><rect x="15" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="16" y="8" width="2" height="1" fill="#ffffff"/><rect x="18" y="8" width="2" height="1" fill="#1b1b1f"/><rect x="20" y="8" width="5" height="1" fill="#ebe6dc"/><rect x="25" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="9" width="1" height="1" fill="#ffffff"/><rect x="3" y="9" width="3" height="1" fill="#ebe6dc"/><rect x="6" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="9" width="3" height="1" fill="#6b1f2c"/><rect x="10" y="9" width="1" height="1" fill="#ffffff"/><rect x="11" y="9" width="2" height="1" fill="#6b1f2c"/><rect x="13" y="9" width="1" height="1" fill="#ffffff"/><rect x="14" y="9" width="2" height="1" fill="#6b1f2c"/><rect x="16" y="9" width="1" height="1" fill="#ffffff"/><rect x="17" y="9" width="3" height="1" fill="#6b1f2c"/><rect x="20" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="9" width="4" height="1" fill="#ebe6dc"/><rect x="25" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="10" width="1" height="1" fill="#ffffff"/><rect x="3" y="10" width="3" height="1" fill="#ebe6dc"/><rect x="6" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="10" width="13" height="1" fill="#6b1f2c"/><rect x="20" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="10" width="4" height="1" fill="#ebe6dc"/><rect x="25" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="11" width="1" height="1" fill="#ffffff"/><rect x="3" y="11" width="3" height="1" fill="#ebe6dc"/><rect x="6" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="11" width="13" height="1" fill="#6b1f2c"/><rect x="20" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="11" width="4" height="1" fill="#ebe6dc"/><rect x="25" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="12" width="1" height="1" fill="#ffffff"/><rect x="3" y="12" width="3" height="1" fill="#ebe6dc"/><rect x="6" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="12" width="13" height="1" fill="#6b1f2c"/><rect x="20" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="12" width="4" height="1" fill="#ebe6dc"/><rect x="25" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="13" width="1" height="1" fill="#ffffff"/><rect x="3" y="13" width="3" height="1" fill="#ebe6dc"/><rect x="6" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="13" width="3" height="1" fill="#6b1f2c"/><rect x="10" y="13" width="1" height="1" fill="#ffffff"/><rect x="11" y="13" width="5" height="1" fill="#6b1f2c"/><rect x="16" y="13" width="1" height="1" fill="#ffffff"/><rect x="17" y="13" width="3" height="1" fill="#6b1f2c"/><rect x="20" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="13" width="4" height="1" fill="#ebe6dc"/><rect x="25" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="14" width="1" height="1" fill="#ffffff"/><rect x="3" y="14" width="4" height="1" fill="#ebe6dc"/><rect x="7" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="14" width="1" height="1" fill="#6b1f2c"/><rect x="9" y="14" width="3" height="1" fill="#ffffff"/><rect x="12" y="14" width="3" height="1" fill="#e65a6e"/><rect x="15" y="14" width="3" height="1" fill="#ffffff"/><rect x="18" y="14" width="1" height="1" fill="#6b1f2c"/><rect x="19" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="20" y="14" width="5" height="1" fill="#ebe6dc"/><rect x="25" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="15" width="6" height="1" fill="#ebe6dc"/><rect x="8" y="15" width="3" height="1" fill="#1b1b1f"/><rect x="11" y="15" width="5" height="1" fill="#e65a6e"/><rect x="16" y="15" width="3" height="1" fill="#1b1b1f"/><rect x="19" y="15" width="6" height="1" fill="#ebe6dc"/><rect x="25" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="16" width="1" height="1" fill="#8a6670"/><rect x="3" y="16" width="8" height="1" fill="#ebe6dc"/><rect x="11" y="16" width="5" height="1" fill="#1b1b1f"/><rect x="16" y="16" width="8" height="1" fill="#ebe6dc"/><rect x="24" y="16" width="1" height="1" fill="#8a6670"/><rect x="25" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="17" width="1" height="1" fill="#8a6670"/><rect x="3" y="17" width="21" height="1" fill="#ebe6dc"/><rect x="24" y="17" width="1" height="1" fill="#8a6670"/><rect x="25" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="18" width="2" height="1" fill="#8a6670"/><rect x="4" y="18" width="19" height="1" fill="#ebe6dc"/><rect x="23" y="18" width="2" height="1" fill="#8a6670"/><rect x="25" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="19" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="19" width="2" height="1" fill="#8a6670"/><rect x="5" y="19" width="17" height="1" fill="#ebe6dc"/><rect x="22" y="19" width="2" height="1" fill="#8a6670"/><rect x="24" y="19" width="2" height="1" fill="#1b1b1f"/><rect x="2" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="20" width="3" height="1" fill="#8a6670"/><rect x="6" y="20" width="15" height="1" fill="#ebe6dc"/><rect x="21" y="20" width="3" height="1" fill="#8a6670"/><rect x="24" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="21" width="3" height="1" fill="#8a6670"/><rect x="7" y="21" width="13" height="1" fill="#ebe6dc"/><rect x="20" y="21" width="3" height="1" fill="#8a6670"/><rect x="23" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="22" width="4" height="1" fill="#8a6670"/><rect x="9" y="22" width="9" height="1" fill="#ebe6dc"/><rect x="18" y="22" width="4" height="1" fill="#8a6670"/><rect x="22" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="23" width="2" height="1" fill="#1b1b1f"/><rect x="6" y="23" width="6" height="1" fill="#8a6670"/><rect x="12" y="23" width="3" height="1" fill="#ebe6dc"/><rect x="15" y="23" width="6" height="1" fill="#8a6670"/><rect x="21" y="23" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="7" y="24" width="13" height="1" fill="#8a6670"/><rect x="20" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="6" y="25" width="3" height="1" fill="#1b1b1f"/><rect x="9" y="25" width="9" height="1" fill="#8a6670"/><rect x="18" y="25" width="3" height="1" fill="#1b1b1f"/><rect x="8" y="26" width="4" height="1" fill="#1b1b1f"/><rect x="12" y="26" width="3" height="1" fill="#8a6670"/><rect x="15" y="26" width="4" height="1" fill="#1b1b1f"/><rect x="11" y="27" width="5" height="1" fill="#1b1b1f"/></g><g class="dn"><rect x="11" y="-1" width="5" height="1" fill="#1b1b1f"/><rect x="8" y="0" width="4" height="1" fill="#1b1b1f"/><rect x="12" y="0" width="3" height="1" fill="#3d2f35"/><rect x="15" y="0" width="4" height="1" fill="#1b1b1f"/><rect x="6" y="1" width="3" height="1" fill="#1b1b1f"/><rect x="9" y="1" width="9" height="1" fill="#3d2f35"/><rect x="18" y="1" width="3" height="1" fill="#1b1b1f"/><rect x="5" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="7" y="2" width="13" height="1" fill="#3d2f35"/><rect x="20" y="2" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="3" width="2" height="1" fill="#1b1b1f"/><rect x="6" y="3" width="6" height="1" fill="#3d2f35"/><rect x="12" y="3" width="3" height="1" fill="#8a6670"/><rect x="15" y="3" width="6" height="1" fill="#3d2f35"/><rect x="21" y="3" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="4" width="4" height="1" fill="#3d2f35"/><rect x="9" y="4" width="3" height="1" fill="#8a6670"/><rect x="12" y="4" width="3" height="1" fill="#d4cdc0"/><rect x="15" y="4" width="3" height="1" fill="#8a6670"/><rect x="18" y="4" width="4" height="1" fill="#3d2f35"/><rect x="22" y="4" width="2" height="1" fill="#1b1b1f"/><rect x="2" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="5" width="3" height="1" fill="#3d2f35"/><rect x="7" y="5" width="2" height="1" fill="#8a6670"/><rect x="9" y="5" width="9" height="1" fill="#d4cdc0"/><rect x="18" y="5" width="2" height="1" fill="#8a6670"/><rect x="20" y="5" width="3" height="1" fill="#3d2f35"/><rect x="23" y="5" width="2" height="1" fill="#1b1b1f"/><rect x="2" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="6" width="3" height="1" fill="#3d2f35"/><rect x="6" y="6" width="1" height="1" fill="#8a6670"/><rect x="7" y="6" width="13" height="1" fill="#d4cdc0"/><rect x="20" y="6" width="1" height="1" fill="#8a6670"/><rect x="21" y="6" width="3" height="1" fill="#3d2f35"/><rect x="24" y="6" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="7" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="7" width="2" height="1" fill="#3d2f35"/><rect x="5" y="7" width="1" height="1" fill="#8a6670"/><rect x="6" y="7" width="15" height="1" fill="#d4cdc0"/><rect x="21" y="7" width="1" height="1" fill="#8a6670"/><rect x="22" y="7" width="2" height="1" fill="#3d2f35"/><rect x="24" y="7" width="2" height="1" fill="#1b1b1f"/><rect x="1" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="8" width="2" height="1" fill="#3d2f35"/><rect x="4" y="8" width="1" height="1" fill="#8a6670"/><rect x="5" y="8" width="17" height="1" fill="#d4cdc0"/><rect x="22" y="8" width="1" height="1" fill="#8a6670"/><rect x="23" y="8" width="2" height="1" fill="#3d2f35"/><rect x="25" y="8" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="9" width="1" height="1" fill="#3d2f35"/><rect x="3" y="9" width="1" height="1" fill="#8a6670"/><rect x="4" y="9" width="19" height="1" fill="#d4cdc0"/><rect x="23" y="9" width="1" height="1" fill="#8a6670"/><rect x="24" y="9" width="1" height="1" fill="#3d2f35"/><rect x="25" y="9" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="10" width="1" height="1" fill="#3d2f35"/><rect x="3" y="10" width="6" height="1" fill="#d4cdc0"/><rect x="9" y="10" width="9" height="1" fill="#1b1b1f"/><rect x="18" y="10" width="6" height="1" fill="#d4cdc0"/><rect x="24" y="10" width="1" height="1" fill="#3d2f35"/><rect x="25" y="10" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="11" width="1" height="1" fill="#8a6670"/><rect x="3" y="11" width="4" height="1" fill="#d4cdc0"/><rect x="7" y="11" width="2" height="1" fill="#1b1b1f"/><rect x="9" y="11" width="2" height="1" fill="#ffffff"/><rect x="11" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="12" y="11" width="3" height="1" fill="#ffffff"/><rect x="15" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="16" y="11" width="2" height="1" fill="#ffffff"/><rect x="18" y="11" width="2" height="1" fill="#1b1b1f"/><rect x="20" y="11" width="4" height="1" fill="#d4cdc0"/><rect x="24" y="11" width="1" height="1" fill="#8a6670"/><rect x="25" y="11" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="12" width="4" height="1" fill="#d4cdc0"/><rect x="6" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="12" width="3" height="1" fill="#6b1f2c"/><rect x="10" y="12" width="1" height="1" fill="#ffffff"/><rect x="11" y="12" width="2" height="1" fill="#6b1f2c"/><rect x="13" y="12" width="1" height="1" fill="#ffffff"/><rect x="14" y="12" width="2" height="1" fill="#6b1f2c"/><rect x="16" y="12" width="1" height="1" fill="#ffffff"/><rect x="17" y="12" width="3" height="1" fill="#6b1f2c"/><rect x="20" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="12" width="4" height="1" fill="#d4cdc0"/><rect x="25" y="12" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="13" width="4" height="1" fill="#d4cdc0"/><rect x="6" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="13" width="13" height="1" fill="#6b1f2c"/><rect x="20" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="13" width="4" height="1" fill="#d4cdc0"/><rect x="25" y="13" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="14" width="4" height="1" fill="#d4cdc0"/><rect x="6" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="14" width="13" height="1" fill="#6b1f2c"/><rect x="20" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="14" width="4" height="1" fill="#d4cdc0"/><rect x="25" y="14" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="15" width="4" height="1" fill="#d4cdc0"/><rect x="6" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="15" width="13" height="1" fill="#6b1f2c"/><rect x="20" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="15" width="4" height="1" fill="#d4cdc0"/><rect x="25" y="15" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="16" width="4" height="1" fill="#d4cdc0"/><rect x="6" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="7" y="16" width="3" height="1" fill="#6b1f2c"/><rect x="10" y="16" width="1" height="1" fill="#ffffff"/><rect x="11" y="16" width="5" height="1" fill="#6b1f2c"/><rect x="16" y="16" width="1" height="1" fill="#ffffff"/><rect x="17" y="16" width="3" height="1" fill="#6b1f2c"/><rect x="20" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="21" y="16" width="4" height="1" fill="#d4cdc0"/><rect x="25" y="16" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="17" width="5" height="1" fill="#d4cdc0"/><rect x="7" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="8" y="17" width="1" height="1" fill="#6b1f2c"/><rect x="9" y="17" width="3" height="1" fill="#ffffff"/><rect x="12" y="17" width="3" height="1" fill="#e65a6e"/><rect x="15" y="17" width="3" height="1" fill="#ffffff"/><rect x="18" y="17" width="1" height="1" fill="#6b1f2c"/><rect x="19" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="20" y="17" width="5" height="1" fill="#d4cdc0"/><rect x="25" y="17" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="18" width="6" height="1" fill="#d4cdc0"/><rect x="8" y="18" width="3" height="1" fill="#1b1b1f"/><rect x="11" y="18" width="5" height="1" fill="#e65a6e"/><rect x="16" y="18" width="3" height="1" fill="#1b1b1f"/><rect x="19" y="18" width="6" height="1" fill="#d4cdc0"/><rect x="25" y="18" width="1" height="1" fill="#1b1b1f"/><rect x="1" y="19" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="19" width="8" height="1" fill="#d4cdc0"/><rect x="11" y="19" width="5" height="1" fill="#1b1b1f"/><rect x="16" y="19" width="8" height="1" fill="#d4cdc0"/><rect x="24" y="19" width="2" height="1" fill="#1b1b1f"/><rect x="2" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="3" y="20" width="21" height="1" fill="#d4cdc0"/><rect x="24" y="20" width="1" height="1" fill="#1b1b1f"/><rect x="2" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="21" width="19" height="1" fill="#d4cdc0"/><rect x="23" y="21" width="2" height="1" fill="#1b1b1f"/><rect x="3" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="22" width="17" height="1" fill="#d4cdc0"/><rect x="22" y="22" width="2" height="1" fill="#1b1b1f"/><rect x="4" y="23" width="2" height="1" fill="#1b1b1f"/><rect x="6" y="23" width="15" height="1" fill="#d4cdc0"/><rect x="21" y="23" width="2" height="1" fill="#1b1b1f"/><rect x="5" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="7" y="24" width="13" height="1" fill="#d4cdc0"/><rect x="20" y="24" width="2" height="1" fill="#1b1b1f"/><rect x="6" y="25" width="3" height="1" fill="#1b1b1f"/><rect x="9" y="25" width="9" height="1" fill="#d4cdc0"/><rect x="18" y="25" width="3" height="1" fill="#1b1b1f"/><rect x="8" y="26" width="4" height="1" fill="#1b1b1f"/><rect x="12" y="26" width="3" height="1" fill="#d4cdc0"/><rect x="15" y="26" width="4" height="1" fill="#1b1b1f"/><rect x="11" y="27" width="5" height="1" fill="#1b1b1f"/></g></svg></button>
   </div>
 </div>
@@ -355,7 +364,7 @@ const FARMER_BOT=[
 const FPAL={...PAL,h:'#e8c15a',H:'#b8902e',f:'#f2c08a',b:'#8a5a3a',R:'#d84a3a',u:'#2f5aa8'};
 const FARMER={
   awake:bake([...FARMER_TOP,"...kfkffkfk..",...FARMER_BOT],false,FPAL),
-  sleep:bake([...FARMER_TOP,"...kkkffkkk..",...FARMER_BOT],false,FPAL),
+  scared:bake([...FARMER_TOP,"...kfkffkfk..","...kffkkffk..",...FARMER_BOT.slice(1)],false,FPAL), // boca aberta: correndo do rugido
   angry:bake([...FARMER_TOP,"...kkfffkkk..","...kfkffkfk..",...FARMER_BOT.slice(1)],false,FPAL)};
 const FARMER_X=88;
 const Y0=LEDGE_Y-8;            // altura de onde a galinha bota e o fazendeiro solta a bola
@@ -380,9 +389,22 @@ function stepTo(a,tx,wait){const d=tx-a.x;if(Math.abs(d)<.3){a.x=tx;return;}
   const v=Math.sign(d)*Math.min(Math.abs(d),Math.max(.4,Math.abs(d)/Math.max(1,wait-6)));a.x+=v;a.f=d<0?1:0;a.walk++;}
 function updateFarm(){
   if(farmer.throwT>0)farmer.throwT--;
-  if(rainT>0)for(const h of hens){ // festa: as galinhas dancam pelo poleiro
-    if(h.dance==null||Math.abs(h.dance-h.x)<1)h.dance=2+Math.random()*(W-16);
-    h.x+=Math.sign(h.dance-h.x)*Math.min(.9,Math.abs(h.dance-h.x));}
+  if(rainT>0){ // rugido: as galinhas voam doidas pela tela e o fazendeiro corre de um lado para o outro
+    const back=rainT<50; // no fim, as galinhas voltam para o lugar delas no poleiro
+    for(const h of hens){
+      if(h.home==null){h.home=h.x;h.fy=LEDGE_Y-12;h.vx=0;h.vy=-1.5;} // chegou ao poleiro no meio da chuva
+      if(back){h.x+=(h.home-h.x)*.12;h.fy+=(LEDGE_Y-12-h.fy)*.12;h.f=h.home<h.x?1:0;continue;}
+      h.vx=clamp(h.vx+(Math.random()-.5)*.6,-2.2,2.2);h.vy=clamp(h.vy+(Math.random()-.5)*.6,-1.8,1.8);
+      h.x+=h.vx;h.fy+=h.vy;
+      if(h.x<0){h.x=0;h.vx=Math.abs(h.vx);}if(h.x>W-13){h.x=W-13;h.vx=-Math.abs(h.vx);}
+      if(h.fy<2){h.fy=2;h.vy=Math.abs(h.vy);}if(h.fy>72){h.fy=72;h.vy=-Math.abs(h.vy);}
+      h.f=h.vx<0?1:0;
+      if(Math.random()<.05)parts.push({x:h.x+6,y:h.fy+8,vx:(Math.random()-.5)*.8,vy:-.2,life:30,c:Math.random()<.5?PAL.t:PAL.w});} // penas
+    if(frame%10===0)sfx.flap();if(frame%50===0)sfx.cluck();
+    farmer.x+=(farmer.run||1)*1.7;farmer.walk++;
+    if(farmer.x<=0||farmer.x>=W-13||Math.random()<.008)farmer.run=-(farmer.run||1);
+    farmer.x=clamp(farmer.x,0,W-13);
+  }else if(hens.some(h=>h.home!=null)){for(const h of hens){if(h.home!=null)h.x=h.home;h.home=null;h.fy=null;}farmer.run=null;}
   for(const it of items){if(!(it.wait>0))continue;
     if(it.thrown){stepTo(farmer,clamp(it.x-2,0,W-13),it.wait);if(it.wait===1)farmer.throwT=14;}
     else if(it.hen>=0)stepTo(hens[it.hen],clamp(it.x-2,0,W-12),it.wait);}
@@ -650,16 +672,24 @@ const sfx={
   smash(){noise(.08,.14,'bandpass',1800);tone(900,1800,.08,'square',.05)},
   vomit(){tone(180,70,.35,'sawtooth',.06);noise(.4,.12,'lowpass',700,150,.05);tone(120,60,.2,'square',.05,.3)},
   rotten(){noise(.18,.14,'lowpass',600,120);tone(150,70,.22,'triangle',.08,.02)},
+  roar(){noise(.55,.2,'lowpass',1100,140);tone(170,70,.5,'sawtooth',.09);tone(260,95,.42,'square',.05,.04)},
+  roarReady(){arp([392,523,784,1047],.06,.08,.05)},
   record(){arp([523,659,784,1047,784,1047],.09,.1,.06,'square',.9)},
 };
 
 /* ---------- state ---------- */
 let state='title',score=0,best=0,lives=3,frame=0,overT=0,newBest=false;
 let items=[],parts=[],puddles=[],spawnT=60,shake=0,combo=0,prevMouth=false,prevLeg=0;
-let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,timerT=0,lastEgg={x:W/2-4,arr:0},recent=[];
+let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,lastEgg={x:W/2-4,arr:0},recent=[];
 let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1,ballGap=0;
 const BALL_GAP=6*60; // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
-const RAIN_EVERY=30*60,RAIN_LEN=7*60; // Chuva de Ovos = festa das galinhas (7 s)
+const RAIN_LEN=7*60; // Chuva de Ovos (7 s): so acontece quando a raposa ruge
+/* Rugido (ver README): o botao RUGIR libera com ROAR_EGGS ovos comidos desde a ultima chuva OU com ROAR_FLOOR de tempo
+   (piso, para quem esta indo mal tambem ter o respiro). Nao acumula: cheio, para de encher ate a raposa rugir. */
+const ROAR_EGGS=20,ROAR_FLOOR=45*60,ROAR_ANIM=48;
+let roarEggs=0,roarT=0,roarFull=0,roarHint=0,roarSeen=false,roars=[];
+const roarP=()=>Math.min(1,Math.max(roarEggs/ROAR_EGGS,roarT/ROAR_FLOOR));
+function roarAdd(n){if(rainT===0)roarEggs+=n;} // ovos da propria chuva nao enchem
 // Pintinho/galinha: recompensa por ir muito bem (ver README). Um passaro por vez.
 const HATCH_COMBO=8,HATCH_P=.3,HATCH_CD=20*60,CHICK_LIFE=8*60,GROW_T=40,HEN_LIFE=12*60,HALT_T=24,CHICK_FLEE=20;
 let bird=null,hatchCD=0;
@@ -677,7 +707,7 @@ let lostLog=[],ballHits=0;
 const STATS=/[?&]stats=1/i.test(location.search);
 function logLoss(c){lostLog.push({c,ph:phaseOf(score),s:score,busy:fox.stun>0||fox.sick>0||fox.halt>0});}
 function saveGame(){try{const L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]');
-  L.push({score,lost:lostLog,balls:ballHits,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
+  L.push({score,lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
 function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
   L=L.filter(g=>g.v!=='b'); // partidas antigas da variante B ficam de fora
   if(!L.length)return['SEM PARTIDAS AINDA'];
@@ -685,7 +715,9 @@ function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-
   const n=c=>lost.filter(c).length;
   return['PARTIDAS '+L.length+'  MEDIANA '+med,'ACIMA DE 50: '+L.filter(g=>g.score>50).length,
     'CASCAS: OVO '+n(x=>x.c==='egg')+' PODRE '+n(x=>x.c==='rot'),'TONTA OU PARADA: '+n(x=>x.busy),
-    'POR FASE: '+[0,1,2,3].map(p=>n(x=>x.ph===p)).join('-'),'BOLAS NA RAPOSA: '+L.reduce((a,g)=>a+g.balls,0)];} // causa de cada casca quebrada no topo: 'egg' ou 'rot'
+    'POR FASE: '+[0,1,2,3].map(p=>n(x=>x.ph===p)).join('-'),'BOLAS NA RAPOSA: '+L.reduce((a,g)=>a+g.balls,0),
+    (()=>{const R=L.flatMap(g=>g.roars||[]),w=R.map(r=>r.w).sort((a,b)=>a-b); // rugidos e quanto tempo o botao ficou cheio antes do toque
+      return'RUGIDOS '+R.length+(w.length?'  ESPERA '+Math.round(w[Math.floor(w.length/2)]/60)+'S':'');})()];} // causa de cada casca quebrada no topo: 'egg' ou 'rot'
 let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
 try{best=+localStorage.getItem('eggsplash-best')||0}catch(e){}
 const FAT_T=60; // depois de comer, a raposa fica gordinha por 1 s
@@ -693,13 +725,13 @@ const FAT_T=60; // depois de comer, a raposa fica gordinha por 1 s
 // o pedaco cai na boca (3) e ela mastiga mostrando os dentes (o resto)
 const EAT_T=24,EAT_BITE=EAT_T-6,EAT_DROP=EAT_BITE-2,EAT_CHEW=EAT_DROP-3;
 function startEat(img){fox.chew=EAT_T;fox.eatImg=img;fox.gulp=false;}
-const fox={eatImg:null,fat:0,x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,big:0};
+const fox={roar:0,eatImg:null,fat:0,x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,big:0};
 const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;timerT=0;recent=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;closePyr();
-  Object.assign(fox,{fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
+function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;closePyr();
+  Object.assign(fox,{roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
 const fallCache=new Map();
@@ -781,9 +813,9 @@ function spawn(){
   items.push({type,x:sx,y:Y0,vx:0,vy:Math.min(.5,vmax),state:'fall',t:0,vmax,ph:L.phase,intro,hatch,gold,land:x,wait:LEAD,hen,thrown,perch:hatch&&perchHatch});
   return intro?L.interval+Math.round(fall*.6):L.interval;
 }
-// festa: cada ovo colorido sai de uma galinha dancando no poleiro
+// rugido: cada ovo colorido cai de uma galinha voando doida pela tela
 function spawnRain(){const h=hens[Math.floor(Math.random()*hens.length)];
-  items.push({type:'egg',x:clamp(Math.round(h.x)+2+Math.round((Math.random()-.5)*4),2,W-10),y:Y0,vx:0,vy:.5+Math.random()*.8,state:'fall',t:0,rain:true,col:Math.floor(Math.random()*EGG_COLS.length)});}
+  items.push({type:'egg',x:clamp(Math.round(h.x)+2+Math.round((Math.random()-.5)*4),2,W-10),y:h.fy!=null?Math.round(h.fy)+8:Y0,vx:0,vy:.5+Math.random()*.8,state:'fall',t:0,rain:true,col:Math.floor(Math.random()*EGG_COLS.length)});}
 // lost hearts come back during the rain, dropped on the side farthest from the fox
 function spawnHeart(bx){items.push({type:'heart',x:bx,bx,y:-10,vx:0,vy:0,state:'fall',t:0});}
 // lost hearts come back during the rain, spread over the whole rain and across the whole screen (shuffled lanes)
@@ -796,7 +828,20 @@ function planHearts(n){
 function startRain(){
   rainT=RAIN_LEN;heartsToDrop=5-lives;heartPlan=planHearts(heartsToDrop);sfx.rain();
   for(const it of items)if(it.type==='ball'||it.type==='rotten'){it.dead=true;burst(it.x+4,it.y+4,8,[PAL.t,PAL.y],1.2,1.2);}
+    else if(it.wait>0)it.wait=0; // a galinha levou um susto e soltou o ovo que ia botar
   items=items.filter(i=>!i.dead);
+  for(const h of hens){h.home=h.x;h.fy=LEDGE_Y-12;h.vx=(Math.random()-.5)*3;h.vy=-1-Math.random();} // todas levantam voo
+  farmer.run=farmer.x<W/2?1:-1;
+}
+// rugido: so com o botao cheio e fora da chuva. Assusta a galinha que bloqueia e comeca a Chuva de Ovos.
+function doRoar(){
+  if(state!=='play'||rainT>0||roarP()<1)return;
+  roars.push({s:score,w:roarFull,busy:fox.stun>0||fox.sick>0||fox.halt>0});
+  roarEggs=0;roarT=0;roarFull=0;roarHint=0;
+  fox.roar=ROAR_ANIM;shake=8;sfx.roar();
+  if(bird&&bird.kind==='hen'){sfx.cluck();henFly(0);} // a galinha que bloqueava foge para o poleiro
+  else if(bird&&bird.kind==='chick'&&bird.ground){const d=bird.x+4<fox.x+8?-1:1;bird.ground=false;bird.vy=-2.7;bird.vx=d*1.7;bird.face=d;bird.scared=bird.t;sfx.chirp();}
+  startRain();
 }
 function burst(x,y,n,colors,spd=1.5,up=1.5){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*spd*2,vy:-Math.random()*up-.3,
   life:25+Math.random()*20,c:colors[i%colors.length]});}
@@ -827,7 +872,7 @@ function eatRotten(it){
 
 /* ---------- ovo dourado ---------- */
 function eatGold(it){
-  it.dead=true;score+=GOLD_PTS;combo++;startEat(GOLD);fox.fat=FAT_T;eaten.push(-2);
+  it.dead=true;score+=GOLD_PTS;combo++;roarAdd(GOLD_PTS);startEat(GOLD);fox.fat=FAT_T;eaten.push(-2);
   fox.big=BIG_T;fox.stun=0;fox.sick=0;fox.halt=0;fox.inv=0;sfx.power();
   burst(fox.x+8,GROUND-16,16,[PAL.y,'#fff3b0',PAL.t],1.8,2.2);
   if(bird&&bird.kind==='hen')henFly(0);
@@ -844,7 +889,7 @@ function smashAway(it){
 /* ---------- pintinho -> galinha ---------- */
 // O ovo marcado choca sozinho perto do chao, com ou sem a raposa: conta como pego (+1) e sai um pintinho.
 function hatchEgg(it){
-  it.dead=true;score++;combo++;hatched++;sfx.hatch();
+  it.dead=true;score++;combo++;hatched++;roarAdd(1);sfx.hatch();
   const cx=it.x+4,cy=it.y+5;
   burst(cx,cy,8,[PAL.w,PAL.c,PAL.t],1.2,1.4);
   bird={kind:'chick',x:clamp(cx-4,2,W-10),y:cy-4,vx:(cx<fox.x+8?-1:1)*.7,vy:-1.6,t:0,face:cx<fox.x+8?-1:1,ground:false,hopT:20,perch:!!it.perch};
@@ -946,14 +991,14 @@ function update(){
     {const k=RAIN_LEN-rainT;while(heartPlan.length&&k>=heartPlan[0].k){spawnHeart(heartPlan.shift().x);heartsToDrop--;}}
     if(rainT===0){for(const p of puddles)burst(p.x+11,GROUND-2,3,[PAL.t,PAL.y],1,1.2);puddles=[]; // rain end cleans the whole floor
       for(const it of items)if(it.rain){it.dead=true;burst(it.x+4,it.y+5,4,[PAL.t,PAL.y],1,1);}
-      timerT=0;spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();lvl++;lvlT=60;}
+      spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();lvl++;lvlT=60;}
   }else{
-    timerT++;ballGap++;
-    const left=RAIN_EVERY-timerT;
-    if(left<=180&&left%60===0&&left>0)sfx.tick();
-    if(timerT>=RAIN_EVERY)startRain();
-    else if(--spawnT<=0)spawnT=spawn();
+    ballGap++;roarT++;
+    if(roarP()>=1){if(roarFull===0){sfx.roarReady();if(!roarSeen){roarHint=150;roarSeen=true;}}roarFull++;} // cheio: avisa uma vez e conta a espera
+    if(--spawnT<=0)spawnT=spawn();
   }
+  if(roarHint>0)roarHint--;
+  if(fox.roar>0)fox.roar--;
 
   updateBird();
 
@@ -1018,7 +1063,7 @@ function update(){
         if(it.hatch&&!bird&&it.y+h>=GROUND-34){hatchEgg(it);continue;} // choca sempre, com ou sem a raposa por perto
         if(it.gold&&fox.mouth&&hit(it,w,h,mouthZ)){eatGold(it);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){
-          it.dead=true;score++;combo++;startEat(it.rain?RAIN_EGGS[it.col]:EGG);fox.fat=FAT_T;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
+          it.dead=true;score++;combo++;roarAdd(1);startEat(it.rain?RAIN_EGGS[it.col]:EGG);fox.fat=FAT_T;eaten.push(it.rain?it.col:-1);sfx.eat(combo);if(score%10===0)sfx.levelup();
           continue;
         }else if(hit(it,w,h,body)){
           it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();
@@ -1108,7 +1153,7 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
     for(let i=0;i<3;i++){const a=frame*.12+i*2.094;ctx.drawImage(STAR,Math.round(X+6+Math.cos(a)*8),Math.round(Y-5+Math.sin(a)*2.5));}
   }
 }
-// HUD (fora da tela do jogo): cascas | nivel + tempo ate a festa + globo | pontos
+// HUD (fora da tela do jogo): cascas | nivel + barra do rugido (ou tempo da chuva) | pontos
 function drawHud(){
   hc.clearRect(0,0,W,HH);TX=hc;
   // cascas: da esquerda para a direita, as quebradas primeiro
@@ -1118,60 +1163,50 @@ function drawHud(){
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
   text(score,W-1,3,2,PAL.t,'right',PAL.k);
   hc.drawImage(PILE,W-1-textW(score,2)-11,5); // pontos = ovos que a raposa juntou
-  // tempo ate a festa das galinhas (Chuva de Ovos); o globo de festa marca o fim da barra
-  const bx=51,bw=40,by=9,f=rainT>0?rainT/RAIN_LEN:1-timerT/RAIN_EVERY;
+  // barra do rugido: enche com os ovos comidos (ou com o tempo); na Chuva de Ovos mostra o tempo que falta
+  const ready=rainT===0&&roarP()>=1,bx=51,bw=40,by=9,f=rainT>0?rainT/RAIN_LEN:roarP();
   text('NÍVEL '+lvl,bx+bw/2,3,1,lvlT>0&&frame%10<5?PAL.y:PAL.t,'center',PAL.k);
   hc.fillStyle=PAL.k;hc.fillRect(bx-1,by-1,bw+2,7);
   hc.fillStyle='#6b2a1f';hc.fillRect(bx,by,bw,5);
-  const low=rainT===0&&RAIN_EVERY-timerT<=180;
-  hc.fillStyle=rainT>0?(frame%10<5?PAL.y:PAL.t):(low&&frame%20<10?PAL.t:PAL.y);
+  hc.fillStyle=rainT>0?(frame%10<5?PAL.y:PAL.t):(ready&&frame%20<10?PAL.t:PAL.y);
   hc.fillRect(bx,by,Math.ceil(bw*f),5);
   hc.fillStyle='rgba(255,255,255,.45)';hc.fillRect(bx,by,Math.ceil(bw*f),1);
-  drawDiscoIcon(bx+bw+8,by+2,rainT>0||low);
-  const secs=Math.ceil((rainT>0?rainT:RAIN_EVERY-timerT)/60);
-  text(secs,bx+bw/2,by+8,1,PAL.t,'center',PAL.k);
+  hc.drawImage(ready||rainT>0?ROAR_ICON:ROAR_OFF,bx+bw+4,by-2+(ready&&frame%20<10?-1:0));
+  if(rainT>0)text(Math.ceil(rainT/60),bx+bw/2,by+8,1,PAL.t,'center',PAL.k);
+  else if(ready&&frame%20<14)text('RUJA!',bx+bw/2,by+8,1,PAL.y,'center',PAL.k);
   TX=null;
 }
-// globinho de festa do HUD: espelhinhos giram mais rapido quando a festa esta chegando ou acontecendo
-function drawDiscoIcon(cx,cy,hot){
-  hc.fillStyle=PAL.k;hc.fillRect(cx,cy-8,1,3); // fio
-  for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++){const d=x*x+y*y;if(d>20)continue;
-    if(d>12){hc.fillStyle=PAL.k;hc.fillRect(cx+x,cy+y,1,1);continue;}
-    const on=((x+y+Math.floor(frame/(hot?4:12)))&3)===0;
-    hc.fillStyle=on?PAL.t:((x+y)&1?'#9aa3ad':'#d8dde8');hc.fillRect(cx+x,cy+y,1,1);}
-}
-// globo de festa: desce no comeco da Chuva de Ovos e sobe no fim
-function discoY(){if(!(state==='play'&&rainT>0))return null;const k=RAIN_LEN-rainT;
-  return Math.round(-14+Math.min(1,k/40,rainT/40)*64);}
-function drawDisco(){const y=discoY();if(y===null)return;const cx=W/2;
-  ctx.fillStyle='#c9cfe0';ctx.fillRect(cx,0,1,Math.max(0,y-6));
-  disc(cx,y,6,PAL.k);disc(cx,y,5,'#9aa3ad');
-  for(let yy=-4;yy<=4;yy+=2)for(let xx=-4;xx<=4;xx+=2){if(xx*xx+yy*yy>22)continue; // espelhinhos girando
-    const on=((xx+yy+Math.floor(frame/6))&3)===0;ctx.fillStyle=on?PAL.t:'#d8dde8';ctx.fillRect(cx+xx,y+yy,1,1);}
-  const C=['#ff4fd8','#4fd8ff','#ffe14f','#7dff4f'];
-  for(let i=0;i<10;i++){const a=frame*.03+i*.63,r=30+((i*37)%90); // bolinhas de luz pela tela
-    ctx.fillStyle=C[i%4];ctx.fillRect(Math.round(cx+Math.cos(a)*r*1.1),Math.round(y+20+Math.abs(Math.sin(a*1.3))*r),2,2);}}
+// rostinho da raposa no fim da barra do rugido: cinza enchendo, laranja e balancando quando libera
+const ROAR_ROWS=["kk.....kk","kokkkkkok","koooooook","kokoookok","kowkkkwok",".kwwwwwk.","..kkkkk.."];
+const ROAR_ICON=bake(ROAR_ROWS),ROAR_OFF=bake(ROAR_ROWS,false,{...PAL,o:PAL.g,w:'#cfcfcf'});
 function drawFarm(){
   // poleiro: tabua com palha, galinhas chocando
     ctx.fillStyle='#8b5a2b';ctx.fillRect(0,LEDGE_Y,W,3);ctx.fillStyle='#5e3b1a';ctx.fillRect(0,LEDGE_Y+3,W,1);
-  ctx.fillStyle='#d6c19c';for(const h of hens)ctx.fillRect(Math.round(h.x)-1,LEDGE_Y-2,14,2); // palha embaixo de cada galinha
-  // fazendeiro atras da tabua: joga as bolas; cochila na Chuva de Ovos; acorda bravo no fim de jogo
-  const sleeping=state==='play'&&rainT>0,over=state==='over';
+  ctx.fillStyle='#d6c19c';for(const h of hens)ctx.fillRect(Math.round(h.home!=null?h.home:h.x)-1,LEDGE_Y-2,14,2); // palha embaixo de cada galinha
+  // fazendeiro atras da tabua: joga as bolas; corre assustado na Chuva de Ovos; acorda bravo no fim de jogo
+  const scared=state==='play'&&rainT>0,over=state==='over';
   const FX=Math.round(farmer.x),carry=items.find(i=>i.wait>0&&i.thrown);
-  const fy=LEDGE_Y-11+(!sleeping&&!over&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
+  const fy=LEDGE_Y-11+(scared?Math.floor(farmer.walk/3)%2:0)+(!scared&&!over&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
   ctx.save();ctx.beginPath();ctx.rect(0,0,W,LEDGE_Y+1);ctx.clip(); // atras da tabua
-  ctx.drawImage(over?FARMER.angry:sleeping?FARMER.sleep:FARMER.awake,FX,fy);ctx.restore();
+  ctx.drawImage(over?FARMER.angry:scared?FARMER.scared:FARMER.awake,FX,fy);ctx.restore();
   if(carry){const bi=(BALLS[carry.ph]||BALL)[0];ctx.drawImage(bi,FX+2,fy-8);       // bola erguida, pronta para jogar
     ctx.fillStyle=FPAL.R;ctx.fillRect(FX+2,fy-1,2,4);ctx.fillRect(FX+9,fy-1,2,4);}
   else if(farmer.throwT>0){ctx.fillStyle=FPAL.R;ctx.fillRect(FX+1,fy+10,2,3);ctx.fillRect(FX+10,fy+10,2,3);} // bracos descendo do arremesso
   const goldHen=(items.find(i=>i.gold&&i.state==='fall'&&i.y<GROUND-60)||{}).hen;
-  hens.forEach((h,i)=>{const lay=items.find(it=>it.wait>0&&it.hen===i);
-    const party=state==='play'&&rainT>0;
-    const up=lay&&lay.wait<6?2:0,bob=party?Math.floor(frame/6+i)%2*2:Math.floor((frame+i*23)/40)%3===0?1:0; // botando: levanta um pouco; na festa: danca
-    ctx.drawImage((goldHen===i||(lay&&lay.gold)?HEN_GOLD:HENS_SIT)[party?Math.floor(frame/12+i)%2:h.f],Math.round(h.x),LEDGE_Y-12+bob-up);});
-  if(sleeping)for(let i=0;i<2;i++){if(Math.floor((frame+i*40)/40)%2)text('Z',FX-3-i*4,LEDGE_Y-7-i*4,1,PAL.t,'center',PAL.k);} // Zzz entre o relogio e o fazendeiro
+  hens.forEach((h,i)=>{
+    if(h.fy!=null&&state==='play'){ctx.drawImage(HEN[Math.floor((frame+i*3)/4)%2?2:3][h.f],Math.round(h.x),Math.round(h.fy));return;} // voando doida
+    const lay=items.find(it=>it.wait>0&&it.hen===i);
+    const up=lay&&lay.wait<6?2:0,bob=Math.floor((frame+i*23)/40)%3===0?1:0; // botando: levanta um pouco
+    ctx.drawImage((goldHen===i||(lay&&lay.gold)?HEN_GOLD:HENS_SIT)[h.f],Math.round(h.x),LEDGE_Y-12+bob-up);});
+  if(scared&&frame%16<10)text('!',FX+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
 }
+let roarUI='';
+function drawRoarBtn(){ // so mexe no DOM quando muda
+  const p=state==='play'&&rainT===0?roarP():0,ready=state==='play'&&rainT===0&&p>=1,k=ready?'r':''+Math.round(p*25);
+  if(k===roarUI)return;roarUI=k;
+  roarBtn.style.setProperty('--p',Math.round(p*100)+'%');roarBtn.classList.toggle('ready',ready);roarBtn.setAttribute('aria-disabled',!ready);}
 function render(){
+  drawRoarBtn();
   ctx.save();
   if(shake)ctx.translate(Math.round((Math.random()-.5)*shake*.6),Math.round((Math.random()-.5)*shake*.6));
   drawWorld();
@@ -1185,7 +1220,6 @@ function render(){
     ctx.fillStyle=PAL.t;ctx.fillRect(p.x+3,GROUND-1,2,1);ctx.fillRect(m-2,GROUND-2,1,1);
   }
   drawDrops();
-  drawDisco();
   if(state!=='title'){
     for(const it of items){
       if(it.wait>0)continue; // ainda na mao do fazendeiro / embaixo da galinha
@@ -1216,9 +1250,13 @@ function render(){
     const legs=(Math.abs(fox.vx)>.2||(fox.walk&&(keys.l||keys.r||touch.l||touch.r)))&&!fox.stun?(Math.floor(fox.walk/5)%2?1:2):0;
     {const k=bigK(),fcx=Math.round(fox.x)+8;ctx.save(); // gigante: escala a partir do pe, no centro da raposa
       if(k!==1){ctx.translate(fcx,GROUND);ctx.scale(k,k);ctx.translate(-fcx,-GROUND);}
-      drawFox(fox.x,fox.stun>0,fox.mouth||fox.sick>0,fox.chew,fox.sick?0:legs,fox.face,fox.inv>0);ctx.restore();}
+      drawFox(fox.x,fox.stun>0,fox.mouth||fox.sick>0||fox.roar>0,fox.chew,fox.sick?0:legs,fox.face,fox.inv>0);ctx.restore();}
     if(fox.sick){ctx.fillStyle='#8fa040';ctx.fillRect(Math.round(fox.x)+3,GROUND-12,10,2);if(frame%20<12)text('ECA!',fox.x+8,GROUND-26,1,'#c9cf7a','center',PAL.k);}
     if(fox.slip&&frame%20<12)text('!',fox.x+8,GROUND-24,1,PAL.r);
+    if(fox.roar>0){const k=ROAR_ANIM-fox.roar,cx=Math.round(fox.x)+8,cy=GROUND-12; // ondas do rugido saindo da raposa
+      ctx.fillStyle=PAL.t;for(const r of [k*3,k*3-14])if(r>4){const n=Math.ceil(r*1.5);
+        for(let i=0;i<n;i++){const a=Math.PI+i/n*Math.PI;ctx.fillRect(Math.round(cx+Math.cos(a)*r),Math.round(cy+Math.sin(a)*r*.8),1,1);}}
+      text('RAAAR!',fox.x+8,GROUND-34-Math.min(6,k),2,frame%8<4?PAL.y:PAL.o,'center',PAL.k);}
     }
   }
   for(const p of parts){ctx.fillStyle=p.c;ctx.fillRect(Math.round(p.x),Math.round(p.y),1,1);}
@@ -1242,10 +1280,10 @@ function render(){
     return;
   }
   drawHud();
+  if(state==='play'&&roarHint>0&&rainT===0&&frame%24<16){text('APERTE RUGIR!',W/2,96,1,PAL.y,'center',PAL.k);text('CHUVA DE OVOS',W/2,104,1,PAL.t,'center',PAL.k);}
   if(state!=='title'){
     if(rainT>0){
       if(rainT>RAIN_LEN-20){ctx.fillStyle='rgba(255,236,160,'+((rainT-(RAIN_LEN-20))/40)+')';ctx.fillRect(0,0,W,H);}
-      {const C=['255,79,216','79,216,255','255,225,79','125,255,79'];ctx.fillStyle='rgba('+C[Math.floor(frame/20)%4]+',.13)';ctx.fillRect(0,0,W,H);} // luz de balada (troca 3x por segundo, bem fraca)
       if(rainT>RAIN_LEN-100){ // o nome aparece so no comeco (~1,7 s) e some
         text('CHUVA',W/2,66,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);
         text('DE OVOS!',W/2,79,2,frame%16<8?PAL.y:PAL.t,'center',PAL.k);}
@@ -1386,6 +1424,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyV'&&state==='over'){openPyr();return;}
   if(e.code==='KeyP'||e.code==='Escape'){if(state==='play'){state='pause';sfx.pause();}else if(state==='pause'){state='play';sfx.resume();}return;}
   if(e.code==='KeyM'){toggleMute();return;}
+  if(e.code==='KeyR'){unlockAudio();if(state==='play')doRoar();return;}
   if(e.code==='KeyX'){toggleSpeed();return;}
   const k=KEYMAP[e.code];if(k){keys[k]=true;e.preventDefault();}
   if(!e.repeat&&(k||e.code==='Enter'))act();
@@ -1399,6 +1438,8 @@ function bind(id,k){
   ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,off));
 }
 bind('bl','l');bind('br','r');bind('bm','m');
+const roarBtn=document.getElementById('broar');
+roarBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();unlockAudio();if(state==='play')doRoar();else act();});
 cv.addEventListener('pointerdown',e=>{e.preventDefault();
   if(state==='over'){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left-cv.clientLeft)/cv.clientWidth*W,y=(e.clientY-r.top-cv.clientTop)/cv.clientHeight*H;
     if(x>=PB.x-3&&x<=PB.x+PB.w+3&&y>=PB.y-3&&y<=PB.y+PB.h+3){unlockAudio();openPyr();return;}}
@@ -1442,7 +1483,7 @@ function fit(){
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
-window.__egg={get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
+window.__egg={doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
   set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
