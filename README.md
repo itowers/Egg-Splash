@@ -16,8 +16,9 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
 ## A fazenda (por que as coisas acontecem)
-- **Galinhas no poleiro** no topo da tela: é delas que vêm os ovos
-- **O fazendeiro** fica atrás do poleiro e joga as bolas para espantar a raposa. A lata de tinta do lado dele mostra a cor do disfarce da fase atual
+- **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta com um **!** e bota
+- **O fazendeiro** anda atrás do poleiro com a bola erguida e joga lá de cima (uma bola por vez). A lata de tinta do lado dele mostra a cor do disfarce da fase atual
+- O tempo de queda da curva conta a partir do momento em que o objeto é solto; antes disso ele não cai nem encosta na raposa
 - **Chuva de Ovos:** o fazendeiro cochila (Zzz), por isso só caem ovos e corações
 - **Ovo dourado:** enquanto ele cai, uma das galinhas fica dourada
 - **Pontos** = ovos levados para a **toca** (canto esquerdo, a pilha cresce a cada 10 ovos)
