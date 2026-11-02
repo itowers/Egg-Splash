@@ -1318,25 +1318,25 @@ function drawFarm(){
 }
 // botao RUGIR em pixel art (27x28): tampa que enche de dourado de baixo para cima, rostinho da raposa e a palavra RUGIR.
 // Cheio: tampa amarela, raposa laranja de boca aberta e ondas do rugido. Ao tocar, a tampa afunda (como as setas e a boca).
-/* icone do botao do rugido (sem texto): cabeca da raposa de perfil, de boca aberta rugindo */
+/* icone do botao do rugido (sem texto): um trovao */
 const ROAR_ICON=[
-"....kk................",
-"...kodk...............",
-"...koddk..............",
-"..kooodok.............",
-"..kooooookkkkk........",
-".kooooooooooooook.....",
-".koooookkooooooookk...",
-".koooookkoooooooooookk",
-"koooooooooooooooooookk",
-"koooooooooookkkkkkkkwk",
-"kooooooooookmmmmmmmmk.",
-"kowwwwwwwwkmmmmmmmm...",
-"kwwwwwwwwwkmmmmpppm...",
-".kwwwwwwwwwkkkkkkkkwk.",
-"..kwwwwwwwwwwwwwwwwwk.",
-"...kkwwwwwwwwwwwkkkk..",
-".....kkkkkkkkkkk......"];
+"......kkkkkkkk",
+".....ktyyyyyyk",
+".....ktyyyyyk.",
+"....ktyyyyyk..",
+"....ktyyyyk...",
+"...ktyyyyk....",
+"...ktyyyykkkkk",
+"..ktyyyyyyyyyk",
+"..ktyyyyyyyyk.",
+".kkkkkkyyyyk..",
+"......kyyyk...",
+".....kyyyk....",
+".....kyyk.....",
+"....kyyk......",
+"....kyk.......",
+"...kyk........",
+"...kk........."];
 /* enchendo: amarelo sobe de baixo para cima; cheio: o botao fica VERMELHO (facil de ver) e pisca */
 function ROAR_SVG(p,ready,down){
   const px=(x,y,c,w=1,h=1)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
@@ -1350,9 +1350,8 @@ function ROAR_SVG(p,ready,down){
     s+=`<clipPath id="rcl">${rr(1,1,W-2,FH,'#000')}</clipPath><g clip-path="url(#rcl)">`+
       px(1,top,'#f4c430',W-2,1+FH-top)+px(1,top,'#fff3b0',W-2,1)+'</g>';}
   s+=px(3,2,C.hi,W-6)+px(2,3,C.hi,1,FH-4); // brilho no canto de cima, como nos outros botoes
-  const pal=ready?{k:C.ink,o:'#f28c3c',d:'#b0521f',w:'#f6ecd8',m:'#5a1622',p:'#e65a6e'}
-                 :{k:C.ink,o:'#a39a8c',d:'#7d756a',w:'#f7f4ee',m:'#5a554d',p:'#a39a8c'};
-  ROAR_ICON.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch])s+=px(2+x,4+y,pal[ch]);}));
+  const pal=ready?{k:C.ink,y:'#f4c430',t:'#fff3b0'}:{k:C.ink,y:'#f7f4ee',t:'#ffffff'}; // pronto: trovao amarelo no vermelho
+  ROAR_ICON.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch])s+=px(6+x,3+y,pal[ch]);}));
   return s+'</g></svg>';}
 let roarUI='',roarDown=0;
 function drawRoarBtn(){ // so mexe no DOM quando muda

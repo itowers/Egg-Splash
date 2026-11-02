@@ -42,7 +42,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 
 ## Rugido
 A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão do rugido (entre as setas e a boca; em paisagem, em cima da boca).
-- O botão é pixel art, da mesma família das setas e da boca, **sem texto**: a cabeça da raposa de perfil, rugindo. Começa bloqueado (cinza) e enche de **amarelo** de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
+- O botão é pixel art, da mesma família das setas e da boca, **sem texto**: um **trovão**. Começa bloqueado (cinza) e enche de **amarelo** de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
 - Cheio, o botão fica **vermelho** piscando (fácil de ver); ao tocar, afunda como os outros (o medidor fica só no botão; o HUD mostra apenas vidas e pontos). Na primeira vez da partida, a tela mostra **HORA DE RUGIR! APERTE O BOTÃO VERMELHO**
 - Não acumula: cheio, para de encher até a raposa rugir. Os ovos da própria chuva não enchem
 - **RAAAR!** a raposa agacha, pula esticando e treme de força, saem ondas da boca e a tela inteira **treme como num terremoto** (com poeira do chão e ronco grave). Depois começa a Chuva de Ovos, com ovos só coloridos (sem enfeite). Dá para rugir até tonta. As bolas e os ovos podres somem, como antes. A galinha que estava bloqueando se assusta e voa para o poleiro; o pintinho dá um pulo para longe
@@ -88,7 +88,7 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 - O nome **CHUVA DE OVOS!** aparece só no começo da chuva (~1,7 s) e some
 
 ## Controles
-- ◀ ▶ andar (dá para **deslizar o dedo** de uma seta para a outra sem levantar) · botão redondo (segurar) abrir a boca · botão da raposa rugindo quando estiver **vermelho**
+- ◀ ▶ andar (dá para **deslizar o dedo** de uma seta para a outra sem levantar) · botão redondo (segurar) abrir a boca · botão do trovão quando estiver **vermelho**
 - **Som:** o botão de som no topo. Com o som do jogo **desligado**, a música de outro app (Spotify, Apple Music) continua tocando; com ele ligado, o jogo toca mesmo com a chave de silencioso
 - Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, M som, Enter jogar de novo (X = 2X, só no modo de teste)
 
