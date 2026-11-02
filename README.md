@@ -90,3 +90,14 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 ## Controles
 - ◀ ▶ andar · botão redondo (segurar) abrir a boca · **RUGIR** quando estiver cheio
 - Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, M som
+
+## Ajustes de teste
+Menu para testar a jogabilidade e comparar versões. Só aparece no **modo de teste**; fora dele o jogo usa sempre o padrão.
+- **Ligar:** abrir com `?debug=1` (fica salvo no aparelho; `?debug=0` desliga) ou, pelo ícone da Tela de Início, **tocar 5 vezes no botão de pausa** na tela inicial (o mesmo gesto desliga). Aparece o botão de ajustes ao lado do 1X e a tela inicial mostra o ajuste em uso
+- **Os valores só mudam entre partidas.** Abrir o menu no meio pausa o jogo, e o que mudar vale na próxima (controles constantes durante a partida)
+- **Controle:** tipo (setas, **arrastar** = o dedo em qualquer lugar da tela move a raposa como um trackpad, **lados** = segurar a metade esquerda/direita da tela), boca (segurar ou alternar), velocidade, velocidade de boca aberta, aceleração, frenagem, boca mais generosa (px a mais na área de pegar) e tamanho dos botões
+- **Punições:** tontura da bola, parada na galinha, vômito do ovo podre, velocidade no splash verde
+- **Curva:** queda (× a curva, padrão 0,9), teto de bolas, máximo sem bola, bolas miradas e erro da mira
+- **Ritmo:** rugido (ovos e tempo), intervalo entre novidades, combo x2/x3, % de duplas aos 100 e aos 200 ovos
+- **Presets:** ATUAL, ÁGIL, PESADA, SUAVE. A regra de alcance acompanha a velocidade da raposa (raposa mais lenta = ovos sorteados mais perto)
+- **Comparar:** cada partida guarda na telemetria o que estava diferente do padrão (`cfg`). O fim do menu mostra uma tabela por ajuste: partidas, mediana de ovos e pontos, % acima de 50, bolas na raposa por partida e % dos ovos perdidos com a raposa tonta/parada

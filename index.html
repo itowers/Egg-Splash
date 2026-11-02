@@ -26,17 +26,17 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;borde
   box-shadow:6px 6px 0 rgba(0,0,0,.16);background:#9fd3e0}
 /* HUD fora da tela do jogo: faixa propria logo acima, com a mesma largura */
 #hud{border:0;box-shadow:none;background:none;margin-bottom:6px}
-#controls{height:118px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px 8px}
+#controls{height:calc(34px + 84px*var(--bs,1));flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px 8px}
 .dpad{display:flex;gap:14px}
 button{background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:none;outline:none}
 button svg{display:block;width:100%;height:100%;pointer-events:none}
 /* botoes 8-bit que afundam: a base (contorno) fica parada e a tampa desce para dentro dela */
-.arrow{width:60px;height:84px}
+.arrow{width:calc(60px*var(--bs,1));height:calc(84px*var(--bs,1))}
 #br svg{transform:scaleX(-1)}
-.mouth{width:84px;height:84px}
+.mouth{width:calc(84px*var(--bs,1));height:calc(84px*var(--bs,1))}
 /* botao RUGIR: SVG 8-bit da mesma familia das setas e da boca (desenhado em JS, ver ROAR_SVG).
    Enche de baixo para cima; cheio, a raposa abre a boca, saem ondas e o botao pisca */
-#broar{width:81px;height:84px}
+#broar{width:calc(81px*var(--bs,1));height:calc(84px*var(--bs,1))}
 #broar .w2{visibility:hidden}
 #broar.ready .w2{animation:roarwave .5s steps(1) infinite}
 #broar.ready .w1{animation:roarwave .5s steps(1) infinite reverse}
@@ -73,8 +73,34 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
     bottom:calc(env(safe-area-inset-bottom) + 24px);
     padding:0 calc(env(safe-area-inset-right) + 30px) 0 calc(env(safe-area-inset-left) + 30px)}
   #controls button{pointer-events:auto}
-  #broar{position:absolute;right:calc(env(safe-area-inset-right) + 31px);bottom:96px} /* em cima do botao da boca, fora da tela do jogo */
+  #broar{position:absolute;right:calc(env(safe-area-inset-right) + 31px);bottom:calc(96px*var(--bs,1))} /* em cima do botao da boca, fora da tela do jogo */
 }
+/* menu AJUSTES (modo de teste) */
+#tune{position:fixed;inset:0;z-index:30;display:flex;align-items:stretch;justify-content:center;background:rgba(27,27,31,.9);
+  padding:calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 10px)}
+#tune[hidden]{display:none}
+#tune .box{width:100%;max-width:440px;display:flex;flex-direction:column;background:var(--btn);border:4px solid var(--ink);
+  box-shadow:6px 6px 0 rgba(0,0,0,.3);font:11px/1.3 Silkscreen,ui-monospace,Menlo,monospace;color:var(--ink);min-height:0}
+#tune .hd{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:4px solid var(--ink);font-size:16px}
+#tunebody{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:4px 10px 14px;flex:1;min-height:0}
+#tune button{font:11px/1 Silkscreen,ui-monospace,Menlo,monospace;color:var(--ink);background:#fff8ea;border:3px solid var(--ink);
+  box-shadow:inset 0 -3px 0 var(--btnsh);padding:7px 9px 9px;touch-action:manipulation}
+#tune button.sel{background:#f4c430;box-shadow:inset 0 -3px 0 #b0821a}
+#tune button:active{box-shadow:none;transform:translateY(2px)}
+#tune h3{font-size:12px;margin:14px 0 4px;padding-top:6px;border-top:2px dashed var(--btnsh)}
+#tune .note{background:#1b1b1f;color:#f4c430;padding:6px 8px;margin:8px 0 0}
+#tune .row{margin:7px 0}
+#tune .lab{display:flex;justify-content:space-between;gap:8px}
+#tune .lab b{font-weight:normal;color:#b0521f}
+#tune .lab b.ch{color:#e8402f}
+#tune .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+#tune input[type=range]{width:100%;margin:4px 0 0;accent-color:#e8792b;touch-action:pan-x;height:26px}
+#tune table{width:100%;border-collapse:collapse;font-size:10px;margin-top:4px}
+#tune td,#tune th{border-bottom:1px solid var(--btnsh);padding:4px 2px;text-align:right;font-weight:normal}
+#tune td:first-child,#tune th:first-child{text-align:left;max-width:150px;word-break:break-word}
+#tune .muted{color:#8a6670}
+#tunebtn{width:48px;height:40px}
+#tunebtn[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -83,7 +109,7 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
   <button id="pause" aria-label="Pausar">
     <svg viewBox="0 0 10 11" shape-rendering="crispEdges"><rect x="0" y="0" width="4" height="11" fill="#1b1b1f"/><rect x="6" y="0" width="4" height="11" fill="#1b1b1f"/><rect x="1" y="1" width="2" height="7" fill="#ebe6dc"/><rect x="7" y="1" width="2" height="7" fill="#ebe6dc"/><rect x="1" y="8" width="2" height="2" fill="#8a6670"/><rect x="7" y="8" width="2" height="2" fill="#8a6670"/></svg>
   </button>
-  <div class="right"><button id="spd"></button><button id="snd"></button></div>
+  <div class="right"><button id="tunebtn" aria-label="Ajustes" hidden></button><button id="spd"></button><button id="snd"></button></div>
   </div>
   <div id="stage"><canvas id="hud"></canvas><canvas id="c"></canvas></div>
   <div id="controls">
@@ -99,6 +125,10 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
   <img id="pyrimg" alt="Piramide de ovos">
   <div class="row"><button id="pyrsave">SALVAR</button><button id="pyrclose">VOLTAR</button></div>
 </div>
+<div id="tune" hidden><div class="box">
+  <div class="hd"><span>AJUSTES</span><button id="tuneclose">FECHAR</button></div>
+  <div id="tunebody"></div>
+</div></div>
 <script>
 (()=>{
 const W=144,H=192,GROUND=172;
@@ -377,8 +407,8 @@ const LEAD_EGG=12,LEAD_BALL=40; // frames para a galinha/o fazendeiro chegar ao 
    um pintinho vira galinha e, quando a raposa encosta nela, voa para o poleiro (se tiver lugar).
    Se faltam galinhas para a pontuacao atual, o proximo ovo ja nasce para chocar (sem precisar de combo). */
 const HENS_START=[40,96],HENS_MAX=7;
-const aimP=s=>.33+.34*(1-Math.exp(-s/40)); // 1 em 3 bolas miradas no comeco, ate 2 em 3
-const aimErr=s=>8+22*Math.exp(-s/30);       // erro da mira: +-30 px no comeco, +-8 px no fim
+const aimP=s=>Math.min(1,(.33+.34*(1-Math.exp(-s/40)))*T.aimK); // 1 em 3 bolas miradas no comeco, ate 2 em 3 (x ajuste)
+const aimErr=s=>(8+22*Math.exp(-s/30))*T.aimErrK; // erro da mira: +-30 px no comeco, +-8 px no fim (x ajuste)
 const henTarget=s=>s<5?2:s<15?3:s<30?4:s<50?5:s<100?6:7;
 let hens=[];
 // lugar livre no poleiro: o meio do maior vao entre as galinhas
@@ -684,6 +714,78 @@ const sfx={
 };
 
 /* ---------- state ---------- */
+/* ---------- ajustes de teste (menu AJUSTES, so no modo de teste) ----------
+   Liga com ?debug=1 (fica salvo no aparelho; ?debug=0 desliga) ou tocando 5 vezes no botao de pausa na tela inicial.
+   CFG = o que esta no menu; T = copia feita no comeco de cada partida. Mudar no meio da partida so vale na proxima
+   (regra 5 da curva: controles constantes durante a partida). Cada partida guarda na telemetria o que mudou (cfg). */
+const TUNE_DEF={ctrl:'setas',mouthMode:'segurar',btn:1,spd:1.8,spdMouth:1,acc:.45,brake:.6,mouthPad:0,
+  stun:1,halt:.4,sick:.7,slow:.45,fallK:.9,ballMax:50,ballGap:6,aimK:1,aimErrK:1,
+  roarEggs:20,roarFloor:45,newGap:20,c2:10,c3:20,duo1:40,duo3:70};
+// [chave, nome no menu, min, max, passo, unidade]; texto = opcoes
+const TUNE_SPEC=[
+  ['CONTROLE',[
+    ['ctrl','TIPO',['setas','arrastar','lados']],
+    ['mouthMode','BOCA',['segurar','alternar']],
+    ['spd','VELOCIDADE',1,3,.1,'px'],
+    ['spdMouth','VEL. DE BOCA ABERTA',.5,2.5,.1,'px'],
+    ['acc','ACELERAÇÃO',.1,1,.05,''],
+    ['brake','FRENAGEM (0 = PARA NA HORA)',0,.9,.05,''],
+    ['mouthPad','BOCA MAIS GENEROSA',0,4,1,'px'],
+    ['btn','TAMANHO DOS BOTÕES',.8,1.15,.05,'x']]],
+  ['PUNIÇÕES',[
+    ['stun','TONTURA DA BOLA',.2,2,.1,'s'],
+    ['halt','PARADA NA GALINHA',0,1,.1,'s'],
+    ['sick','VÔMITO DO OVO PODRE',.2,1.5,.1,'s'],
+    ['slow','VELOCIDADE NO SPLASH VERDE',.2,1,.05,'x']]],
+  ['CURVA',[
+    ['fallK','QUEDA (X CURVA)',.6,1.2,.05,'x'],
+    ['ballMax','TETO DE BOLAS',20,70,5,'%'],
+    ['ballGap','MÁX. SEM BOLA',3,15,1,'s'],
+    ['aimK','BOLAS MIRADAS (X)',0,1.5,.1,'x'],
+    ['aimErrK','ERRO DA MIRA (X)',.3,2,.1,'x']]],
+  ['RITMO',[
+    ['roarEggs','RUGIR: OVOS',5,40,1,''],
+    ['roarFloor','RUGIR: TEMPO',15,90,5,'s'],
+    ['newGap','ENTRE NOVIDADES',0,40,5,'s'],
+    ['c2','COMBO X2',4,20,1,'ovos'],
+    ['c3','COMBO X3',8,40,1,'ovos'],
+    ['duo1','DUPLAS AOS 100',0,80,5,'%'],
+    ['duo3','DUPLAS AOS 200',0,100,5,'%']]]];
+const TUNE_PRESETS={
+  'ATUAL':{},
+  'ÁGIL':{spd:2.2,spdMouth:1.3,acc:.7,brake:.4},
+  'PESADA':{spd:1.6,spdMouth:.9,acc:.25,brake:.8},
+  'SUAVE':{stun:.6,fallK:1,aimK:.7,ballMax:40,mouthPad:2}};
+let DEBUG=false;
+try{const m=location.search.match(/[?&]debug=([01])/i);if(m)localStorage.setItem('eggsplash-debug',m[1]);
+  DEBUG=localStorage.getItem('eggsplash-debug')==='1';}catch(e){}
+// fora do modo de teste o jogo usa sempre o padrao (os ajustes ficam guardados para quando ligar de novo)
+function loadCfg(){const c={...TUNE_DEF};if(DEBUG)try{const o=JSON.parse(localStorage.getItem('eggsplash-tune')||'{}');for(const k in o)if(k in TUNE_DEF)c[k]=o[k];}catch(e){}return c;}
+let CFG=loadCfg();
+let T={...CFG};
+const r2=v=>Math.round(v*100)/100;
+function tuneDiff(c){const d={};for(const k in TUNE_DEF)if(c[k]!==TUNE_DEF[k])d[k]=c[k];return d;}
+function tuneLabel(d){d=d||{};const ks=Object.keys(d);
+  for(const [n,p] of Object.entries(TUNE_PRESETS)){const pk=Object.keys(p);if(pk.length===ks.length&&pk.every(k=>p[k]===d[k]))return n;}
+  const N={ctrl:'CTRL',mouthMode:'BOCA',spd:'VEL',spdMouth:'VELB',acc:'ACEL',brake:'FREIO',mouthPad:'BOCA+',btn:'BOT',stun:'TONTA',halt:'GALINHA',
+    sick:'VOMITO',slow:'VERDE',fallK:'QUEDA',ballMax:'BOLAS',ballGap:'SEMBOLA',aimK:'MIRA',aimErrK:'ERRO',roarEggs:'RUGOVOS',roarFloor:'RUGTEMPO',
+    newGap:'NOVID',c2:'X2',c3:'X3',duo1:'DUPLA1',duo3:'DUPLA3'};
+  return ks.map(k=>N[k]+' '+(typeof d[k]==='number'?r2(d[k]):String(d[k]).toUpperCase())).join(' · ');}
+// regra de alcance: o ovo seguinte e sorteado ate 1,2 px por frame; acompanha a raposa se ela ficar mais lenta (ou mais rapida)
+const reachK=()=>Math.min(T.spd/1.8,T.spdMouth/1);
+// arrastar (o dedo move a raposa, em qualquer lugar da tela, como um trackpad) e lados (segurar a metade esquerda/direita da tela)
+const ptrs=new Map();
+function ptrDir(){if(T.ctrl==='setas'||!ptrs.size)return 0;let d=0;
+  for(const p of ptrs.values()){
+    if(T.ctrl==='lados')d+=p.side;
+    else{const e=p.tx-(fox.x+8),stop=Math.abs(fox.vx)*T.brake/(1-T.brake)+1;if(Math.abs(e)>stop)d+=Math.sign(e);}}
+  return Math.sign(d);}
+function syncCtrl(){ // aplica o que e visual: tamanho dos botoes e setas escondidas fora do modo setas
+  const c=state==='play'||state==='pause'?T:CFG;
+  document.documentElement.style.setProperty('--bs',c.btn);
+  document.querySelector('.dpad').style.visibility=c.ctrl==='setas'?'':'hidden';
+  document.getElementById('bm').classList.toggle('on',!!touch.m);
+  if(typeof fit==='function')fit();}
 let state='title',score=0,best=0,lives=3,frame=0,overT=0,newBest=false;
 let items=[],parts=[],puddles=[],spawnT=60,shake=0,combo=0,prevMouth=false,prevLeg=0;
 let lvlT=0,lvl=1,heartsToDrop=0,heartPlan=[],rainT=0,lastEgg={x:W/2-4,arr:0},recent=[];
@@ -691,20 +793,19 @@ let spawned=0,ballRun=0,eggRun=0,lastBallPhase=-1,ballGap=0;
 /* v2 (curva-de-dificuldade.md): pontos com multiplicador de combo (score continua = ovos e e o que move a curva),
    novidades espacadas (NEW_GAP entre uma regra nova e a proxima) e reviravoltas depois dos 100 ovos. */
 let pts=0,maxCombo=0,multT=0,lastNew=-1e9,henSeen=false,henHint=0,goldSeen=false,twistLvl=0,twistT=0;
-const NEW_GAP=20*60;
-const newOK=()=>frame-lastNew>=NEW_GAP;
+const newOK=()=>frame-lastNew>=T.newGap*60; // NEW_GAP: 20 s por padrao (ajustavel)
 function markNew(){lastNew=frame;}
-const mult=()=>combo>=20?3:combo>=10?2:1; // x2 com 10 ovos seguidos, x3 com 20
-function gain(n){pts+=n*mult();if(combo>maxCombo)maxCombo=combo;if(combo===10||combo===20){multT=70;sfx.record();}}
+const mult=()=>combo>=T.c3?3:combo>=T.c2?2:1; // x2 com 10 ovos seguidos, x3 com 20 (ajustavel)
+function gain(n){pts+=n*mult();if(combo>maxCombo)maxCombo=combo;if(combo===T.c2||combo===T.c3){multT=70;sfx.record();}}
 const TWISTS=[null,['FAZENDEIRO BRAVO!','BOLAS EM DUPLA'],['VENTANIA!','VENTO MAIS FORTE'],['FAZENDEIRO FURIOSO!','MAIS BOLAS EM DUPLA']];
 const twistFor=s=>s>=200?3:s>=150?2:s>=100?1:0;
-const BALL_GAP=6*60; // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
+const BALL_GAP=()=>T.ballGap*60; // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
 const RAIN_LEN=7*60; // Chuva de Ovos (7 s): so acontece quando a raposa ruge
 /* Rugido (ver README): o botao RUGIR libera com ROAR_EGGS ovos comidos desde a ultima chuva OU com ROAR_FLOOR de tempo
    (piso, para quem esta indo mal tambem ter o respiro). Nao acumula: cheio, para de encher ate a raposa rugir. */
-const ROAR_EGGS=20,ROAR_FLOOR=45*60,ROAR_ANIM=48;
+const ROAR_ANIM=48; // ROAR_EGGS (20) e ROAR_FLOOR (45 s) vem dos ajustes: T.roarEggs, T.roarFloor
 let roarEggs=0,roarT=0,roarFull=0,roarHint=0,roarSeen=false,roars=[];
-const roarP=()=>{const p=Math.min(1,Math.max(roarEggs/ROAR_EGGS,roarT/ROAR_FLOOR));return !roarSeen&&p>=1&&!newOK()?.97:p;}; // o 1o rugido espera a novidade anterior assentar
+const roarP=()=>{const p=Math.min(1,Math.max(roarEggs/T.roarEggs,roarT/(T.roarFloor*60)));return !roarSeen&&p>=1&&!newOK()?.97:p;}; // o 1o rugido espera a novidade anterior assentar
 function roarAdd(n){if(rainT===0)roarEggs+=n;} // ovos da propria chuva nao enchem
 // Pintinho/galinha: recompensa por ir muito bem (ver README). Um passaro por vez.
 const HATCH_COMBO=8,HATCH_P=.3,HATCH_CD=20*60,CHICK_LIFE=8*60,GROW_T=40,HEN_LIFE=12*60,HALT_T=24,CHICK_FLEE=20;
@@ -723,7 +824,7 @@ let lostLog=[],ballHits=0;
 const STATS=/[?&]stats=1/i.test(location.search);
 function logLoss(c){lostLog.push({c,ph:phaseOf(score),s:score,busy:fox.stun>0||fox.sick>0||fox.halt>0});}
 function saveGame(){try{const L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]');
-  L.push({score,pts,mc:maxCombo,tw:twistLvl,lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
+  L.push({score,pts,mc:maxCombo,tw:twistLvl,cfg:tuneDiff(T),lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
 function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
   L=L.filter(g=>g.v!=='b'); // partidas antigas da variante B ficam de fora
   if(!L.length)return['SEM PARTIDAS AINDA'];
@@ -746,7 +847,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;closePyr();
+function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;closePyr();
   Object.assign(fox,{roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -757,10 +858,10 @@ function vmaxFor(frames){ // velocidade maxima para um ovo levar ~frames do topo
   fallCache.set(frames,hi);return hi;}
 const phaseOf=s=>s<10?0:s<30?1:s<50?2:3;
 // FALL_K: a galinha/o fazendeiro avisam antes de soltar, entao a queda e 10% mais curta para manter a dificuldade
-const FALL_K=.9;
-function level(){const s=score,fall=Math.round(60*FALL_K*(1.6+1.4*Math.exp(-s/40)));
+// (desde os ajustes de teste: T.fallK, padrao .9)
+function level(){const s=score,fall=Math.round(60*T.fallK*(1.6+1.4*Math.exp(-s/40)));
   return{fall,vmax:vmaxFor(fall),interval:Math.round(60*(.7+.9*Math.exp(-s/35))),
-    ballP:.5*(1-Math.exp(-s/25)),maxOn:s<5?1:s<20?2:s<100?3:4,phase:phaseOf(s)};}
+    ballP:T.ballMax/100*(1-Math.exp(-s/25)),maxOn:s<5?1:s<20?2:s<100?3:4,phase:phaseOf(s)};}
 // os objetos saem do poleiro (Y0): a galinha bota, o fazendeiro joga. O tempo de queda da curva vale a partir dai.
 function fallFrames(vmax,target){let y=Y0,vy=Math.min(.5,vmax),n=0;while(y<target&&n<900){vy=Math.min(vy+.025,vmax);y+=vy;n++;}return n;}
 // onde um objeto que nasce agora em x0 vai estar quando chegar a altura target (mesma conta do update)
@@ -783,7 +884,7 @@ function spawn(){
   if(type==='egg'&&spawned>=3&&score>=20&&eggRun>=6)type=BAD;    // depois de 20, no maximo 6 ovos seguidos
   const phaseIntro=spawned>=1&&L.phase>lastBallPhase;
   if(phaseIntro)type=BAD;                                        // cada fase apresenta seu disfarce logo no inicio
-  if(type==='egg'&&spawned>=2&&ballGap>=BALL_GAP)type='ball'; // o fazendeiro nao para de jogar
+  if(type==='egg'&&spawned>=2&&ballGap>=BALL_GAP())type='ball'; // o fazendeiro nao para de jogar
   if(type==='egg'&&spawned>=3&&(rotSeen?Math.random()<rotP(score):score>=ROT_FROM&&newOK()))type='rotten'; // ovo podre extra; o primeiro e garantido ao chegar em ROT_FROM
   const intro=(phaseIntro&&type===BAD)||(type==='rotten'&&!rotSeen); // apresentacao:
   if(intro&&falling>0)return 6;                                  // cai sozinha...
@@ -802,7 +903,7 @@ function spawn(){
   const aim=type==='ball'&&Math.random()<aimP(score)?fox.x+8-4.5+(Math.random()*2-1)*aimErr(score):null;
   for(let i=0;i<24&&!ok;i++){
     if(type==='egg'){
-      const reach=Math.max(8,1.2*(arr-lastEgg.arr));
+      const reach=Math.max(8,1.2*reachK()*(arr-lastEgg.arr)); // reachK: alcance acompanha a velocidade da raposa (ajustes)
       x=clamp(lastEgg.x+(Math.random()*2-1)*reach,4,W-12);
       ok=!recent.some(r=>r.type!=='egg'&&Math.abs(r.arr-arr)<32&&Math.abs(r.x-x)<20);
     }else{
@@ -831,7 +932,7 @@ function spawn(){
   if(hatch&&!henSeen)markNew(); // 1o pintinho/galinha da partida
   items.push({type,x:sx,y:Y0,vx:0,vy:Math.min(.5,vmax),state:'fall',t:0,vmax,ph:L.phase,intro,hatch,gold,land:x,wait:LEAD,hen,thrown,perch:hatch&&perchHatch});
   // depois dos 100 ovos o fazendeiro as vezes joga duas bolas juntas (afastadas o bastante para a raposa passar entre elas)
-  if(thrown&&!intro&&twistLvl>=1&&Math.random()<(twistLvl>=3?.7:.4))for(let k=0;k<10;k++){
+  if(thrown&&!intro&&twistLvl>=1&&Math.random()<(twistLvl>=3?T.duo3:T.duo1)/100)for(let k=0;k<10;k++){
     const x2=clamp(x+(24+Math.random()*16)*(Math.random()<.5?-1:1),4,W-13);if(Math.abs(x2-x)<22)continue;
     if(recent.some(r=>r.type==='egg'&&Math.abs(r.arr-arr)<32&&Math.abs(r.x-x2)<22))continue;
     const sx2=spawnXFor(x2,vmax,tgt,wd,LEAD);if(sx2===null)continue;
@@ -893,7 +994,7 @@ function breakRotten(it){
 }
 // comeu: vomita e fica parado um instante (sem perder vida, mas zera o combo e nao conta ponto)
 function eatRotten(it){
-  it.dead=true;combo=0;fox.sick=SICK_T;fox.vx=0;fox.chew=0;shake=3;sfx.vomit();
+  it.dead=true;combo=0;fox.sick=Math.round(T.sick*60);fox.vx=0;fox.chew=0;shake=3;sfx.vomit();
 }
 
 /* ---------- ovo dourado ---------- */
@@ -996,7 +1097,7 @@ function henBlock(){
   if(fox.big){sfx.cluck();henFly(hb.x+hb.w/2<fox.x+8?-1:1);return;} // gigante: a galinha sai voando sem parar a raposa
   const fromLeft=fl+5<hb.x+hb.w/2;
   fox.x=fromLeft?hb.x-13:hb.x+hb.w-3;
-  fox.vx=0;fox.halt=HALT_T;shake=3;sfx.cluck();sfx.bonk();
+  fox.vx=0;fox.halt=Math.round(T.halt*60);shake=3;sfx.cluck();sfx.bonk();
   burst(fromLeft?hb.x:hb.x+hb.w,GROUND-10,6,[PAL.t,PAL.w],1.2,1.2);
   henFly(fromLeft?1:-1);
 }
@@ -1044,16 +1145,17 @@ function update(){
   else if(fox.sick>0){fox.sick--;fox.vx=0;
     if(fox.sick%3===0)parts.push({x:fox.x+8+fox.face*5,y:GROUND-12,vx:fox.face*(.6+Math.random()*.6),vy:-.3-Math.random()*.6,life:30,
       c:['#a3ad5e','#8fa040','#c9cf7a'][Math.floor(Math.random()*3)]});}
-  else{if(keys.l||touch.l)dir--;if(keys.r||touch.r)dir++;}
+  else{if(keys.l||touch.l)dir--;if(keys.r||touch.r)dir++;
+    if(!dir)dir=ptrDir();} // arrastar / lados da tela (ajustes)
   if(fox.inv>0)fox.inv--;
   fox.mouth=fox.stun===0&&fox.sick===0&&(keys.m||touch.m);if(fox.mouth&&!prevMouth)sfx.mouth();prevMouth=fox.mouth;
-  const max=(fox.mouth?1.0:1.8)*(fox.onRot?.45:1);
+  const max=(fox.mouth?T.spdMouth:T.spd)*(fox.onRot?T.slow:1);
   if(fox.onP){
     if(dir)fox.vx+=dir*.04;else fox.vx*=.993;
     fox.vx=clamp(fox.vx,-2.2,2.2);
   }else{
-    if(dir){fox.vx+=dir*.45;fox.vx=clamp(fox.vx,-max,max);}
-    else{fox.vx*=.6;if(Math.abs(fox.vx)<.05)fox.vx=0;}
+    if(dir){fox.vx+=dir*T.acc;fox.vx=clamp(fox.vx,-max,max);}
+    else{fox.vx*=T.brake;if(Math.abs(fox.vx)<.05)fox.vx=0;}
   }
   fox.x+=fox.vx;
   const xm=fox.big?8:0; // gigante: 32 px de largura, centrada no mesmo ponto
@@ -1073,7 +1175,7 @@ function update(){
   if(fox.slip&&frame%4===0)parts.push({x:fox.x+8-Math.sign(fox.vx)*6,y:GROUND-1,vx:-fox.vx*.3,vy:-.4,life:10,c:PAL.t});
 
   const body=fox.big?{x:fox.x-2,y:GROUND-28,w:20,h:28}:{x:fox.x+3,y:GROUND-14,w:10,h:14};
-  const mouthZ=fox.big?{x:fox.x-6,y:GROUND-36,w:28,h:18}:{x:fox.x+1,y:GROUND-18,w:14,h:9};
+  const mp=T.mouthPad,mouthZ=fox.big?{x:fox.x-6,y:GROUND-36,w:28,h:18}:{x:fox.x+1-mp,y:GROUND-18-mp,w:14+2*mp,h:9+mp}; // mp: boca mais generosa (ajustes)
 
   updateFarm();
   for(const it of items){
@@ -1106,11 +1208,11 @@ function update(){
       }else if(fox.big&&(hit(it,w,h,body)||(fox.mouth&&hit(it,w,h,mouthZ)))){smashAway(it);
       }else if(fox.mouth&&hit(it,w,h,mouthZ)){ // engole a bola: mesmo efeito da pancada, mas a bola some
         it.dead=true;fox.chew=EAT_T;fox.eatImg=(BALLS[it.ph]||BALL)[0];fox.gulp=true;fox.fat=FAT_T;
-        if(fox.stun===0&&fox.inv===0){fox.stun=60;ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;}
+        if(fox.stun===0&&fox.inv===0){fox.stun=Math.max(1,Math.round(T.stun*60));ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;}
         continue;
       }else if(hit(it,w,h,body)){
         if(fox.stun===0&&fox.inv===0){
-          fox.stun=60;ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
+          fox.stun=Math.max(1,Math.round(T.stun*60));ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
           burst(fox.x+8,GROUND-14,5,[PAL.y,PAL.t],1.4,1.4);
         }
         it.state='bounce';it.t=0;it.b=1;it.vy=-2.2;it.vx=(it.x+4.5<fox.x+8?-1:1)*1.2;
@@ -1312,6 +1414,8 @@ function render(){
 
     if(Math.floor(frame/30)%2)text('TOQUE PARA COMEÇAR',W/2,120,1,PAL.k);
     if(best)text('RECORDE '+best,W/2,130,1,PAL.d);
+    if(DEBUG){const d=tuneDiff(CFG),n=tuneLabel(d),k=Object.keys(d).length,l='AJUSTE: '+(n.includes(' ')?'PERSONALIZADO ('+k+')':n);ctx.fillStyle='rgba(27,27,31,.85)';ctx.fillRect(4,141,W-8,8);
+      text(l,W/2,142,1,PAL.y);}
     drawFox(W/2-8,false,Math.floor(frame/45)%2===1,0,0,1,false);
     if(STATS){ctx.fillStyle='rgba(27,27,31,.9)';ctx.fillRect(4,150,W-8,40);
       statsLines().forEach((l,i)=>text(l,W/2,152+i*6,1,PAL.t));}
@@ -1456,13 +1560,14 @@ const SND_SVG=m=>'<svg viewBox="0 0 11 11" shape-rendering="crispEdges"><polygon
 /* ---------- input ---------- */
 function act(){
   unlockAudio();
-  if(pyrOpen())return;
+  if(pyrOpen()||tuneOpen())return;
   if(state==='title')reset();
   else if(state==='over'&&overT>25)reset();
   else if(state==='pause'){state='play';sfx.resume();}
 }
 const KEYMAP={ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r',ArrowUp:'m',KeyW:'m',Space:'m'};
 addEventListener('keydown',e=>{
+  if(tuneOpen()){if(e.code==='Escape')closeTune();return;}
   if(pyrOpen()){if(e.code==='Escape'||e.code==='KeyV'||e.code==='Enter')closePyr();return;}
   if(e.code==='KeyV'&&state==='over'){openPyr();return;}
   if(e.code==='KeyP'||e.code==='Escape'){if(state==='play'){state='pause';sfx.pause();}else if(state==='pause'){state='play';sfx.resume();}return;}
@@ -1473,11 +1578,13 @@ addEventListener('keydown',e=>{
   if(!e.repeat&&(k||e.code==='Enter'))act();
 });
 addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k)keys[k]=false;});
+const mouthToggle=()=>(state==='play'||state==='pause'?T:CFG).mouthMode==='alternar';
 function bind(id,k){
   const el=document.getElementById(id);
   el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(_){}
+    if(k==='m'&&mouthToggle()){touch.m=!touch.m;el.classList.toggle('on',touch.m);act();return;}
     touch[k]=true;el.classList.add('on');act();});
-  const off=()=>{touch[k]=false;el.classList.remove('on');};
+  const off=()=>{if(k==='m'&&mouthToggle())return;touch[k]=false;el.classList.remove('on');};
   ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,off));
 }
 bind('bl','l');bind('br','r');bind('bm','m');
@@ -1487,7 +1594,11 @@ cv.addEventListener('pointerdown',e=>{e.preventDefault();
   if(state==='over'){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left-cv.clientLeft)/cv.clientWidth*W,y=(e.clientY-r.top-cv.clientTop)/cv.clientHeight*H;
     if(x>=PB.x-3&&x<=PB.x+PB.w+3&&y>=PB.y-3&&y<=PB.y+PB.h+3){unlockAudio();openPyr();return;}}
   act();});
+let dbgTaps=0,dbgT=0;
 document.getElementById('pause').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();
+  if(state==='title'){const n=performance.now();dbgTaps=n-dbgT<800?dbgTaps+1:1;dbgT=n; // 5 toques seguidos: modo de teste
+    if(dbgTaps>=5){dbgTaps=0;DEBUG=!DEBUG;try{localStorage.setItem('eggsplash-debug',DEBUG?'1':'0')}catch(_){}
+      CFG=loadCfg();T={...CFG};syncCtrl();drawTuneBtn();unlockAudio();tone(DEBUG?1319:440,0,.08,'square',.05);}}
   unlockAudio();if(state==='play'){state='pause';sfx.pause();}else if(state==='pause'){state='play';sfx.resume();}});
 const sndBtn=document.getElementById('snd');
 function drawSnd(){sndBtn.innerHTML=SND_SVG(muted);sndBtn.setAttribute('aria-label',muted?'Ligar som':'Desligar som');}
@@ -1512,7 +1623,70 @@ addEventListener('contextmenu',e=>{if(!pyrOpen())e.preventDefault();}); // na pi
 ['controls','top','stage'].forEach(id=>document.getElementById(id).addEventListener('touchstart',e=>{if(!pyrOpen()&&e.cancelable)e.preventDefault();},{passive:false}));
 addEventListener('selectstart',e=>{if(!pyrOpen())e.preventDefault();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')state='pause';});
-addEventListener('blur',()=>{for(const k in keys)keys[k]=false;for(const k in touch)touch[k]=false;});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;for(const k in touch)touch[k]=false;ptrs.clear();});
+
+/* ---------- controles por toque na tela (ajustes: arrastar / lados) ---------- */
+const isUI=t=>t&&t.closest&&t.closest('button,#tune,#pyr');
+function ptrWorldX(e){const r=cv.getBoundingClientRect();return (e.clientX-r.left-cv.clientLeft)/cv.clientWidth*W;}
+addEventListener('pointerdown',e=>{if(state!=='play'||T.ctrl==='setas'||tuneOpen()||pyrOpen()||isUI(e.target))return;
+  if(T.ctrl==='arrastar'){ptrs.clear();ptrs.set(e.pointerId,{sx:ptrWorldX(e),fx:fox.x+8,tx:fox.x+8});} // um dedo so, relativo (como trackpad)
+  else ptrs.set(e.pointerId,{side:e.clientX<innerWidth/2?-1:1});});
+addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;
+  if(T.ctrl==='arrastar'){const tx=p.fx+(ptrWorldX(e)-p.sx),c=clamp(tx,8,W-8);p.fx+=c-tx;p.tx=c;} // na parede, o dedo volta a mandar na hora
+  else p.side=e.clientX<innerWidth/2?-1:1;});
+['pointerup','pointercancel'].forEach(t=>addEventListener(t,e=>ptrs.delete(e.pointerId)));
+
+/* ---------- menu AJUSTES ---------- */
+const tuneEl=document.getElementById('tune'),tuneBody=document.getElementById('tunebody'),tuneBtn=document.getElementById('tunebtn');
+const tuneOpen=()=>!tuneEl.hidden;
+const TUNE_SVG='<svg viewBox="0 0 13 11" shape-rendering="crispEdges"><rect width="13" height="11" fill="#1b1b1f"/><rect x="1" y="1" width="11" height="7" fill="#ebe6dc"/><rect x="1" y="8" width="11" height="2" fill="#8a6670"/>'+
+  [[2,8],[4,3],[6,6]].map(([y,k])=>`<rect x="2" y="${y}" width="9" height="1" fill="#8a6670"/><rect x="${k}" y="${y-1}" width="2" height="3" fill="#1b1b1f"/>`).join('')+'</svg>';
+function drawTuneBtn(){tuneBtn.innerHTML=TUNE_SVG;tuneBtn.hidden=!DEBUG;}
+const fmtV=(v,st,u)=>{const d=st<1?(String(st).split('.')[1]||'').length:0;return String(+(+v).toFixed(d))+(u?' '+u.toUpperCase():'');};
+function saveCfg(){try{localStorage.setItem('eggsplash-tune',JSON.stringify(tuneDiff(CFG)))}catch(e){}}
+function compareTable(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
+  L=L.filter(g=>g.v!=='b');if(!L.length)return'<div class="muted">SEM PARTIDAS AINDA</div>';
+  const G=new Map();for(const g of L){const k=JSON.stringify(g.cfg||{});if(!G.has(k))G.set(k,[]);G.get(k).push(g);}
+  const med=a=>{a=[...a].sort((x,y)=>x-y);return a[Math.floor(a.length/2)];},cur=JSON.stringify(tuneDiff(CFG));
+  const rows=[...G].sort((a,b)=>b[1].length-a[1].length).slice(0,8).map(([k,gs])=>{
+    const lost=gs.flatMap(g=>g.lost||[]),busy=lost.filter(x=>x.busy).length;
+    return`<tr><td>${tuneLabel(JSON.parse(k))}${k===cur?' *':''}</td><td>${gs.length}</td><td>${med(gs.map(g=>g.score))}</td>`+
+      `<td>${med(gs.map(g=>g.pts??g.score))}</td><td>${Math.round(100*gs.filter(g=>g.score>50).length/gs.length)}%</td>`+
+      `<td>${(gs.reduce((a,g)=>a+(g.balls||0),0)/gs.length).toFixed(1)}</td><td>${lost.length?Math.round(100*busy/lost.length)+'%':'-'}</td></tr>`;}).join('');
+  return'<table><tr><th>AJUSTE</th><th>N</th><th>OVOS</th><th>PTS</th><th>&gt;50</th><th>BOLAS</th><th>TONTA</th></tr>'+rows+'</table>'+
+    '<div class="muted" style="margin-top:6px">OVOS E PTS = MEDIANA. BOLAS = NA RAPOSA POR PARTIDA. TONTA = OVOS PERDIDOS COM A RAPOSA TONTA OU PARADA. * = AJUSTE ATUAL. COMPARE SÓ COM 10+ PARTIDAS.</div>';}
+function renderTune(){const lab=tuneLabel(tuneDiff(CFG));let h='';
+  if(state==='play'||state==='pause')h+='<div class="note">VALE NA PRÓXIMA PARTIDA: OS CONTROLES NÃO MUDAM NO MEIO DE UMA.</div>';
+  h+='<h3>PRESETS</h3><div class="opts">'+Object.keys(TUNE_PRESETS).map(n=>`<button data-pre="${n}" class="${lab===n?'sel':''}">${n}</button>`).join('')+'</div>';
+  h+=`<div class="row muted">AGORA: ${lab}</div>`;
+  for(const [g,rows] of TUNE_SPEC){h+=`<h3>${g}</h3>`;
+    for(const [k,name,a,b,st,u] of rows){
+      if(Array.isArray(a)){h+=`<div class="row"><div class="lab"><span>${name}</span></div><div class="opts">`+
+        a.map(o=>`<button data-k="${k}" data-v="${o}" class="${CFG[k]===o?'sel':''}">${o.toUpperCase()}</button>`).join('')+'</div></div>';continue;}
+      const ch=CFG[k]!==TUNE_DEF[k];
+      h+=`<div class="row"><div class="lab"><span>${name}${ch?` <span class="muted">(PADRÃO ${fmtV(TUNE_DEF[k],st)})</span>`:''}</span>`+
+        `<b class="${ch?'ch':''}" id="tv-${k}">${fmtV(CFG[k],st,u)}</b></div>`+
+        `<input type="range" data-k="${k}" min="${a}" max="${b}" step="${st}" value="${CFG[k]}"></div>`;}}
+  h+='<h3>COMPARAR (TELEMETRIA DESTE APARELHO)</h3>'+compareTable();
+  h+='<div class="opts" style="margin-top:14px"><button data-act="reset">VOLTAR AO PADRÃO</button></div>';
+  tuneBody.innerHTML=h;}
+function fixCombo(k){if(CFG.c3<=CFG.c2){if(k==='c3')CFG.c2=Math.max(4,CFG.c3-1);else CFG.c3=Math.min(40,CFG.c2+1);}}
+tuneBody.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k||e.target.type!=='range')return; // arrastando: so atualiza o numero
+  CFG[k]=r2(+e.target.value);fixCombo(k);const sp=TUNE_SPEC.flatMap(g=>g[1]).find(r=>r[0]===k);
+  document.getElementById('tv-'+k).textContent=fmtV(CFG[k],sp[4],sp[5]);saveCfg();});
+tuneBody.addEventListener('change',e=>{if(e.target.type==='range'){renderTune();syncCtrl();}}); // soltou: redesenha (presets, comparar)
+tuneBody.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.pre)CFG={...TUNE_DEF,...TUNE_PRESETS[t.dataset.pre]};
+  else if(t.dataset.k)CFG[t.dataset.k]=t.dataset.v;
+  else if(t.dataset.act==='reset')CFG={...TUNE_DEF};
+  else return;
+  saveCfg();renderTune();syncCtrl();tone(880,0,.04,'square',.04);});
+function openTune(){unlockAudio();if(state==='play'){state='pause';sfx.pause();}renderTune();tuneEl.hidden=false;}
+function closeTune(){tuneEl.hidden=true;syncCtrl();}
+tuneBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();openTune();});
+document.getElementById('tuneclose').addEventListener('click',e=>{e.stopPropagation();closeTune();});
+tuneEl.addEventListener('pointerdown',e=>e.stopPropagation());
+drawTuneBtn();syncCtrl();
 
 /* ---------- fit ---------- */
 function fit(){
@@ -1526,7 +1700,7 @@ function fit(){
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
-window.__egg={get pts(){return pts},get combo(){return combo},get twistLvl(){return twistLvl},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
+window.__egg={get T(){return T},get CFG(){return CFG},ptrDir,get pts(){return pts},get combo(){return combo},get twistLvl(){return twistLvl},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
   set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
