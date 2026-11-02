@@ -18,6 +18,16 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Engolir a bola:** se a raposa abre a boca e a bola cai nela, ela engole: fica tonta igual à pancada, mas não sobra bola no chão
 - A primeira bola de cada fase cai sozinha e 30% mais devagar
 
+## Aprender e continuar jogando (v2)
+- **Uma novidade por vez:** entre uma regra nova e a próxima passam pelo menos **20 s**. Isso vale para a 1ª bola, o 1º pintinho/galinha, o 1º rugido, o 1º ovo podre e o 1º dourado. Se a próxima já pode chegar (pela pontuação), ela espera o intervalo; o botão RUGIR fica quase cheio até lá
+- **Galinha que bloqueia:** na primeira vez da partida aparece o aviso **EMPURRE!** em cima dela
+- **Combo vale pontos:** com **10 ovos seguidos** cada ovo vale **x2**; com **20**, **x3** (aviso COMBO X2!/X3! e "X2" ao lado dos pontos). Ovo quebrado, ovo podre comido ou bola na raposa zeram o combo. A curva de dificuldade continua andando pelos **ovos**, não pelos pontos
+- **Depois dos 100 ovos** a curva já está no piso, então o jogo muda de jeito:
+  - **100 ovos — FAZENDEIRO BRAVO!:** 40% das bolas vêm em dupla, afastadas o bastante para a raposa passar entre elas (nunca em cima de ovo)
+  - **150 ovos — VENTANIA!:** a chuva com vento vem bem mais vezes e o vento é 60% mais forte (o pouso continua calculado, então os ovos seguem alcançáveis)
+  - **200 ovos — FAZENDEIRO FURIOSO!:** 70% das bolas em dupla, com a ventania
+- **Recorde em pontos:** o fim de jogo mostra PONTOS, ovos e o maior combo. As medalhas continuam por ovos (10/25/50/100)
+
 ## A fazenda (por que as coisas acontecem)
 - **Galinhas no poleiro** no topo da tela: cada ovo (e ovo podre) sai de uma galinha. A mais perto anda até o ponto, levanta e bota
 - **O fazendeiro** joga as bolas para espantar a raposa. A bola é **vermelha** com costura branca. A tela inicial avisa: "FAZENDEIRO JOGA EM VOCÊ!". Ele anda com a bola erguida e joga lá de cima, uma por vez, o jogo todo. Começa a jogar logo no início e **nunca fica mais de 6 s sem jogar** (fora da Chuva de Ovos)
@@ -28,7 +38,7 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Ovo dourado:** a galinha que vai botá-lo fica dourada
 - **Erros:** os 5 ovos no topo. Cada ovo que quebra no chão esborracha um. Pegar um coração na Chuva de Ovos conserta um
 - **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge pela esquerda
-- **Telemetria local:** cada partida fica salva no aparelho (pontos e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial
+- **Telemetria local:** cada partida fica salva no aparelho (ovos, pontos, maior combo, reviravolta alcançada e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial
 
 ## Rugido
 A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão **RUGIR** (entre as setas e a boca; em paisagem, em cima da boca).
