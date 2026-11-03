@@ -454,7 +454,7 @@ const CALM_N=5,PAIR_P=.4,MAXL=()=>5;
 /* v3 do BOLA: VINGANCA. Cada ovo que cai vira uma bola mirada na raposa ("!" em cima), para a vida cair no mesmo ritmo
    dos ovos perdidos no NORMAL, mas com uma chance de desviar. REV_LEAD = aviso (o fazendeiro corre ate o ponto), REV_ERR = erro da mira. */
 const REV_LEAD=18,REV_ERR=3,REV_FAST=1.35,REV_HOME=.5; // REV_HOME: px por frame que a bola puxa em direcao a raposa (ate ~35 px do chao)let revN=0,revHit=0; // REV_FAST: cai 35% mais rapido que a curva
-/* FOME (BOLA). A barriga (desde o PR #50, alerta em cima da raposa; ver bellyTick) guarda FOME.max ovos e esvazia SEMPRE, no mesmo ritmo (FOME.rate ovos
+/* FOME (BOLA). A barriga (desde o PR #51, alerta em cima da raposa; ver bellyTick) guarda FOME.max ovos e esvazia SEMPRE, no mesmo ritmo (FOME.rate ovos
    por segundo), nao so quando cai ovo. Comer enche 1. Vazia = raposa FRACA (lenta) ate comer (a fome nao tira coracao: so a
    bola tira, como na narrativa). O ritmo e menor que a oferta de ovos do nivel 1, entao quem come todos os ovos nunca fica
    fraco. Para na chuva e com a raposa gigante. Nao mexem: ovo que choca. Enchem: ovo comido, da chuva, podre (+1, mas
@@ -466,7 +466,7 @@ const BOLA_VAR=(location.search.match(/[?&]bola=(\w+)/i)||[])[1]==='vinganca'?'v
 const FOME_ON=()=>BOLA()&&BOLA_VAR==='fome';
 let full=0,hungerHint=0,minFull=9,boldSeen=0,bPlayF=0,weakF=0,hitWeak=0,hitNerv=0,pzClean=0,firstHit=0,rotEaten=0; // telemetria do BOLA (v11)
 const foodEgg=it=>it.type==='egg'&&!it.rain&&!it.hatch&&!it.gold; // ovo que conta para a fome
-/* PR #50 (pedido do Igor): a barriga saiu do HUD (era redundante para quem come normalmente). Ela aparece EM CIMA DA RAPOSA
+/* PR #51 (pedido do Igor): a barriga saiu do HUD (era redundante para quem come normalmente). Ela aparece EM CIMA DA RAPOSA
    so quando chega na metade (alerta). Vazia: fica em cima, vermelha piscando, e a raposa fica fraca. Comendo um ovo com o
    alerta ligado, a barriga enche ate o verde (cheia), da um brilho e some. */
 const BELLY_GLOW=36;let bellyOn=0,bellyGlow=0,bellyDisp=0;
@@ -1501,7 +1501,7 @@ function drawHud(){
     hc.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,1+i*9,3);}
   if(false){ // v11: as gotas sairam do HUD (os ovos no chao ja mostram a sujeira) // modo BOLA: chao sujo (cada ovo perdido desde a chuva = 1 gota amarela)
     const y=FOME_ON()?18:13;for(let i=0;i<DIRT_MAX;i++){hc.fillStyle=PAL.k;hc.fillRect(1+i*9,y,8,FOME_ON()?3:4);hc.fillStyle=i<dirt?(dirt>=4&&frame%20<10?PAL.o:PAL.y):'#6b6058';hc.fillRect(2+i*9,y+1,6,FOME_ON()?1:2);}}
-  // PR #50: a barriga saiu do HUD; agora e um alerta em cima da raposa (ver drawBelly)
+  // PR #51: a barriga saiu do HUD; agora e um alerta em cima da raposa (ver drawBelly)
   if(fox.big){const f=fox.big/BIG_T; // barrinha dourada do poder
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
   text(pts,W-1,3,2,PAL.t,'right',PAL.k);
@@ -1656,7 +1656,7 @@ function render(){
       drawFox(fox.x,fox.stun>0,fox.mouth||fox.sick>0||fox.roar>0,fox.chew,fox.sick?0:legs,fox.face,fox.inv>0);ctx.restore();}
     if(fox.sick){ctx.fillStyle='#8fa040';ctx.fillRect(Math.round(fox.x)+3,GROUND-12,10,2);if(frame%20<12)text('ECA!',fox.x+8,GROUND-26,1,'#c9cf7a','center',PAL.k);}
     if(fox.slip&&frame%20<12)text('!',fox.x+8,GROUND-24,1,PAL.r);
-    if(state==='play'&&FOME_ON()&&bellyOn&&!fox.big&&!fox.roar){ // PR #50: barriga em cima da raposa (alerta de fome)
+    if(state==='play'&&FOME_ON()&&bellyOn&&!fox.big&&!fox.roar){ // PR #51: barriga em cima da raposa (alerta de fome)
       const f=Math.max(0,Math.min(1,bellyDisp/FOME.max)),bx=Math.round(fox.x)+8-10,by=GROUND-31,g=bellyGlow;
       ctx.save();if(g>0&&g<10)ctx.globalAlpha=g/10; // some no fim do brilho
       ctx.fillStyle=g>0&&g<BELLY_GLOW-10&&frame%6<3?PAL.t:!g&&f<=1e-6&&frame%16<8?PAL.r:PAL.k;ctx.fillRect(bx-1,by-1,22,6); // borda (pisca branca no brilho)
