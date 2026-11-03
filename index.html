@@ -414,25 +414,26 @@ const CALM_N=5,PAIR_P=.4,MAXL=()=>5;
 /* v3 do BOLA: VINGANCA. Cada ovo que cai vira uma bola mirada na raposa ("!" em cima), para a vida cair no mesmo ritmo
    dos ovos perdidos no NORMAL, mas com uma chance de desviar. REV_LEAD = aviso (o fazendeiro corre ate o ponto), REV_ERR = erro da mira. */
 const REV_LEAD=18,REV_ERR=3,REV_FAST=1.35,REV_HOME=.5; // REV_HOME: px por frame que a bola puxa em direcao a raposa (ate ~35 px do chao)let revN=0,revHit=0; // REV_FAST: cai 35% mais rapido que a curva
-/* v4 do BOLA: FOME. A barriga (barra embaixo dos coracoes) guarda FOME.max ovos. Cada ovo que cai esvazia 1 aos poucos,
-   enquanto cai; comer enche 1 (a barra mostra a queda em andamento). So o ovo PERDIDO tira de verdade: quem come todos os
-   ovos nunca perde vida de fome. Vazia = COM FOME!: perde uma vida e volta a FOME.reset do maximo.
-   Nao mexem na fome: ovo que choca e dourado perdido. Enchem: ovo comido, ovo da chuva, ovo podre (+1, mas enjoa 1 s) e
-   dourado (enche tudo). ?bola=vinganca troca a fome pela bola da vinganca. */
-const FOME={max:2,start:.5,reset:.5},SICK_BOLA=60; // comeca e volta com meia barriga (1 ovo): o 1o ovo perdido ja doi; comer bem guarda 1 de reserva
+/* FOME (BOLA). A barriga (barra embaixo dos coracoes) guarda FOME.max ovos e esvazia SEMPRE, no mesmo ritmo (FOME.rate ovos
+   por segundo), nao so quando cai ovo. Comer enche 1. Vazia = raposa FRACA (lenta) ate comer (a fome nao tira coracao: so a
+   bola tira, como na narrativa). O ritmo e menor que a oferta de ovos do nivel 1, entao quem come todos os ovos nunca fica
+   fraco. Para na chuva e com a raposa gigante. Nao mexem: ovo que choca. Enchem: ovo comido, da chuva, podre (+1, mas
+   enjoa 1 s) e dourado (tudo). ?bola=vinganca troca a fome pela bola da vinganca. */
+const FOME={max:3,start:2/3,rate:.18},SICK_BOLA=60; // barriga de 3 ovos, comeca com 2, gasta 1 ovo a cada ~5,5 s
 const BOLA_VAR=(location.search.match(/[?&]bola=(\w+)/i)||[])[1]==='vinganca'?'vinganca':'fome';
 const FOME_ON=()=>BOLA()&&BOLA_VAR==='fome';
-let full=0,hungerHint=0;
+let full=0,hungerHint=0,minFull=9;
 const foodEgg=it=>it.type==='egg'&&!it.rain&&!it.hatch&&!it.gold; // ovo que conta para a fome
 function feed(n){if(FOME_ON())full=Math.min(FOME.max,full+n);}
 // v5 (narrativa do Igor: a raposa morre com 5 boladas): a fome nao tira coracao. Barriga vazia = raposa FRACA, mais lenta
 // (FRACA_K da velocidade e da aceleracao) ate comer de novo, e assim leva bolada mais facil.
 const FRACA_K=.6;const weak=()=>FOME_ON()&&full<=1e-6;
-function starve(){if(!FOME_ON())return;full=Math.max(0,full-1); // ovo perdido
-  if(full<=1e-6){shake=4;sfx.hurt();if(!hungerHint){hungerHint=1;bolaHint('COM FOME!','FICOU FRACA: COMA UM OVO',120);}}}
-// barra: a fome guardada menos o que os ovos no ar ja "gastaram" (cada um gasta 1 ate chegar ao chao)
-function fullShown(){let p=0;for(const it of items)if(foodEgg(it)&&!(it.wait>0)&&it.state==='fall')p+=clamp((it.y-Y0)/(GROUND-26-Y0),0,1);return Math.max(0,full-p);}
-function hungerTick(){if(FOME_ON()&&fullShown()<FOME.max*.3&&frame%40===0&&rainT===0)tone(110,0,.12,'triangle',.05);} // barriga roncando
+function starve(){} // ovo perdido: nao tira da barriga (so deixa de encher); o castigo e o chao sujo
+function fullShown(){return Math.max(0,full);}
+function hungerTick(){if(!FOME_ON()||rainT>0||fox.big>0)return;const was=full>1e-6;
+  full=Math.max(0,full-FOME.rate/60);
+  if(was&&full<=1e-6){shake=4;sfx.hurt();if(!hungerHint){hungerHint=1;bolaHint('COM FOME!','FICOU FRACA: COMA UM OVO',120);}}
+  else if(full>0&&full<FOME.max*.25&&frame%40===0)tone(110,0,.12,'triangle',.05);} // barriga roncando
 function revengeBall(){if(BOLA_VAR!=='vinganca')return;const L=level(),fc=fox.x+8,vm=L.vmax*REV_FAST;revN++;
   const x=clamp(Math.round(fc-4.5+(Math.random()*2-1)*REV_ERR),4,W-13),busy=items.some(i=>i.wait>0&&i.thrown);
   const sx=spawnXFor(x,vm,GROUND-23,9,REV_LEAD);if(sx===null)return;
@@ -940,7 +941,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;full=FOME.max*FOME.start;hungerHint=0;hintMsg=null;furySeen=false;closePyr();
+function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;full=FOME.max*FOME.start;hungerHint=0;minFull=9;hintMsg=null;furySeen=false;closePyr();
   Object.assign(fox,{queasy:0,roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos fora da Chuva de Ovos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
