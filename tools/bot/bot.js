@@ -3,7 +3,7 @@
 // FOME=max,start,rate sobrescreve a fome do BOLA para calibrar.
 const {chromium,devices}=require('playwright');
 const FO=process.env.FOME?process.env.FOME.split(',').map(Number):null,MODES=(process.env.MODES||'normal,bola').split(',');const N=+process.argv[2]||10,MAXS=+process.argv[3]||360;
-const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html');
+const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html')+(process.env.CHUTE?'?chute='+process.env.CHUTE:''); // CHUTE=1: bola fica no chao e a raposa chuta
 const PROFILES={
   bom:  {react:10,err:3,missBall:.08,mouthLate:.05},
   medio:{react:18,err:6,missBall:.22,mouthLate:.12},
@@ -51,7 +51,7 @@ const PROFILES={
       }
       const over=E.state==='over',LL=E.lostLog;
       return{modo,secs:f/60,over,score:E.score,pts:E.pts,balls:E.ballHits,lostEgg:LL.filter(x=>x.c==='egg').length,
-        firstLoss,lossTimes,hitsByDirt,rev:E.rev,fome:0,weak:weakF,bolaL:E.lostLog.filter(x=>x.c==='ball').length,missed:E.lostLog.filter(x=>x.c==='egg').length,maxDirt,framesByDirt,mc:E.maxCombo,rains:roarsN,TL};
+        firstLoss,lossTimes,hitsByDirt,rev:E.rev,fome:0,weak:weakF,bolaL:E.lostLog.filter(x=>x.c==='ball').length,missed:E.lostLog.filter(x=>x.c==='egg').length,maxDirt,framesByDirt,mc:E.maxCombo,kk:E.kicks.slice(),rains:roarsN,TL};
     },{modo,P,MAXS,seed:g,FO});
     r.perfil=pn;out.push(r);process.stderr.write('.');
   }
