@@ -469,11 +469,12 @@ const foodEgg=it=>it.type==='egg'&&!it.rain&&!it.hatch&&!it.gold; // ovo que con
 /* PR #51 (pedido do Igor): a barriga saiu do HUD (era redundante para quem come normalmente). Ela aparece EM CIMA DA RAPOSA
    so quando chega na metade (alerta). Vazia: fica em cima, vermelha piscando, e a raposa fica fraca. Comendo um ovo com o
    alerta ligado, a barriga enche ate o verde (cheia), da um brilho e some. */
-const BELLY_GLOW=36;let bellyOn=0,bellyGlow=0,bellyDisp=0;
+const BELLY_GLOW=36;let bellyOn=0,bellyGlow=0,bellyDisp=0,bellyLbl=0;const BELLY_LBL=90; // ao aparecer, mostra FOME por 1,5 s
 function feed(n){if(!FOME_ON())return;if(bellyOn&&!bellyGlow){full=FOME.max;bellyGlow=BELLY_GLOW;tone(880,1320,.15,'square',.05);}else full=Math.min(FOME.max,full+n);}
 function bellyTick(){if(!FOME_ON())return;
-  if(bellyGlow>0){bellyGlow--;bellyDisp+=(full-bellyDisp)*.25;if(!bellyGlow)bellyOn=0;return;}
-  if(!bellyOn&&full<=FOME.max/2){bellyOn=1;tone(330,220,.12,'triangle',.05);}
+  if(bellyGlow>0){bellyGlow--;bellyLbl=0;bellyDisp+=(full-bellyDisp)*.25;if(!bellyGlow)bellyOn=0;return;}
+  if(bellyLbl>0)bellyLbl--;
+  if(!bellyOn&&full<=FOME.max/2){bellyOn=1;bellyLbl=BELLY_LBL;tone(330,220,.12,'triangle',.05);}
   bellyDisp=full;}
 // v5 (narrativa do Igor: a raposa morre com 5 boladas): a fome nao tira coracao. Barriga vazia = raposa FRACA, mais lenta
 // (FRACA_K da velocidade e da aceleracao) ate comer de novo, e assim leva bolada mais facil.
@@ -1020,7 +1021,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;known=new Set(seenNow);vet=kn('galinha');lv2T=0;playF=0;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;farmerRest=0;dirtT=0;stressT=0;stressSeen=false;full=FOME.max*FOME.start;hungerHint=0;bellyOn=0;bellyGlow=0;bellyDisp=FOME.max*FOME.start;weakT=0;boldSeen=0;bPlayF=0;weakF=0;hitWeak=0;hitNerv=0;pzClean=0;firstHit=0;rotEaten=0;minFull=9;hintMsg=null;furySeen=false;closePyr();
+function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;known=new Set(seenNow);vet=kn('galinha');lv2T=0;playF=0;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;farmerRest=0;dirtT=0;stressT=0;stressSeen=false;full=FOME.max*FOME.start;hungerHint=0;bellyOn=0;bellyGlow=0;bellyLbl=0;bellyDisp=FOME.max*FOME.start;weakT=0;boldSeen=0;bPlayF=0;weakF=0;hitWeak=0;hitNerv=0;pzClean=0;firstHit=0;rotEaten=0;minFull=9;hintMsg=null;furySeen=false;closePyr();
   Object.assign(fox,{queasy:0,roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos fora da Chuva de Ovos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -1666,7 +1667,7 @@ function render(){
       if(g>0&&g<BELLY_GLOW-8){ctx.fillStyle=PAL.t;const k=BELLY_GLOW-8-g; // brilhinhos
         for(const [dx,dy] of [[-4,-3],[24,-3],[10,-6],[-3,6],[23,6]])if((k+dx)%6<3)ctx.fillRect(bx+dx,by+dy,1,1);}
       ctx.restore();
-      if(weak()&&rainT===0&&frame%30<20)text('FOME',fox.x+8,GROUND-39,1,PAL.o,'center',PAL.k);} // fraca de fome
+      if(!g&&(bellyLbl>0||weak()&&rainT===0&&frame%30<20))text('FOME',fox.x+8,GROUND-39,1,PAL.o,'center',PAL.k);} // ao aparecer: FOME por 1,5 s; vazia: FOME piscando // fraca de fome
     if(fox.roar>0){const k=ROAR_ANIM-fox.roar,cx=Math.round(fox.x)+8,cy=GROUND-20; // ondas do rugido saindo da boca
       if(k>=10){const kk=k-10;
         for(const [r,c] of [[kk*4,PAL.t],[kk*4-12,PAL.y],[kk*4-24,PAL.t]])if(r>3&&r<150){const n=Math.ceil(r*2.2);ctx.fillStyle=c;
@@ -2053,7 +2054,7 @@ function fit(){
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
 window.__egg={get T(){return T},get rainEaten(){return rainEaten},get mouthKnown(){return mouthKnown},get speed(){return speed},get CFG(){return CFG},ptrDir,get pts(){return pts},get combo(){return combo},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
-  set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},get dirt(){return dirt},get stressT(){return stressT},FOME,get full(){return full},set full(v){full=v},get bellyOn(){return bellyOn},get bellyGlow(){return bellyGlow},feed,get rev(){return [revN,revHit]},get lostLog(){return lostLog},get ballHits(){return ballHits},get maxCombo(){return maxCombo},get modo(){return modo},setModo,
+  set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},get dirt(){return dirt},get stressT(){return stressT},FOME,get full(){return full},set full(v){full=v},get bellyOn(){return bellyOn},get bellyGlow(){return bellyGlow},get bellyLbl(){return bellyLbl},feed,get rev(){return [revN,revHit]},get lostLog(){return lostLog},get ballHits(){return ballHits},get maxCombo(){return maxCombo},get modo(){return modo},setModo,
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
     const u=Math.floor(S/24),o=Math.floor((S-24*u)/2);
