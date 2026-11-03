@@ -448,7 +448,7 @@ const BOLA_P0=.35,BOLA_AIM0=.4,BOLA_ERR0=.4,GRACE_INV=60,REST_T=90;let farmerRes
    passa por ela WEAR_N vezes: a cada passada ela encolhe (fica mais estreita e a gema menor), sem mudar a opacidade.
    O fazendeiro nao fica mais bravo pelos ovos no chao: ele fica NERVOSO logo depois de um rugido (STRESS_T), quando corre
    mais, avisa menos e as vezes joga duas bolas. */
-const WEAR_N=5,STRESS_T=5*60; // v11: nervoso 5 s, sem duplas (o rugido nao deve parecer castigo)
+let lastCx=0;const WEAR_N=5,STRESS_T=5*60; // v11: nervoso 5 s, sem duplas (o rugido nao deve parecer castigo)
 let stressT=0,stressSeen=false;
 const CALM_N=5,PAIR_P=.4,MAXL=()=>5;
 /* v3 do BOLA: VINGANCA. Cada ovo que cai vira uma bola mirada na raposa ("!" em cima), para a vida cair no mesmo ritmo
@@ -1320,12 +1320,16 @@ function update(){
 
   // fox
   const cx=fox.x+8;
-  if(BOLA()&&rainT===0){ // cada passada da raposa gasta a poça; na WEAR_N-esima ela some
-    for(const p of puddles){if(p.rain)continue;const hw=Math.max(p.w,10)/2,pc=p.x+p.w/2,inn=cx>pc-hw&&cx<pc+hw; // area minima de 10 px para contar a passada
-      if(inn&&!p.inn){p.wear=(p.wear||0)+1;const c=p.x+p.w/2;p.w0=p.w0||p.w;p.w=Math.round(p.w0*(1-p.wear/WEAR_N));p.x=Math.round(c-p.w/2);
-        burst(c,GROUND-1,3,p.rot?['#a3ad5e','#6f7a34']:[PAL.w,PAL.y],.9,.9);if(p.wear>=WEAR_N){p.life=0;sfx.splat();pzClean++;}}
-      p.inn=inn;}
+  if(BOLA()&&rainT===0){ // cada PASSADA COMPLETA da raposa gasta a poça; na WEAR_N-esima ela some
+    // passada = entrar por um lado e sair pelo outro, 1 px alem da borda (parada em cima ou voltando pelo mesmo lado nao conta).
+    // A proxima conta quando ela volta e atravessa de novo.
+    for(const p of puddles){if(p.rain)continue;const c=p.x+p.w/2,hw=Math.max(p.w,4)/2,a=c-hw,b=c+hw;
+      if(!p.from){if(cx>=a&&cx<=b)p.from=lastCx<a?'L':lastCx>b?'R':cx<c?'L':'R';}
+      else if(p.from==='L'?cx<a-1:cx>b+1)p.from=null; // voltou pelo mesmo lado
+      else if(p.from==='L'?cx>b+1:cx<a-1){p.from=null;p.wear=(p.wear||0)+1;p.w0=p.w0||p.w;p.w=Math.round(p.w0*(1-p.wear/WEAR_N));p.x=Math.round(c-p.w/2);
+        burst(c,GROUND-1,3,p.rot?['#a3ad5e','#6f7a34']:[PAL.w,PAL.y],.9,.9);if(p.wear>=WEAR_N){p.life=0;sfx.splat();pzClean++;}}}
     puddles=puddles.filter(p=>p.life>0);}
+  lastCx=cx;
   if(BOLA())dirt=Math.min(DIRT_MAX,puddles.filter(p=>!p.rain).length); // chao sujo = poças no chao
   fox.onP=puddles.some(p=>!p.rot&&cx>p.x&&cx<p.x+p.w);
   fox.onRot=!fox.onP&&!fox.big&&puddles.some(p=>p.rot&&cx>p.x&&cx<p.x+p.w); // ovo podre no chao: gruda e deixa a raposa lenta
