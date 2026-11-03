@@ -20,6 +20,12 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - **Engolir a bola:** se a raposa abre a boca e a bola cai nela, ela engole: fica tonta igual à pancada, mas não sobra bola no chão
 - Só a **primeira bola da partida** é apresentada (DESVIE!). As apresentações aos 10, 30 e 50 ovos saíram: eram do tempo do disfarce e só quebravam o ritmo
 
+## Modos de jogo
+Na tela inicial, escolha **NORMAL** ou **CONSTANTE** (a escolha fica salva no aparelho):
+- **NORMAL:** a curva de dificuldade de sempre, que sobe com os ovos e os níveis (galinhas no poleiro)
+- **CONSTANTE** (como o Flappy Bird): a dificuldade **não muda** do primeiro ao último ovo. O jogo fica sempre no ponto da curva dos 30 ovos: queda ~2,0 s, um objeto a cada ~1,1 s, ~35% de bolas e até 3 objetos ao mesmo tempo, com 3 galinhas fixas no poleiro. Só **ovo e bola**: sem nível (pintinho/galinha), sem ovo podre, sem dourado e sem rugido/Chuva de Ovos (o botão do rugido some). Combo e medalhas continuam iguais
+- Cada modo tem o **seu recorde**. As partidas no constante ficam fora do `?stats=1` e aparecem como **(CONSTANTE)** na comparação do menu AJUSTES
+
 ## Aprender e continuar jogando (v2)
 - **Uma novidade por vez:** entre uma regra nova e a próxima passam pelo menos **20 s**. Isso vale para a 1ª bola, o 1º pintinho/galinha, o 1º rugido, o 1º ovo podre e o 1º dourado. Se a próxima já pode chegar (pela pontuação), ela espera o intervalo; o botão do rugido fica quase cheio até lá
 - **Galinha que bloqueia:** na primeira vez da partida aparece o aviso **EMPURRE!** em cima dela
