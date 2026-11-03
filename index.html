@@ -1774,13 +1774,12 @@ addEventListener('resize',fit);fit();setTimeout(fit,100);
 window.__egg={get T(){return T},get rainEaten(){return rainEaten},get mouthKnown(){return mouthKnown},get speed(){return speed},get CFG(){return CFG},ptrDir,get pts(){return pts},get combo(){return combo},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
   set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
-  icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
-    const u=Math.floor(S/24),o=Math.floor((S-24*u)/2);
-    g.fillStyle='#9fd3e0';g.fillRect(0,0,S,S);
-    g.fillStyle='#fbe9a6';g.fillRect(o+18*u,o+2*u,3*u,3*u);
-    g.fillStyle='#7db37f';g.fillRect(0,o+18*u,S,2*u);g.fillStyle='#4f8a4f';g.fillRect(0,o+20*u,S,u);
-    g.fillStyle='#8a5a3c';g.fillRect(0,o+21*u,S,S);
-    g.drawImage(FOX.c0[0],o+4*u,o+6*u,16*u,15*u);g.drawImage(EGG,o+8*u,o-2*u+u,8*u*0.75|0,10*u*0.75|0);
+  // ícone (versão 1a: ovo esparramado), 24x24; as bordas se estendem até o canto da imagem
+  icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+    const u=Math.floor(S/24),o=Math.floor((S-24*u)/2),C=['#9fd3e0','#1b1b1f','#f4f3ef','#c9ced8','#fbe9a6','#f4c430','#d68f1a','#ffffff','#7db37f','#4f8a4f','#8a5a3c'],
+      R=['aaaaaaaaaaaaaaaaaaaaaaaa','abbaaaaaaaaaaaabaaaaaaaa','bcdbaaaaaaaaaabdbaeeeaaa','bddbaaaaaaaaaaabaaeeeaaa','abbaaaaaaabbaaaaaaeeeaaa','aaaabbaaabcdbaaaaabbaaaa','aaabcdbaabcdbaaaabcdbaaa','aaabdcdbabcdbaaabccdbaaa','aaaabdcdbcccdbbbdddbaaaa','aaaaabcccccccccdbbbaaaaa','aaaaabccccfffgccdbaaaaaa','aabbbccccfffffgccdbbbbaa','abcccccccfhhffgccccccdba','abdddccccfhfffgcccddddba','aabbbdcccgffffgccdbbbbaa','aaaaabccccggggccdbaaaaaa','aaaaabccddccccddbbbaaaaa','aaaabccdbbcccdbbdcdbbbaa','iiibccdbibdccdbibdcbcdbi','iiibddbiiibddbiiibdbddbi','jjjjbbjjjjjbbjjjjjbbbbjj','kkkkkkkkkkkkkkkkkkkkkkkk','kkkkkkkkkkkkkkkkkkkkkkkk','kkkkkkkkkkkkkkkkkkkkkkkk'];
+    R.forEach((r,y)=>{for(let x=0;x<24;x++){g.fillStyle=C[r.charCodeAt(x)-97];
+      const x0=x?o+x*u:0,y0=y?o+y*u:0;g.fillRect(x0,y0,(x<23?o+(x+1)*u:S)-x0,(y<23?o+(y+1)*u:S)-y0);}});
     return c.toDataURL('image/png');},
   puddle(x){puddles.push({x,w:22,life:Infinity})},get score(){return score},get lvl(){return lvl},forceOver(){gameOver()},level,fallFrames,
   get bird(){return bird},dropGold(x,y=-12){items.push({type:'egg',gold:true,x,y,vx:0,vy:1,state:'fall',t:0})},set combo(v){combo=v},hatchAt(x){hatchEgg({x,y:GROUND-40})},
