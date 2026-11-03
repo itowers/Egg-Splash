@@ -1638,7 +1638,7 @@ function render(){
   if(state!=='title'){
     for(const it of items){
       if(it.wait>0)continue; // ainda na mao do fazendeiro / embaixo da galinha
-      const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?ROTTEN:ballSet(it.ph)[CHUTE&&it.state!=='fall'?Math.floor(it.x/3)%2:Math.floor((it.t+it.x)/8)%2];
+      const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?ROTTEN:ballSet(it.ph)[(CHUTE&&it.state!=='fall'?Math.floor(it.x/3)&1:Math.floor((it.t+it.x)/8)&1)];
       const hw=it.hatch&&it.state==='fall'?(Math.floor(it.t/(it.y>90?3:6))%2?1:-1):0; // ovo que vai chocar: balanca, cada vez mais rapido
       if(it.type==='ball'&&it.state==='bounce'&&(CHUTE?it.fade>0:it.t>20)&&frame%4<2)continue; // pisca antes de sumir, estilo Mario
       ctx.drawImage(img,Math.round(it.x)+hw,Math.round(it.y));
