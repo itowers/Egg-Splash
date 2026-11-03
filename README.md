@@ -47,6 +47,20 @@ Na tela inicial, escolha **NORMAL**, **CONSTANTE** ou **BOLA** (a escolha fica s
 - **Fim de jogo:** com os 5 esborrachados, **o fazendeiro acorda** e a raposa foge pela esquerda. A tela fica **1,5 s** parada e depois **tocar no jogo** começa outra partida; setas, boca e rugido não reiniciam (para ninguém pular a medalha, o recorde e a pirâmide apertando os botões no susto)
 - **Telemetria local:** cada partida fica salva no aparelho (ovos, ovos da chuva, pontos, maior combo, se foi em 2X e causa de cada ovo perdido: ovo ou podre, fase, se a raposa estava tonta/parada, bolas que acertaram). Abra com **`?stats=1`** para ver o resumo na tela inicial (só partidas em que a chuva conta só pontos e sem 2X)
 
+## Veterano (quem já jogou)
+- Cada novidade (1ª bola, galinha do poleiro, rugido, ovo podre, dourado) fica salva no aparelho quando o jogador a vê pela primeira vez. **Nas partidas seguintes, o que ele já viu não espera os 20 s entre novidades**
+- **Quem já levou uma galinha ao poleiro pula a espera do nível 1:** o 1º ovo já choca, o pintinho vira galinha em 1,5 s e a galinha **sobe sozinha** para o poleiro depois de 2,5 s (sem EMPURRE!; encostar nela continua valendo). Antes dos 5 ovos caem até 2 objetos juntos (no novato, 1). O nível 2 chega em ~8–10 s (antes ~45 s)
+- A queda, o intervalo e as bolas continuam na curva de sempre: só sai a espera
+- Telemetria: a partida grava `vet: 1` e `l2` (segundos até o nível 2)
+
+## Menu
+O botão de pausa abre o **MENU** (na partida, pausa o jogo):
+- **CONTINUAR** (ou FECHAR fora da partida)
+- **JOGO NOVO**: começa outra partida na hora (no meio de uma, desiste dela)
+- **RESETAR RECORDE**: zera o recorde dos dois modos
+- **JOGAR COMO 1ª VEZ**: zera o recorde, o SEGURE A BOCA! e as novidades já vistas, e volta para a tela inicial, para testar o jogo completo como um jogador novo
+- Os dois resets pedem um 2º toque para confirmar. A telemetria e os ajustes não são apagados
+
 ## Rugido
 A Chuva de Ovos não vem mais pelo relógio: é a raposa que chama, com o botão do rugido (entre as setas e a boca; em paisagem, em cima da boca).
 - O botão é pixel art, da mesma família das setas e da boca, **sem texto**: um **trovão**. Começa bloqueado (cinza) e enche de **amarelo** de baixo para cima. Libera com **20 ovos comidos** desde a última chuva (o dourado vale 5, o ovo que choca vale 1) **ou com 45 s**, o que vier primeiro. O piso de tempo garante o respiro para quem está indo mal
@@ -97,11 +111,11 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 ## Controles
 - ◀ ▶ andar (dá para **deslizar o dedo** de uma seta para a outra sem levantar) · botão redondo (segurar) abrir a boca · botão do trovão quando estiver **vermelho**
 - **Som:** o botão de som no topo. Com o som do jogo **desligado**, a música de outro app (Spotify, Apple Music) continua tocando; com ele ligado, o jogo toca mesmo com a chave de silencioso
-- Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, M som, Enter jogar de novo (X = 2X, só no modo de teste)
+- Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, Esc menu, M som, Enter jogar de novo (X = 2X, só no modo de teste)
 
 ## Ajustes de teste
 Menu para testar a jogabilidade e comparar versões. Só aparece no **modo de teste**; fora dele o jogo usa sempre o padrão.
-- **Ligar:** abrir com `?debug=1` (fica salvo no aparelho; `?debug=0` desliga) ou, pelo ícone da Tela de Início, **tocar 5 vezes no botão de pausa** na tela inicial (o mesmo gesto desliga). Aparecem o botão de ajustes e o **1X/2X** (fora do modo de teste o jogo roda sempre em 1X) e a tela inicial mostra o ajuste em uso
+- **Ligar:** abrir com `?debug=1` (fica salvo no aparelho; `?debug=0` desliga) ou, pelo ícone da Tela de Início, abrir o MENU (botão de pausa) e **tocar 5 vezes no título MENU** (o mesmo gesto desliga). Aparecem o botão de ajustes e o **1X/2X** (fora do modo de teste o jogo roda sempre em 1X) e a tela inicial mostra o ajuste em uso
 - **Os valores só mudam entre partidas.** Abrir o menu no meio pausa o jogo, e o que mudar vale na próxima (controles constantes durante a partida)
 - **Controle:** tipo (setas, **arrastar** = o dedo em qualquer lugar da tela move a raposa como um trackpad, **lados** = segurar a metade esquerda/direita da tela), boca (segurar ou alternar), velocidade, velocidade de boca aberta, aceleração, frenagem, boca mais generosa (px a mais na área de pegar) e tamanho dos botões
 - **Punições:** tontura da bola, parada na galinha, vômito do ovo podre, velocidade no splash verde
