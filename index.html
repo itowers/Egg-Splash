@@ -591,7 +591,7 @@ function updateWorld(){
   for(let j=0;j<Math.floor(n)+(Math.random()<n%1?1:0);j++)drops.push({x:-48+Math.random()*(W+96),y:-4-Math.random()*20});
   const dc=nightK(ct())>.5?'#8fa6c8':'#dceaf2';
   for(const d of drops){d.x+=-.3+wind*7;d.y+=4.5;
-    if(d.y>=GROUND){d.dead=true;if(Math.random()<.3&&(!BARN||inArch(Math.round(d.x),GROUND-1)))parts.push({x:d.x,y:GROUND-1,vx:(Math.random()-.5)*.6,vy:-.7,life:6,c:dc});}}
+    if(d.y>=GROUND){d.dead=true;if(Math.random()<.3&&(!BARN||barnHole(Math.round(d.x),GROUND-1)))parts.push({x:d.x,y:GROUND-1,vx:(Math.random()-.5)*.6,vy:-.7,life:6,c:dc});}}
   drops=drops.filter(d=>!d.dead&&d.x>-52&&d.x<W+52);
 }
 function drawCloud(x,y,s){
@@ -637,6 +637,7 @@ function drawDropsOutdoor(){
 const BARN=!/[?&]celeiro=0/.test(location.search);
 const BARN_LAMPS=[17,127]; // x das duas luminarias (a cupula fica em y 46-49, a lampada em y 50)
 const inArch=(x,y,k=0)=>{if(x<8-k||x>=136+k||y<46-k)return false;const dx=(x+.5-72)/(64+k),dy=(y+.5-74)/(28+k);return y>=74||dx*dx+dy*dy<=1;};
+const barnHole=(x,y)=>y>=GROUND||inArch(x,y); // vao + chao: o chao fica na frente da fachada, de ponta a ponta
 const BARN_IMG=(()=>{const c=mk(),g=c.getContext('2d'),R=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h);};
   const RED='#8a3a30',SEAM='#7a3229',DARK='#6e2d25',TRIM='#efe6d2';
   R(0,0,W,6,'#3d383b');for(let x=0;x<W;x+=8)R(x,4,6,1,'#4a4448');R(0,6,W,2,TRIM);          // telhado e beiral
@@ -651,10 +652,10 @@ const BARN_IMG=(()=>{const c=mk(),g=c.getContext('2d'),R=(x,y,w,h,col)=>{g.fillS
   BARN_LAMPS.forEach((x,i)=>{const bx=i?x+7:x-8;                                              // luminarias de celeiro
     R(bx,42,2,5,'#2c2c30');R(Math.min(bx,x),43,Math.abs(x-bx)+1,1,'#2c2c30');R(x,44,1,2,'#2c2c30');
     R(x-1,46,3,1,'#2c2c30');R(x-2,47,5,1,'#2c2c30');R(x-3,48,7,1,'#3a3a3e');R(x-4,49,9,1,'#55555a');R(x-1,50,3,1,'#c8bfa8');});
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(inArch(x,y))g.clearRect(x,y,1,1);              // abre o vao
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(barnHole(x,y))g.clearRect(x,y,1,1);            // abre o vao e o chao
   return c;})();
 const BARN_CLIP=(()=>{const p=new Path2D();for(let y=0;y<H;y++){let x0=-1;
-  for(let x=0;x<=W;x++){const h=x<W&&inArch(x,y);if(h&&x0<0)x0=x;if(!h&&x0>=0){p.rect(x0,y,x-x0,1);x0=-1;}}}return p;})();
+  for(let x=0;x<=W;x++){const h=x<W&&barnHole(x,y);if(h&&x0<0)x0=x;if(!h&&x0>=0){p.rect(x0,y,x-x0,1);x0=-1;}}}return p;})();
 const BARN_DARK={};
 function barnDark(lvl){ // fachada escurecida em degraus (noite / ceu fechado), so onde tem parede
   if(!BARN_DARK[lvl]){const c=mk(),g=c.getContext('2d');g.drawImage(BARN_IMG,0,0);
