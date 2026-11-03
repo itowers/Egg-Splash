@@ -952,7 +952,10 @@ function spawn(){
   for(let i=0;i<24&&!ok;i++){
     if(type==='egg'){
       const reach=Math.max(8,1.2*reachK()*(arr-lastEgg.arr)); // reachK: alcance acompanha a velocidade da raposa (ajustes)
-      x=clamp(lastEgg.x+(Math.random()*2-1)*reach,4,W-12);
+      // sorteia dentro da faixa alcancavel (antes cortava nas bordas: no comeco ~45% dos ovos caiam colados na parede
+      // e a galinha so ia de um canto ao outro)
+      const lo=Math.max(4,lastEgg.x-reach),hi=Math.min(W-12,lastEgg.x+reach);
+      x=lo+Math.random()*(hi-lo);
       ok=!recent.some(r=>r.type!=='egg'&&Math.abs(r.arr-arr)<32&&Math.abs(r.x-x)<20);
     }else{
       if(aim!==null)x=clamp(aim+(i?(i%2?1:-1)*Math.ceil(i/2)*5:0),4,W-13); // mirando: se cair num ovo, desvia aos poucos
