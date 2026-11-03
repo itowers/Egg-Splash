@@ -414,21 +414,24 @@ const CALM_N=5,PAIR_P=.4,MAXL=()=>5;
 /* v3 do BOLA: VINGANCA. Cada ovo que cai vira uma bola mirada na raposa ("!" em cima), para a vida cair no mesmo ritmo
    dos ovos perdidos no NORMAL, mas com uma chance de desviar. REV_LEAD = aviso (o fazendeiro corre ate o ponto), REV_ERR = erro da mira. */
 const REV_LEAD=18,REV_ERR=3,REV_FAST=1.35,REV_HOME=.5; // REV_HOME: px por frame que a bola puxa em direcao a raposa (ate ~35 px do chao)let revN=0,revHit=0; // REV_FAST: cai 35% mais rapido que a curva
-/* v4 do BOLA: FOME. A barriga (barra embaixo das vidas) cabe FOME.max ovos e esvazia com o tempo, no ritmo dos ovos que
-   as galinhas botam: para ficar cheia, a raposa precisa comer FOME.q (a proporcao) dos ovos que caem. Cada ovo enche 1.
-   Vazia = COM FOME!: perde uma vida e a barriga volta a FOME.reset do maximo. Para na chuva e com o dourado (que enche tudo).
-   ?bola=vinganca troca a fome pela bola da vinganca. */
-const FOME={max:2,q:1,reset:.67};let eggT=[]; // eggT: quando cada ovo (fora da chuva) foi botado, para medir a oferta
-const eggRate=()=>{const n=frame,w=Math.min(15*60,Math.max(5*60,n-playT0));eggT=eggT.filter(t=>t>n-w);return Math.max(eggT.length,1)/(w/60);}; // ovos por segundo
+/* v4 do BOLA: FOME. A barriga (barra embaixo dos coracoes) guarda FOME.max ovos. Cada ovo que cai esvazia 1 aos poucos,
+   enquanto cai; comer enche 1 (a barra mostra a queda em andamento). So o ovo PERDIDO tira de verdade: quem come todos os
+   ovos nunca perde vida de fome. Vazia = COM FOME!: perde uma vida e volta a FOME.reset do maximo.
+   Nao mexem na fome: ovo que choca e dourado perdido. Enchem: ovo comido, ovo da chuva, ovo podre (+1, mas enjoa 1 s) e
+   dourado (enche tudo). ?bola=vinganca troca a fome pela bola da vinganca. */
+const FOME={max:2,start:.5,reset:.5},SICK_BOLA=60; // comeca e volta com meia barriga (1 ovo): o 1o ovo perdido ja doi; comer bem guarda 1 de reserva
 const BOLA_VAR=(location.search.match(/[?&]bola=(\w+)/i)||[])[1]==='vinganca'?'vinganca':'fome';
 const FOME_ON=()=>BOLA()&&BOLA_VAR==='fome';
-let full=0,hungerHint=0,playT0=0;
-function feed(n){if(FOME_ON())full=Math.max(.01,Math.min(FOME.max,full+n));}
-function hungerTick(){if(!FOME_ON()||rainT>0||fox.big>0)return;
-  full-=eggRate()*FOME.q/60;
-  if(full<=0){lives--;losses.push('fome');logLoss('fome');shake=6;sfx.hurt();full=FOME.max*FOME.reset;
-    bolaHint('COM FOME!','COMA OVOS',90);if(lives<=0)gameOver();}
-  else if(full<FOME.max*.3){if(!hungerHint){hungerHint=1;bolaHint('ESTÁ COM FOME!','COMA OS OVOS',100);}if(frame%40===0)tone(110,0,.12,'triangle',.05);}} // barriga roncando; 1o aviso uma vez por partida
+let full=0,hungerHint=0;
+const foodEgg=it=>it.type==='egg'&&!it.rain&&!it.hatch&&!it.gold; // ovo que conta para a fome
+function feed(n){if(FOME_ON())full=Math.min(FOME.max,full+n);}
+function starve(){if(!FOME_ON())return;full-=1; // ovo perdido
+  if(full<=1e-6){lives--;losses.push('fome');logLoss('fome');shake=6;sfx.hurt();full=FOME.max*FOME.reset;
+    bolaHint('COM FOME!','COMA OS OVOS',90);if(lives<=0)gameOver();}
+  else if(full<=1&&!hungerHint){hungerHint=1;bolaHint('ESTÁ COM FOME!','COMA OS OVOS',100);}}
+// barra: a fome guardada menos o que os ovos no ar ja "gastaram" (cada um gasta 1 ate chegar ao chao)
+function fullShown(){let p=0;for(const it of items)if(foodEgg(it)&&!(it.wait>0)&&it.state==='fall')p+=clamp((it.y-Y0)/(GROUND-26-Y0),0,1);return Math.max(0,full-p);}
+function hungerTick(){if(FOME_ON()&&fullShown()<FOME.max*.3&&frame%40===0&&rainT===0)tone(110,0,.12,'triangle',.05);} // barriga roncando
 function revengeBall(){if(BOLA_VAR!=='vinganca')return;const L=level(),fc=fox.x+8,vm=L.vmax*REV_FAST;revN++;
   const x=clamp(Math.round(fc-4.5+(Math.random()*2-1)*REV_ERR),4,W-13),busy=items.some(i=>i.wait>0&&i.thrown);
   const sx=spawnXFor(x,vm,GROUND-23,9,REV_LEAD);if(sx===null)return;
@@ -936,7 +939,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;full=FOME.max;eggT=[];playT0=frame;hungerHint=0;hintMsg=null;furySeen=false;closePyr();
+function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;full=FOME.max*FOME.start;hungerHint=0;hintMsg=null;furySeen=false;closePyr();
   Object.assign(fox,{queasy:0,roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos fora da Chuva de Ovos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -1012,7 +1015,7 @@ function spawn(){
   if(!thrown){const busy=new Set(items.filter(i=>i.wait>0&&i.hen>=0).map(i=>i.hen));let bd=1e9;
     hens.forEach((h,i)=>{const d=Math.abs(h.x-(sx-2));if(!busy.has(i)&&d<bd){bd=d;hen=i;}});
     if(hen<0)return 6;}
-  if(type==='egg'){lastEgg={x,arr};eggRun++;ballRun=0;eggT.push(frame);}
+  if(type==='egg'){lastEgg={x,arr};eggRun++;ballRun=0;}
   else if(type===BAD){ballRun++;eggRun=0;lastBallPhase=L.phase;}
   else{if(!rotSeen)markNew();rotSeen=true;} // ovo podre extra
   if(intro&&type===BAD)markNew(); // 1a bola da partida
@@ -1072,7 +1075,7 @@ function breakEgg(it){
   if(it.rain||rainT>0){const c=it.rain?EGG_COLS[it.col]:[PAL.w,PAL.c];burst(cx,GROUND-2,5,[c[0],c[1]],1.2,1.4);burst(cx,GROUND-2,3,[PAL.y],.8,1);sfx.splat();
     puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rain:true,col:it.rain?it.col:null});return;}
   if(BOLA()){ // modo BOLA: nao tira vida, suja o chao (escorrega mais e vem mais bola)
-    dirt=Math.min(DIRT_MAX,dirt+1);missed++;calm=0;logLoss('egg');combo=0;shake=3;sfx.crack();sfx.slip();
+    dirt=Math.min(DIRT_MAX,dirt+1);missed++;calm=0;if(!it.hatch)starve();logLoss('egg');combo=0;shake=3;sfx.crack();sfx.slip();
     revengeBall();
     if(!dirtSeen){dirtSeen=true;bolaHint('DEIXOU CAIR?','O FAZENDEIRO VAI TE ACERTAR!');}
     else if(dirt>=3&&!furySeen){furySeen=true;bolaHint('FAZENDEIRO FURIOSO!','COMA 5 OVOS PARA ACALMAR');}
@@ -1098,7 +1101,8 @@ function breakRotten(it){
 }
 // comeu: vomita e fica parado um instante (sem perder vida, mas zera o combo e nao conta ponto)
 function eatRotten(it){
-  it.dead=true;combo=0;feed(-1);fox.sick=Math.round(T.sick*60);fox.vx=0;fox.chew=0;shake=3;sfx.vomit();
+  it.dead=true;combo=0;feed(1);fox.sick=FOME_ON()?SICK_BOLA:Math.round(T.sick*60); // BOLA: mata a fome, mas enjoa 1 s
+  fox.vx=0;fox.chew=0;shake=3;sfx.vomit();
 }
 
 /* ---------- ovo dourado ---------- */
@@ -1120,7 +1124,7 @@ function smashAway(it){
 /* ---------- pintinho -> galinha ---------- */
 // O ovo marcado choca sozinho perto do chao, com ou sem a raposa: conta como pego (+1) e sai um pintinho.
 function hatchEgg(it){
-  it.dead=true;score++;combo++;gain(1);hatched++;roarAdd(1);feed(1);sfx.hatch();
+  it.dead=true;score++;combo++;gain(1);hatched++;roarAdd(1);sfx.hatch();
   const cx=it.x+4,cy=it.y+5;
   burst(cx,cy,8,[PAL.w,PAL.c,PAL.t],1.2,1.4);
   bird={kind:'chick',x:clamp(cx-4,2,W-10),y:cy-4,vx:(cx<fox.x+8?-1:1)*.7,vy:-1.6,t:0,face:cx<fox.x+8?-1:1,ground:false,hopT:20,perch:!!it.perch};
@@ -1399,10 +1403,11 @@ function drawHud(){
   hc.clearRect(0,0,W,HH);TX=hc;
   // cascas: da esquerda para a direita, as quebradas primeiro
   for(let i=0;i<MAXL();i++){const lost=i<MAXL()-lives,why=losses[i];
+    if(BOLA()){hc.drawImage(lost?HEART0:HEART,1+i*9,4);continue;} // BOLA: a vida e coracao (cai por bola ou fome, nao por ovo)
     hc.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,1+i*9,3);}
   if(BOLA()&&dirt>0&&!fox.big){  // modo BOLA: chao sujo (cada ovo perdido desde a chuva = 1 gota amarela)
     const y=FOME_ON()?18:13;for(let i=0;i<DIRT_MAX;i++){hc.fillStyle=PAL.k;hc.fillRect(1+i*9,y,8,FOME_ON()?3:4);hc.fillStyle=i<dirt?(dirt>=4&&frame%20<10?PAL.o:PAL.y):'#6b6058';hc.fillRect(2+i*9,y+1,6,FOME_ON()?1:2);}}
-  if(FOME_ON()&&!fox.big&&state!=='title'){const f=full/FOME.max,low=f<.3; // barriga: verde cheia, laranja, vermelha piscando quando esta com fome
+  if(FOME_ON()&&!fox.big&&state!=='title'){const f=fullShown()/FOME.max,low=f<.3; // barriga: verde cheia, laranja, vermelha piscando quando esta com fome
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,5);hc.fillStyle='#6b6058';hc.fillRect(1,14,44,3);
     hc.fillStyle=low?(frame%16<8?PAL.r:PAL.o):f<.6?PAL.o:'#7cc35a';hc.fillRect(1,14,Math.ceil(44*f),3);}
   if(fox.big){const f=fox.big/BIG_T; // barrinha dourada do poder
@@ -1525,7 +1530,7 @@ function render(){
       if(it.revenge&&it.state==='fall'&&frame%12<8)text('!',Math.round(it.x)+5,Math.round(it.y)-9,1,PAL.y,'center',PAL.k); // bola da vinganca
       if(it.type==='rotten'){ // fedor: tres fiozinhos ondulando e subindo em cima do ovo podre
         stink(Math.round(it.x)+4,Math.round(it.y)-1,it.t);
-        if(it.intro&&it.state==='fall')text('NÃO COMA!',it.x+4,it.y-13,1,'#c9cf7a','center',PAL.k);
+        if(it.intro&&it.state==='fall')text(FOME_ON()?'MATA A FOME, MAS ENJOA':'NÃO COMA!',it.x+4,it.y-13,1,'#c9cf7a','center',PAL.k);
       }
       if(it.type==='ball'&&it.intro&&it.state==='fall')text('DESVIE!',it.x+4,it.y+12,1,PAL.t,'center',PAL.k);
       if(it.type==='egg'&&!it.rain&&!mouthKnown&&it.state==='fall'&&state==='play'&&frame%24<16){ // 1a partida: ensina a abrir a boca
