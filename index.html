@@ -401,10 +401,16 @@ const HENS_START=[66],HENS_MAX=7;
 /* Modo CONSTANTE (como o Flappy Bird): a dificuldade nao sobe. Do primeiro ao ultimo ovo o jogo fica no ponto da curva
    dos CONST_S ovos (queda ~2,0 s, intervalo ~1,1 s, ~35% de bolas, ate 3 objetos), com 3 galinhas fixas no poleiro.
    So ovo e bola: sem nivel (pintinho/galinha), sem ovo podre, sem dourado e sem rugido/Chuva de Ovos. Recorde separado. */
-let modo='normal';try{if(localStorage.getItem('eggsplash-modo')==='constante')modo='constante'}catch(e){}
+/* Modo BOLA: a mesma curva do NORMAL, mas a vida so cai quando a bola acerta a raposa (pancada ou engolida).
+   Perder o ovo nao tira vida: suja o chao (DIRT_MAX niveis). Chao sujo = escorrega mais (acelera menos e freia menos) e
+   o fazendeiro joga mais bolas e mira melhor. A Chuva de Ovos limpa o chao (junto com os splashes), como sempre. */
+let modo='normal';try{const m=localStorage.getItem('eggsplash-modo');if(m==='constante'||m==='bola')modo=m}catch(e){}
 const CONST=()=>modo==='constante',CONST_S=30,HENS_CONST=[30,66,102];
-const curveS=()=>CONST()?CONST_S:score; // ovos que a curva enxerga (no constante, sempre CONST_S)
-const aimP=s=>Math.min(1,(.33+.34*(1-Math.exp(-s/40)))*T.aimK); // 1 em 3 bolas miradas no comeco, ate 2 em 3 (x ajuste)
+const BOLA=()=>modo==='bola',DIRT_MAX=5;
+let dirt=0,dirtHint=0,dirtSeen=false,missed=0; // ovos perdidos desde a ultima chuva (so no modo BOLA)
+const dirtK=()=>BOLA()?dirt/DIRT_MAX:0;
+const curveS=()=>CONST()?CONST_S:BOLA()?score+missed:score; // ovos que a curva enxerga (no constante, sempre CONST_S; no BOLA, comidos + perdidos)
+const aimP=s=>Math.min(1,(.33+.34*(1-Math.exp(-s/40)))*T.aimK+.1*dirt*(BOLA()?1:0)); // BOLA: chao sujo = mira melhor (+10 p.p. por nivel) // 1 em 3 bolas miradas no comeco, ate 2 em 3 (x ajuste)
 const aimErr=s=>(8+22*Math.exp(-s/30))*T.aimErrK; // erro da mira: +-30 px no comeco, +-8 px no fim (x ajuste)
 const henTarget=s=>s<5?1:s<15?2:s<30?3:s<50?4:s<75?5:s<100?6:7; // nivel que a pontuacao (ovos) ja pede
 let hens=[];
@@ -851,7 +857,7 @@ const newOK=()=>frame-lastNew>=T.newGap*60; // NEW_GAP: 20 s por padrao (ajustav
 function markNew(){lastNew=frame;}
 const mult=()=>combo>=T.c3?3:combo>=T.c2?2:1; // x2 com 10 ovos seguidos, x3 com 20 (ajustavel)
 function gain(n){pts+=n*mult();if(combo>maxCombo)maxCombo=combo;if(combo===T.c2||combo===T.c3){multT=70;sfx.record();}}
-const BALL_GAP=()=>T.ballGap*60; // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
+const BALL_GAP=()=>Math.round(T.ballGap*60*(1-.1*dirtK()*DIRT_MAX)); // BOLA: cada nivel de sujeira tira 10% (6 s -> 3 s) // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
 const RAIN_LEN=7*60; // Chuva de Ovos (7 s): so acontece quando a raposa ruge
 /* Rugido (ver README): o botao RUGIR libera com ROAR_EGGS ovos comidos desde a ultima chuva OU com ROAR_FLOOR de tempo
    (piso, para quem esta indo mal tambem ter o respiro). Nao acumula: cheio, para de encher ate a raposa rugir. */
@@ -876,7 +882,7 @@ let lostLog=[],ballHits=0;
 const STATS=/[?&]stats=1/i.test(location.search);
 function logLoss(c){lostLog.push({c,ph:phaseOf(score),s:score,busy:fox.stun>0||fox.sick>0||fox.halt>0});}
 function saveGame(){try{const L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]');
-  L.push({score,pts,ch:rainEaten,sv:2,...(CONST()?{m:'c'}:{}),mc:maxCombo,cfg:{...tuneDiff(T),...(fastGame?{x2:1}:{})},lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
+  L.push({score,pts,ch:rainEaten,sv:2,...(CONST()?{m:'c'}:BOLA()?{m:'b'}:{}),mc:maxCombo,cfg:{...tuneDiff(T),...(fastGame?{x2:1}:{})},lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
 function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
   L=L.filter(g=>g.v!=='b'&&g.sv>=2&&!(g.cfg&&g.cfg.x2)&&!g.m); // e sem o modo constante // so partidas em que a chuva conta so pontos (sv 2), sem variante B e sem 2X
   if(!L.length)return['SEM PARTIDAS AINDA'];
@@ -888,8 +894,8 @@ function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-
     (()=>{const R=L.flatMap(g=>g.roars||[]),w=R.map(r=>r.w).sort((a,b)=>a-b); // rugidos e quanto tempo o botao ficou cheio antes do toque
       return'RUGIDOS '+R.length+(w.length?'  ESPERA '+Math.round(w[Math.floor(w.length/2)]/60)+'S':'');})()];} // causa de cada casca quebrada no topo: 'egg' ou 'rot'
 let eaten=[],hatched=0; // ovos que a raposa comeu (-1 = ovo normal, -2 = dourado, 0..5 = cor da Chuva de Ovos) e ovos que viraram pintinho
-const bestKey=()=>CONST()?'eggsplash-pts-c':'eggsplash-pts'; // cada modo tem o seu recorde (em pontos)
-function loadBest(){try{best=+localStorage.getItem(bestKey())||(CONST()?0:+localStorage.getItem('eggsplash-best'))||0}catch(e){best=0}} // normal: antes o recorde era em ovos
+const bestKey=()=>CONST()?'eggsplash-pts-c':BOLA()?'eggsplash-pts-b':'eggsplash-pts'; // cada modo tem o seu recorde (em pontos)
+function loadBest(){try{best=+localStorage.getItem(bestKey())||(modo!=='normal'?0:+localStorage.getItem('eggsplash-best'))||0}catch(e){best=0}} // normal: antes o recorde era em ovos
 try{mouthKnown=localStorage.getItem('eggsplash-boca')==='1'||+localStorage.getItem('eggsplash-pts')>0||+localStorage.getItem('eggsplash-best')>0}catch(e){}
 loadBest(); // quem ja jogou antes ja sabe abrir a boca
 const FAT_T=60; // depois de comer, a raposa fica gordinha por 1 s
@@ -902,7 +908,7 @@ const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;closePyr();
+function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=5;resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;dirt=0;dirtHint=0;dirtSeen=false;missed=0;closePyr();
   Object.assign(fox,{queasy:0,roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos fora da Chuva de Ovos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -937,7 +943,8 @@ function spawn(){
   // Quem nunca comeu um ovo: o fazendeiro espera o 1o ovo comido (no maximo 3 ovos), uma novidade por vez.
   const holdBall=lastBallPhase<0&&!mouthKnown&&eggRun<3;
   const phaseIntro=spawned>=1&&lastBallPhase<0&&!holdBall;       // so a 1a bola da partida e apresentada (DESVIE!)
-  let type=phaseIntro?BAD:spawned<3||holdBall?'egg':Math.random()<L.ballP?BAD:'egg';
+  const ballP=BOLA()?Math.min(.75,L.ballP+.1*dirt):L.ballP; // BOLA: chao sujo = mais bolas (+10 p.p. por nivel, teto 75%)
+  let type=phaseIntro?BAD:spawned<3||holdBall?'egg':Math.random()<ballP?BAD:'egg';
   if(type===BAD&&ballRun>=3)type='egg';                          // no maximo 3 ruins seguidos
   if(type==='egg'&&spawned>=3&&curveS()>=20&&eggRun>=6)type=BAD;    // depois de 20, no maximo 6 ovos seguidos
   if(type==='egg'&&spawned>=2&&!holdBall&&ballGap>=BALL_GAP())type='ball'; // o fazendeiro nao para de jogar
@@ -1030,11 +1037,19 @@ function breakEgg(it){
   if(it.gold){burst(cx,GROUND-2,10,[PAL.y,'#b8861a','#fff3b0'],1.3,1.6);sfx.heartLost();return;} // perder o dourado nao tira vida
   if(it.rain||rainT>0){const c=it.rain?EGG_COLS[it.col]:[PAL.w,PAL.c];burst(cx,GROUND-2,5,[c[0],c[1]],1.2,1.4);burst(cx,GROUND-2,3,[PAL.y],.8,1);sfx.splat();
     puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rain:true,col:it.rain?it.col:null});return;}
+  if(BOLA()){ // modo BOLA: nao tira vida, suja o chao (escorrega mais e vem mais bola)
+    dirt=Math.min(DIRT_MAX,dirt+1);missed++;logLoss('egg');combo=0;shake=3;sfx.crack();sfx.slip();
+    if(!dirtSeen){dirtSeen=true;dirtHint=150;}
+    puddles.push({x:Math.round(cx-11),w:22,life:Infinity});
+    burst(cx,GROUND-2,6,[PAL.w,PAL.c],1.4,1.8);burst(cx,GROUND-2,5,[PAL.y],1,1.2);return;}
   lives--;losses.push('egg');logLoss('egg');combo=0;shake=5;sfx.crack();if(lives>0)sfx.hurt();
   puddles.push({x:Math.round(cx-11),w:22,life:Infinity}); // puddles stay until the next egg rain ends
   burst(cx,GROUND-2,6,[PAL.w,PAL.c],1.4,1.8);burst(cx,GROUND-2,5,[PAL.y],1,1.2);
   if(lives<=0)gameOver();
 }
+
+// modo BOLA: a bola que acerta (pancada ou engolida) tira uma vida
+function ballLife(){if(!BOLA())return;lives--;losses.push('ball');logLoss('ball');shake=9;if(lives>0)sfx.hurt();if(lives<=0)gameOver();}
 
 /* ---------- ovo podre ---------- */
 // cai no chao: nao tira vida; deixa um splash verde que fica ate a Chuva de Ovos
@@ -1169,7 +1184,7 @@ function update(){
   if(rainT>0){
     rainT--;if(frame%6===0)spawnRain();
     {const k=RAIN_LEN-rainT;while(heartPlan.length&&k>=heartPlan[0].k){spawnHeart(heartPlan.shift().x);heartsToDrop--;}}
-    if(rainT===0){for(const p of puddles)burst(p.x+11,GROUND-2,3,[PAL.t,PAL.y],1,1.2);puddles=[]; // rain end cleans the whole floor
+    if(rainT===0){for(const p of puddles)burst(p.x+11,GROUND-2,3,[PAL.t,PAL.y],1,1.2);puddles=[];dirt=0; // rain end cleans the whole floor
       for(const it of items)if(it.rain){it.dead=true;burst(it.x+4,it.y+5,4,[PAL.t,PAL.y],1,1);}
       spawnT=45;lastEgg={x:fox.x+4,arr:frame+45};recent=[];sfx.rainEnd();}
   }else{
@@ -1178,7 +1193,7 @@ function update(){
     if(--spawnT<=0)spawnT=spawn();
   }
   if(roarHint>0)roarHint--;
-  if(henHint>0)henHint--;if(multT>0)multT--;
+  if(henHint>0)henHint--;if(dirtHint>0)dirtHint--;if(multT>0)multT--;
   if(fox.roar>0)fox.roar--;
   { // fedor do ovo podre: perto dele a raposa fica enjoada (olhinho em X). So visual: nao muda nada no jogo
     const fc=fox.x+8,near=it=>it.type==='rotten'&&!it.dead&&!(it.wait>0)&&Math.abs(it.x+4-fc)<16&&it.y>GROUND-70;
@@ -1207,8 +1222,9 @@ function update(){
     if(dir)fox.vx+=dir*.04;else fox.vx*=.993;
     fox.vx=clamp(fox.vx,-2.2,2.2);
   }else{
-    if(dir){fox.vx+=dir*T.acc;fox.vx=clamp(fox.vx,-max,max);}
-    else{fox.vx*=T.brake;if(Math.abs(fox.vx)<.05)fox.vx=0;}
+    const k=dirtK(),acc=T.acc*(1-.6*k),brake=T.brake+(.94-T.brake)*k; // BOLA: chao sujo acelera menos e desliza mais
+    if(dir){fox.vx+=dir*acc*(Math.sign(fox.vx)===-dir?1+k:1);fox.vx=clamp(fox.vx,-max,max);}
+    else{fox.vx*=brake;if(Math.abs(fox.vx)<.05)fox.vx=0;}
   }
   fox.x+=fox.vx;
   const xm=fox.big?8:0; // gigante: 32 px de largura, centrada no mesmo ponto
@@ -1216,7 +1232,7 @@ function update(){
   if(fox.x>W-16-xm){fox.x=W-16-xm;fox.vx=fox.onP?-fox.vx*.5:0;}
   henBlock();
   if(dir)fox.face=dir;
-  fox.slip=fox.onP&&Math.abs(fox.vx)>.35;
+  fox.slip=fox.onP&&Math.abs(fox.vx)>.35||dirt>=2&&!dir&&Math.abs(fox.vx)>.35&&BOLA();
   if(dir)fox.walk+=fox.onP?2:fox.onRot?.5:1;
   const leg=Math.floor(fox.walk/5)%2;if(dir&&!fox.onP&&leg!==prevLeg)sfx.step();prevLeg=leg;
   if(fox.slip&&frame%18===0)sfx.slip();
@@ -1264,12 +1280,12 @@ function update(){
       }else if(fox.big&&(hit(it,w,h,body)||(fox.mouth&&hit(it,w,h,mouthZ)))){smashAway(it);
       }else if(fox.mouth&&hit(it,w,h,mouthZ)){ // engole a bola: mesmo efeito da pancada, mas a bola some
         it.dead=true;fox.chew=EAT_T;fox.eatImg=(BALLS[it.ph]||BALL)[0];fox.gulp=true;fox.fat=FAT_T;
-        if(fox.stun===0&&fox.inv===0){fox.stun=Math.max(1,Math.round(T.stun*60));ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;}
+        if(fox.stun===0&&fox.inv===0){fox.stun=Math.max(1,Math.round(T.stun*60));ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;ballLife();}
         continue;
       }else if(hit(it,w,h,body)){
         if(fox.stun===0&&fox.inv===0){
           fox.stun=Math.max(1,Math.round(T.stun*60));ballHits++;combo=0;shake=7;sfx.bonk();fox.vx*=fox.onP?1:0;
-          burst(fox.x+8,GROUND-14,5,[PAL.y,PAL.t],1.4,1.4);
+          burst(fox.x+8,GROUND-14,5,[PAL.y,PAL.t],1.4,1.4);ballLife();
         }
         it.state='bounce';it.t=0;it.b=1;it.vy=-2.2;it.vx=(it.x+4.5<fox.x+8?-1:1)*1.2;
       }
@@ -1345,6 +1361,8 @@ function drawHud(){
   // cascas: da esquerda para a direita, as quebradas primeiro
   for(let i=0;i<5;i++){const lost=i<5-lives,why=losses[i];
     hc.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,1+i*9,3);}
+  if(BOLA()&&dirt>0&&!fox.big){ // modo BOLA: chao sujo (cada ovo perdido desde a chuva = 1 gota amarela)
+    for(let i=0;i<DIRT_MAX;i++){hc.fillStyle=PAL.k;hc.fillRect(1+i*9,13,8,4);hc.fillStyle=i<dirt?(dirt>=4&&frame%20<10?PAL.o:PAL.y):'#6b6058';hc.fillRect(2+i*9,14,6,2);}}
   if(fox.big){const f=fox.big/BIG_T; // barrinha dourada do poder
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
   text(pts,W-1,3,2,PAL.t,'right',PAL.k);
@@ -1510,7 +1528,7 @@ function render(){
     text('SPLASH',W/2,56,3,PAL.o,'center',PAL.k);
     ctx.drawImage(EGG,30,74);text('COMA O OVO',44,77,1,PAL.k,'left');
     ctx.drawImage(BALLS[0][0],30,87);text('DESVIE DA BOLA',44,89,1,PAL.k,'left');
-    text('FAZENDEIRO JOGA EM VOCÊ!',W/2,98,1,PAL.d);
+    text(BOLA()?'SÓ A BOLA TIRA VIDA!':'FAZENDEIRO JOGA EM VOCÊ!',W/2,98,1,BOLA()?PAL.r:PAL.d);
     drawModeBtns();
     if(Math.floor(frame/30)%2)text('TOQUE PARA COMEÇAR',W/2,122,1,PAL.k);
     if(best)text('RECORDE '+best,W/2,131,1,PAL.d);
@@ -1524,6 +1542,7 @@ function render(){
   }
   drawHud();
   if(state==='play'&&roarHint>0&&rainT===0&&frame%24<16){text('HORA DE RUGIR!',W/2,94,1,PAL.y,'center',PAL.k);text('APERTE O BOTÃO VERMELHO',W/2,103,1,PAL.t,'center',PAL.k);}
+  if(state==='play'&&dirtHint>0&&rainT===0&&frame%24<17){text('CHÃO ESCORREGADIO!',W/2,94,1,PAL.y,'center',PAL.k);text('E VEM MAIS BOLA',W/2,103,1,PAL.t,'center',PAL.k);}
   if(state==='play'&&multT>0&&frame%16<11)text('COMBO X'+mult()+'!',W/2,88,1,mult()>2?PAL.o:PAL.y,'center',PAL.k);
   if(state==='play'&&lvlT>0&&rainT===0)text('NÍVEL '+lvl,W/2,62,2,frame%16<8?PAL.y:PAL.o,'center',PAL.k); // galinha nova no poleiro = nivel novo
   if(state!=='title'){
@@ -1566,14 +1585,17 @@ function render(){
 
 const PB={x:W/2-40,y:151,w:80,h:14}; // botao PIRAMIDE na tela de fim de jogo
 /* tela inicial: escolha do modo. NORMAL = curva que sobe com os niveis; CONSTANTE = dificuldade fixa (como o Flappy Bird) */
-const MODES=[{m:'normal',l:'NORMAL',x:W/2-63,w:54},{m:'constante',l:'CONSTANTE',x:W/2-6,w:69}],MODE_Y=106,MODE_H=11;
-function drawModeBtns(){for(const b of MODES){const on=modo===b.m;
+/* BOLA = so a bola tira vida; ovo perdido suja o chao. Largura de cada botao = texto + 6 px, centrados */
+const MODES=[{m:'normal',l:'NORMAL'},{m:'constante',l:'CONSTANTE'},{m:'bola',l:'BOLA'}],MODE_Y=106,MODE_H=11,MODE_GAP=3;
+function layoutModes(){let x=W/2-(MODES.reduce((a,b)=>a+textW(b.l)+6,0)+MODE_GAP*(MODES.length-1))/2;
+  for(const b of MODES){b.w=textW(b.l)+6;b.x=Math.round(x);x+=b.w+MODE_GAP;}}
+function drawModeBtns(){layoutModes();for(const b of MODES){const on=modo===b.m;
   ctx.fillStyle=PAL.k;ctx.fillRect(b.x-1,MODE_Y-1,b.w+2,MODE_H+2);
   ctx.fillStyle=on?'#f4c430':'#ebe6dc';ctx.fillRect(b.x,MODE_Y,b.w,MODE_H);
   ctx.fillStyle=on?'#b0821a':'#8a6670';ctx.fillRect(b.x,MODE_Y+MODE_H-2,b.w,2);
   text(b.l,b.x+b.w/2,MODE_Y+2,1,on?PAL.k:PAL.g);}}
 function setModo(m){if(m===modo)return;modo=m;try{localStorage.setItem('eggsplash-modo',m)}catch(e){}
-  loadBest();resetFarm();roarUI='';tone(m==='constante'?988:660,0,.05,'square',.04);}
+  loadBest();resetFarm();roarUI='';tone(m==='constante'?988:m==='bola'?440:660,0,.05,'square',.04);}
 
 /* ---------- piramide de ovos ---------- */
 // Pilha "bala de canhao": camadas quadradas b*b, (b-1)*(b-1)... e cada ovo de cima fica no vao entre 4 de baixo.
@@ -1772,11 +1794,11 @@ const fmtV=(v,st,u)=>{const d=st<1?(String(st).split('.')[1]||'').length:0;retur
 function saveCfg(){try{localStorage.setItem('eggsplash-tune',JSON.stringify(tuneDiff(CFG)))}catch(e){}}
 function compareTable(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
   L=L.filter(g=>g.v!=='b');if(!L.length)return'<div class="muted">SEM PARTIDAS AINDA</div>';
-  const G=new Map();for(const g of L){const k=JSON.stringify(g.cfg||{})+(g.sv>=2?'':'|v1')+(g.m?'|c':'');if(!G.has(k))G.set(k,[]);G.get(k).push(g);} // v1 = antes da chuva so contar pontos
+  const G=new Map();for(const g of L){const k=JSON.stringify(g.cfg||{})+(g.sv>=2?'':'|v1')+(g.m?'|'+g.m:'');if(!G.has(k))G.set(k,[]);G.get(k).push(g);} // v1 = antes da chuva so contar pontos
   const med=a=>{a=[...a].sort((x,y)=>x-y);return a[Math.floor(a.length/2)];},cur=JSON.stringify(tuneDiff(CFG));
   const rows=[...G].sort((a,b)=>b[1].length-a[1].length).slice(0,8).map(([k,gs])=>{
     const lost=gs.flatMap(g=>g.lost||[]),busy=lost.filter(x=>x.busy).length;
-    return`<tr><td>${tuneLabel(JSON.parse(k.split('|')[0]))}${k.includes('|v1')?' (ANTES)':''}${k.endsWith('|c')?' (CONSTANTE)':''}${k===cur?' *':''}</td><td>${gs.length}</td><td>${med(gs.map(g=>g.score))}</td>`+
+    return`<tr><td>${tuneLabel(JSON.parse(k.split('|')[0]))}${k.includes('|v1')?' (ANTES)':''}${k.endsWith('|c')?' (CONSTANTE)':k.endsWith('|b')?' (BOLA)':''}${k===cur?' *':''}</td><td>${gs.length}</td><td>${med(gs.map(g=>g.score))}</td>`+
       `<td>${med(gs.map(g=>g.pts??g.score))}</td><td>${Math.round(100*gs.filter(g=>g.score>50).length/gs.length)}%</td>`+
       `<td>${(gs.reduce((a,g)=>a+(g.balls||0),0)/gs.length).toFixed(1)}</td><td>${lost.length?Math.round(100*busy/lost.length)+'%':'-'}</td></tr>`;}).join('');
   return'<table><tr><th>AJUSTE</th><th>N</th><th>OVOS</th><th>PTS</th><th>&gt;50</th><th>BOLAS</th><th>TONTA</th></tr>'+rows+'</table>'+
@@ -1843,7 +1865,7 @@ function fit(){
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
 window.__egg={get T(){return T},get rainEaten(){return rainEaten},get mouthKnown(){return mouthKnown},get speed(){return speed},get CFG(){return CFG},ptrDir,get pts(){return pts},get combo(){return combo},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
-  set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},
+  set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},get dirt(){return dirt},get lostLog(){return lostLog},get ballHits(){return ballHits},get maxCombo(){return maxCombo},get modo(){return modo},setModo,
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
     const u=Math.floor(S/24),o=Math.floor((S-24*u)/2);

@@ -21,10 +21,11 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 - Só a **primeira bola da partida** é apresentada (DESVIE!). As apresentações aos 10, 30 e 50 ovos saíram: eram do tempo do disfarce e só quebravam o ritmo
 
 ## Modos de jogo
-Na tela inicial, escolha **NORMAL** ou **CONSTANTE** (a escolha fica salva no aparelho):
+Na tela inicial, escolha **NORMAL**, **CONSTANTE** ou **BOLA** (a escolha fica salva no aparelho):
 - **NORMAL:** a curva de dificuldade de sempre, que sobe com os ovos e os níveis (galinhas no poleiro)
 - **CONSTANTE** (como o Flappy Bird): a dificuldade **não muda** do primeiro ao último ovo. O jogo fica sempre no ponto da curva dos 30 ovos: queda ~2,0 s, um objeto a cada ~1,1 s, ~35% de bolas e até 3 objetos ao mesmo tempo, com 3 galinhas fixas no poleiro. Só **ovo e bola**: sem nível (pintinho/galinha), sem ovo podre, sem dourado e sem rugido/Chuva de Ovos (o botão do rugido some). Combo e medalhas continuam iguais
-- Cada modo tem o **seu recorde**. As partidas no constante ficam fora do `?stats=1` e aparecem como **(CONSTANTE)** na comparação do menu AJUSTES
+- **BOLA**: a mesma curva do NORMAL, mas **só a bola tira vida** (pancada ou engolida; 5 vidas, voltam na Chuva de Ovos). Perder um ovo **não tira vida**: **suja o chão** (até 5 gotas amarelas embaixo das vidas). Cada gota deixa o chão mais escorregadio (a raposa acelera menos e desliza mais), e o fazendeiro joga mais bolas (+10 p.p. por gota, teto 75%), mira melhor (+10 p.p.) e espera menos entre bolas (6 s → 3 s). A Chuva de Ovos limpa o chão. Os ovos perdidos também andam a curva (comidos + perdidos), para que deixar os ovos caírem não deixe o jogo fácil. No 1º ovo perdido aparece **CHÃO ESCORREGADIO! / E VEM MAIS BOLA**
+- Cada modo tem o **seu recorde**. As partidas no constante e no bola ficam fora do `?stats=1` e aparecem como **(CONSTANTE)** / **(BOLA)** na comparação do menu AJUSTES
 
 ## Aprender e continuar jogando (v2)
 - **Uma novidade por vez:** entre uma regra nova e a próxima passam pelo menos **20 s**. Isso vale para a 1ª bola, o 1º pintinho/galinha, o 1º rugido, o 1º ovo podre e o 1º dourado. Se a próxima já pode chegar (pela pontuação), ela espera o intervalo; o botão do rugido fica quase cheio até lá
