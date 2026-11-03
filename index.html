@@ -1026,7 +1026,7 @@ const phaseOf=s=>s<10?0:s<30?1:s<50?2:3;
 // (desde os ajustes de teste: T.fallK, padrao .9)
 function level(){const s=curveS(),fall=Math.round(60*T.fallK*(1.6+1.4*Math.exp(-s/40)));
   return{fall,vmax:vmaxFor(fall),interval:Math.round(60*(.7+.9*Math.exp(-s/35))),
-    ballP:T.ballMax/100*(1-Math.exp(-s/25)),maxOn:s<5?(vet&&!CONST()?2:1):s<20?2:s<100?3:4,phase:phaseOf(s)};}
+    ballP:T.ballMax/100*(1-Math.exp(-s/25)),maxOn:s<5?1:s<20?2:s<100?3:4,phase:phaseOf(s)};}
 // os objetos saem do poleiro (Y0): a galinha bota, o fazendeiro joga. O tempo de queda da curva vale a partir dai.
 function fallFrames(vmax,target){let y=Y0,vy=Math.min(.5,vmax),n=0;while(y<target&&n<900){vy=Math.min(vy+.025,vmax);y+=vy;n++;}return n;}
 // onde um objeto que nasce agora em x0 vai estar quando chegar a altura target (mesma conta do update)
