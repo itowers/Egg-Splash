@@ -467,7 +467,8 @@ const FOME_ON=()=>BOLA()&&BOLA_VAR==='fome';
 /* CHUTE (?chute=1 liga e fica salvo; ?chute=0 desliga), vale em todos os modos: a bola quica e fica no chao.
    Quando a raposa encosta, chuta: se veio correndo de longe (KICK_RUN px sem parar), a bola voa para o lado e pode
    sair da tela; se estava pertinho, a bola sai rolando. O chute corta o embalo e deixa a raposa lenta por um instante
-   (KICK_SLOW), sem travar o controle. No maximo FLOOR_MAX bolas no chao (a mais antiga pisca e some); a Chuva de Ovos limpa tudo. */
+   (KICK_SLOW), sem travar o controle. Nenhuma bola some do nada: as laterais sao abertas (a bola sai rolando ou voando), com mais de FLOOR_MAX no chao a mais antiga
+   vai embora rolando, e no rugido o chao treme e todas saem rolando pela lateral mais perto. */
 const CHUTE=(()=>{const m=location.search.match(/[?&]chute=([01])/);try{if(m)localStorage.setItem('eggsplash-chute',m[1]);return (m?m[1]:localStorage.getItem('eggsplash-chute'))==='1';}catch(e){return !!m&&m[1]==='1';}})();
 const KICK_RUN=24,FLOOR_MAX=5,KICK_SLOW=.35;let kicks=[0,0]; // telemetria: [de longe, de perto]
 let full=0,hungerHint=0,minFull=9,boldSeen=0,bPlayF=0,weakF=0,hitWeak=0,hitNerv=0,pzClean=0,firstHit=0,rotEaten=0; // telemetria do BOLA (v11)
@@ -1138,7 +1139,8 @@ function planHearts(n){
 }
 function startRain(){
   rainT=RAIN_LEN;rainRun=0;heartsToDrop=MAXL()-lives;heartPlan=planHearts(heartsToDrop);sfx.rain();
-  for(const it of items)if(it.type==='ball'||it.type==='rotten'){it.dead=true;burst(it.x+4,it.y+4,8,[PAL.t,PAL.y],1.2,1.2);}
+  for(const it of items)if(CHUTE&&it.type==='ball')leaveBall(it,true); // CHUTE: o chao treme e as bolas saem rolando pelas laterais
+    else if(it.type==='ball'||it.type==='rotten'){it.dead=true;burst(it.x+4,it.y+4,8,[PAL.t,PAL.y],1.2,1.2);}
     else if(it.wait>0)it.wait=0; // a galinha levou um susto e soltou o ovo que ia botar
   items=items.filter(i=>!i.dead);
   for(const h of hens){h.home=h.x;h.fy=LEDGE_Y-12;h.vx=(Math.random()-.5)*3;h.vy=-1-Math.random();} // todas levantam voo
@@ -1186,9 +1188,13 @@ function floorBall(it,body){const h=9;
   if(it.y+h>=GROUND){it.y=GROUND-h;
     if(Math.abs(it.vy)>1){it.vy=-Math.abs(it.vy)*.55;it.b=(it.b||0)+1;sfx.bounce(Math.min(it.b,4));it.vx*=.9;}
     else{it.vy=0;it.fly=false;it.vx*=.985;if(Math.abs(it.vx)<.05)it.vx=0;}} // rola e para
-  if(it.fly){if(it.x<-12||it.x>W+4){it.dead=true;return;}} // chute de longe: pode sair da tela
-  else{if(it.x<0){it.x=0;it.vx=Math.abs(it.vx)*.6;}if(it.x>W-9){it.x=W-9;it.vx=-Math.abs(it.vx)*.6;}}
-  if(!it.nok&&!it.fade&&fox.stun===0&&hit(it,9,h,body))kick(it);}
+  if(it.leave&&it.vy===0&&Math.abs(it.vx)<1.2)it.vx=it.leave*1.2; // indo embora: rola sem parar ate sair
+  if(it.vy===0&&it.x<0)it.vx=Math.min(it.vx,-.6);if(it.vy===0&&it.x>W-9)it.vx=Math.max(it.vx,.6); // meio fora da tela: termina de sair
+  if(it.x<-12||it.x>W+4){it.dead=true;return;} // sai rolando (ou voando) pela lateral: nunca some do nada
+  if(!it.leave&&!it.nok&&!it.fade&&fox.stun===0&&hit(it,9,h,body))kick(it);}
+// a bola vai embora rolando para a lateral mais perto (limite de bolas no chao e susto do rugido)
+function leaveBall(it,jump){const d=it.x+4.5<W/2?-1:1;it.leave=d;it.fly=false;it.nok=0;it.vx=d*(1.4+Math.random()*.8);
+  if(jump&&it.state!=='fall'){it.vy=-1.3-Math.random()*1.2;it.y=Math.min(it.y,GROUND-10);}}
 function kick(it){const fc=fox.x+8,bc=it.x+4.5,s=bc<fc?-1:1,run=fox.big?99:fox.run;
   if(run>=KICK_RUN&&Math.sign(fox.vx)===s){ // veio correndo de longe: a bola voa para o lado
     const p=Math.min(1,(run-KICK_RUN)/50);it.vx=s*(2.3+1.4*p);it.vy=-2-1.3*p;it.fly=true;kicks[0]++;
@@ -1440,6 +1446,7 @@ function update(){
           it.dead=true;sfx.smash();burst(it.x+4,it.y+5,8,['#a3ad5e','#6f7a34',PAL.y],1.5,1.5);continue;}
         if(fox.mouth&&hit(it,w,h,mouthZ)){eatRotten(it);continue;}
         else if(hit(it,w,h,body)){it.state='bonk';it.vy=-1.8;it.vx=(it.x+4<fox.x+8?-1:1)*.9;sfx.tock();}
+      }else if(it.leave){ // bola indo embora (susto do rugido): cai sem acertar ninguem
       }else if(fox.big&&(hit(it,w,h,body)||(fox.mouth&&hit(it,w,h,mouthZ)))){smashAway(it);
       }else if(fox.mouth&&hit(it,w,h,mouthZ)){ // engole a bola: mesmo efeito da pancada, mas a bola some
         it.dead=true;fox.chew=EAT_T;fox.eatImg=ballSet(it.ph)[0];fox.gulp=true;fox.fat=FAT_T;
@@ -1456,7 +1463,7 @@ function update(){
         if(it.type==='egg')breakEgg(it);
         else if(it.type==='rotten')breakRotten(it);
         else{it.y=GROUND-h;it.state='bounce';it.t=0;it.vy=-Math.abs(it.vy)*.6;
-          it.vx=0;it.b=0;sfx.bounce(0);}
+          it.vx=it.leave?it.vx:0;it.b=0;sfx.bounce(0);}
       }
     }else if(CHUTE&&it.type==='ball'){floorBall(it,body);
     }else{
@@ -1472,7 +1479,7 @@ function update(){
     }
   }
   items=items.filter(i=>!i.dead);
-  if(CHUTE){const fl=items.filter(i=>i.type==='ball'&&i.state!=='fall'&&!i.fade);if(fl.length>FLOOR_MAX)fl[0].fade=40;}
+  if(CHUTE){const fl=items.filter(i=>i.type==='ball'&&i.state!=='fall');if(fl.filter(i=>!i.leave).length>FLOOR_MAX)leaveBall(fl.find(i=>!i.leave));}
   for(const p of puddles)p.life--;
   puddles=puddles.filter(p=>p.life>0);
 }
@@ -1657,7 +1664,7 @@ function render(){
         if(it.intro&&it.state==='fall')text(FOME_ON()?'MATA A FOME, MAS ENJOA':'NÃO COMA!',it.x+4,it.y-13,1,'#c9cf7a','center',PAL.k);
       }
       if(it.type==='ball'&&it.intro&&it.state==='fall')text('DESVIE!',it.x+4,it.y+12,1,PAL.t,'center',PAL.k);
-      if(CHUTE&&it.type==='ball'&&it.state!=='fall'&&!it.fade&&kicks[0]+kicks[1]===0&&state==='play')text('CHUTE!',it.x+4,it.y-8,1,PAL.t,'center',PAL.k); // ensina o chute ate o 1o
+      if(CHUTE&&it.type==='ball'&&it.state!=='fall'&&!it.leave&&kicks[0]+kicks[1]===0&&state==='play')text('CHUTE!',it.x+4,it.y-8,1,PAL.t,'center',PAL.k); // ensina o chute ate o 1o
       if(it.type==='egg'&&!it.rain&&!mouthKnown&&it.state==='fall'&&state==='play'&&frame%24<16){ // 1a partida: ensina a abrir a boca
         const hs='SEGURE A BOCA!',hw=Math.ceil(textW(hs)/2);text(hs,clamp(Math.round(it.x)+4,hw+1,W-hw-1),Math.round(it.y)-11,1,PAL.y,'center',PAL.k);}
     }
