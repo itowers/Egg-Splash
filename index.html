@@ -432,7 +432,9 @@ const HENS_START=[66],HENS_MAX=7;
 /* Modo BOLA: a mesma curva do NORMAL, mas a vida so cai quando a bola acerta a raposa (pancada ou engolida).
    Perder o ovo nao tira vida: suja o chao (DIRT_MAX niveis). Chao sujo = escorrega mais (acelera menos e freia menos) e
    o fazendeiro joga mais bolas e mira melhor. A Chuva de Ovos limpa o chao (junto com os splashes), como sempre. */
-let modo='normal';try{const m=localStorage.getItem('eggsplash-modo');if(m==='constante'||m==='bola')modo=m}catch(e){}
+// PR #56 (pedido do Igor): o BOLA e o modo oficial. Fora do modo de teste o jogo e sempre BOLA e a home nao mostra os modos;
+// no modo de teste os botoes NORMAL / CONSTANTE / BOLA voltam (e o modo escolhido fica salvo).
+let modo='bola';function loadModo(){modo='bola';if(DEBUG)try{const m=localStorage.getItem('eggsplash-modo');if(m==='normal'||m==='constante')modo=m}catch(e){}}
 const CONST=()=>modo==='constante',CONST_S=30,HENS_CONST=[30,66,102];
 const BOLA=()=>modo==='bola',DIRT_MAX=5;
 /* v2 do BOLA: o chao sujo tambem deixa o FAZENDEIRO BRAVO (cara vermelha). 1+ = corre mais e avisa menos (0,7 s -> 0,4 s);
@@ -908,6 +910,7 @@ const TUNE_PRESETS={
 let DEBUG=false;
 try{const m=location.search.match(/[?&]debug=([01])/i);if(m)localStorage.setItem('eggsplash-debug',m[1]);
   DEBUG=localStorage.getItem('eggsplash-debug')==='1';}catch(e){}
+loadModo();
 // fora do modo de teste o jogo usa sempre o padrao (os ajustes ficam guardados para quando ligar de novo)
 function loadCfg(){const c={...TUNE_DEF};if(DEBUG)try{const o=JSON.parse(localStorage.getItem('eggsplash-tune')||'{}');for(const k in o)if(k in TUNE_DEF)c[k]=o[k];}catch(e){}return c;}
 let CFG=loadCfg();
@@ -1699,8 +1702,8 @@ function render(){
     {const k=Math.floor(frame/30)%2,cx=W/2,cy=90,h=k?6:5; // play: triangulo pulsando
       ctx.fillStyle=PAL.k;for(let i=-h-1;i<=h+1;i++){const w=Math.round((h+1-Math.abs(i))*1.4)+1;ctx.fillRect(cx-4,cy+i,w+1,1);}
       ctx.fillStyle=PAL.r;for(let i=-h;i<=h;i++){const w=Math.round((h-Math.abs(i))*1.4);if(w>0)ctx.fillRect(cx-3,cy+i,w,1);}}
-    drawModeBtns();
-    if(best){const tw=textW(best,1);ctx.drawImage(PILE,W/2-(tw+11)/2,123);text(best,W/2-(tw+11)/2+11,124,1,PAL.d,'left');} // recorde: so o icone dos pontos e o numero
+    if(DEBUG)drawModeBtns(); // os modos so aparecem no modo de teste
+    if(best){const tw=textW(best,1),ry=DEBUG?123:110;ctx.drawImage(PILE,W/2-(tw+11)/2,ry);text(best,W/2-(tw+11)/2+11,ry+1,1,PAL.d,'left');} // recorde: so o icone dos pontos e o numero
     if(DEBUG){const d=tuneDiff(CFG),n=tuneLabel(d),k=Object.keys(d).length,l='AJUSTE: '+(n.includes(' ')?'PERSONALIZADO ('+k+')':n);ctx.fillStyle='rgba(27,27,31,.85)';ctx.fillRect(4,141,W-8,8);
       text(l,W/2,142,1,PAL.y);}
     drawFox(W/2-8,false,Math.floor(frame/45)%2===1,0,0,1,false);
@@ -1908,7 +1911,7 @@ const roarBtn=document.getElementById('broar');
 roarBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();unlockAudio();roarDown=8;if(state==='play')doRoar();else act('botao');});
 cv.addEventListener('pointerdown',e=>{e.preventDefault();
   const r=cv.getBoundingClientRect(),x=(e.clientX-r.left-cv.clientLeft)/cv.clientWidth*W,y=(e.clientY-r.top-cv.clientTop)/cv.clientHeight*H;
-  if(state==='title'&&!pyrOpen()&&!tuneOpen()&&!menuOpen()&&y>=MODE_Y-4&&y<=MODE_Y+MODE_H+4){const b=MODES.find(b=>x>=b.x-2&&x<=b.x+b.w+2); // escolher o modo nao comeca a partida
+  if(state==='title'&&DEBUG&&!pyrOpen()&&!tuneOpen()&&!menuOpen()&&y>=MODE_Y-4&&y<=MODE_Y+MODE_H+4){const b=MODES.find(b=>x>=b.x-2&&x<=b.x+b.w+2); // escolher o modo nao comeca a partida
     if(b){unlockAudio();setModo(b.m);return;}}
   if(state==='over'){
     if(x>=PB.x-3&&x<=PB.x+PB.w+3&&y>=PB.y-3&&y<=PB.y+PB.h+3){unlockAudio();openPyr();return;}}
@@ -1943,7 +1946,7 @@ mb('mtune',()=>{closeMenu(false);openTune();});
 menuEl.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===menuEl)closeMenu(true);}); // tocar fora da caixa = continuar
 let dbgTaps=0,dbgT=0;
 document.getElementById('menuhd').addEventListener('pointerdown',e=>{const n=performance.now();dbgTaps=n-dbgT<800?dbgTaps+1:1;dbgT=n; // 5 toques seguidos: modo de teste
-  if(dbgTaps>=5){dbgTaps=0;DEBUG=!DEBUG;try{localStorage.setItem('eggsplash-debug',DEBUG?'1':'0')}catch(_){}
+  if(dbgTaps>=5){dbgTaps=0;DEBUG=!DEBUG;try{localStorage.setItem('eggsplash-debug',DEBUG?'1':'0')}catch(_){}{const was=modo;loadModo();if(modo!==was){loadBest();resetFarm();roarUI='';}}
     CFG=loadCfg();if(state!=='play'&&state!=='pause')T={...CFG};if(!DEBUG&&speed===2){speed=1;}syncCtrl();drawTuneBtn();drawSpd();
     tone(DEBUG?1319:440,0,.08,'square',.05);menuInfo.textContent=DEBUG?'MODO DE TESTE LIGADO':'MODO DE TESTE DESLIGADO';renderMenu();}});
 document.getElementById('pause').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();
