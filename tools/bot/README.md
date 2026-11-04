@@ -1,9 +1,9 @@
 # Bot de testes do Egg Splash
 
-Simula partidas no Chromium (tamanho de iPhone 13) para comparar modos e calibrar a dificuldade. Precisa de Node e Playwright (`npm i playwright`).
+Simula partidas no Chromium (tamanho de iPhone 13) para calibrar a dificuldade do BOLA (o único modo). Precisa de Node e Playwright (`npm i playwright`).
 
 ```sh
-MODES=normal,bola node tools/bot/bot.js 40 600 > saida.json   # 40 partidas por modo e perfil, até 600 s
+node tools/bot/bot.js 40 600 > saida.json   # 40 partidas por perfil, até 600 s
 python3 tools/bot/analise.py saida.json                        # duração, ovos, 1ª vida, perdas em sequência
 node tools/bot/perfeito.js                                     # BOLA: quem come todos os ovos nunca fica fraco?
 ```

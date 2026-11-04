@@ -3,7 +3,7 @@ const {chromium,devices}=require('playwright');
 // Uso: node tools/bot/perfeito.js  (FOME=max,start,rate para testar outros valores)
 const FO=(process.env.FOME||'3,0.6667,0.18').split(',').map(Number);
 (async()=>{const b=await chromium.launch();const ctx=await b.newContext({...devices['iPhone 13']});
-await ctx.addInitScript(()=>{window.requestAnimationFrame=()=>0;localStorage.setItem('eggsplash-boca','1');localStorage.setItem('eggsplash-modo','bola')});
+await ctx.addInitScript(()=>{window.requestAnimationFrame=()=>0;localStorage.setItem('eggsplash-boca','1')});
 const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e)));
 await p.goto('file://'+require('path').resolve(__dirname,'../../index.html'));await p.waitForTimeout(300);
 const r=await p.evaluate((FO)=>{const E=__egg,res=[];E.FOME.max=FO[0];E.FOME.start=FO[1];E.FOME.rate=FO[2];
