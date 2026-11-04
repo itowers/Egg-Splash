@@ -27,7 +27,8 @@ O BOLA é o único modo desde 04/11/2026: o NORMAL e o CONSTANTE saíram do jogo
 - **Vida:** 5 corações. A **bolinha de tênis** do fazendeiro tira um (pancada ou engolida) e a **fome** também: com a barriga vazia a raposa fica fraca (60% da velocidade), perde 1 coração depois de 6 s e mais 1 a cada 4 s até comer. A fome pode matar.
 - **Barriga:** guarda 3 ovos, começa com 2 e esvazia sempre (0,14 / 0,16 / 0,18 ovo/s). Aparece em cima da raposa quando chega na metade. Ovo comido, da chuva, dourado e podre alimentam (o podre enjoa 1 s).
 - **Ovo perdido** não tira vida: vira poça escorregadia, que some depois de 5 passadas completas da raposa.
-- **Grito (rugido):** só comendo, 10 ovos no nível 1, +2 por nível. Chama a Chuva de Ovos, onde caem os corações perdidos; depois o fazendeiro fica bravo por 5 s.
+- **A Chuva de Ovos não limpa o chão** (desde 04/11/2026): as poças ficam e os ovos da chuva no ar continuam caindo e viram poças coloridas, que somem com 3 passadas. Limpar não dá nada; só tira o escorregão. Ovo que cai em cima de uma poça não empilha outra. `?chao=0` volta a chuva que limpa.
+- **Grito (rugido):** só comendo, 10 ovos no nível 1, +2 por nível. Chama a Chuva de Ovos, onde caem os corações perdidos (a chuva não limpa mais o chão); depois o fazendeiro fica bravo por 5 s.
 - **Fazendeiro:** tem medo (gota de suor); ameaça desde o começo (pelo menos 35% de bolas).
 - **Curva:** anda por ovos comidos + perdidos. Recorde em `eggsplash-pts-b`. Telemetria em `?stats=1`. `?bola=vinganca` troca a fome pela bola da vingança (teste). Bot em `tools/bot/`.
 
