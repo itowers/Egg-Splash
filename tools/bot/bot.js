@@ -1,8 +1,8 @@
-// Bot para comparar os modos (NORMAL x BOLA). Uso: MODES=normal,bola node tools/bot/bot.js <partidas> <maxSeg> > saida.json
+// Bot para calibrar o jogo (BOLA, o unico modo). Uso: node tools/bot/bot.js <partidas> <maxSeg> > saida.json
 // Perfis: bom, medio, desvia (nao come, so desvia), desviaBom. O bot sabe onde a bola vai cair, entao desvia melhor que uma pessoa.
 // FOME=max,start,rate sobrescreve a fome do BOLA para calibrar.
 const {chromium,devices}=require('playwright');
-const FO=process.env.FOME?process.env.FOME.split(',').map(Number):null,MODES=(process.env.MODES||'normal,bola').split(',');const N=+process.argv[2]||10,MAXS=+process.argv[3]||360;
+const FO=process.env.FOME?process.env.FOME.split(',').map(Number):null;const MODES=['bola'];const N=+process.argv[2]||10,MAXS=+process.argv[3]||360;
 const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html');
 const PROFILES={
   bom:  {react:10,err:3,missBall:.08,mouthLate:.05},
@@ -20,7 +20,7 @@ const PROFILES={
   const out=[];
   for(const modo of MODES)for(const [pn,P] of Object.entries(PROFILES))for(let g=0;g<N;g++){
     const r=await page.evaluate(({modo,P,MAXS,seed,FO})=>{
-      const E=window.__egg;if(FO){E.FOME.max=FO[0];E.FOME.start=FO[1];E.FOME.rate=FO[2];}E.setModo(modo);E.reset();
+      const E=window.__egg;if(FO){E.FOME.max=FO[0];E.FOME.start=FO[1];E.FOME.rate=FO[2];}E.reset();
       const GROUND=E.fox?null:null;
       let f=0,dirL=0,mouth=false,ballLife0=E.lives,firstLoss=null,hitsByDirt=[0,0,0,0,0,0],framesByDirt=[0,0,0,0,0,0],lostEggs=0,maxDirt=0;
       let TL={eat:[],ball:[],lvl:[],roar:[],weak:[],dirt:[],ballP:[]},prevS=0,prevL=1,roarsN=0,weakF=0,lastLives=E.lives,lastScore=0,lossTimes=[],hits=0;
@@ -45,7 +45,7 @@ const PROFILES={
         if(E.score>prevS){TL.eat.push(f/60);prevS=E.score;} if(E.lvl!==prevL){TL.lvl.push([f/60,E.lvl]);prevL=E.lvl;}
         for(const it of E.items)if(it.type==='ball'&&it.t===1&&!it._c){it._c=1;TL.ball.push(f/60);}
         if(f%60===0){TL.dirt.push(E.dirt||0);TL.weak.push(E.full<=1e-6?1:0);TL.ballP.push(+E.level().ballP.toFixed(3));}
-        const d=E.dirt||0;framesByDirt[d]++;if(E.full<=1e-6&&modo==="bola")weakF++;maxDirt=Math.max(maxDirt,d);
+        const d=E.dirt||0;framesByDirt[d]++;if(E.full<=1e-6)weakF++;maxDirt=Math.max(maxDirt,d);
         if(E.lives<lastLives){lossTimes.push(f/60);hitsByDirt[d]++;if(firstLoss===null)firstLoss=f/60;}
         lastLives=E.lives;
       }
@@ -56,7 +56,7 @@ const PROFILES={
     r.perfil=pn;out.push(r);process.stderr.write('.');
   }
   // tira prints do modo BOLA
-  await page.evaluate(()=>{const E=__egg;E.setModo('bola');E.reset();for(let i=0;i<600;i++)E.update();for(let i=0;i<3;i++)E.puddle(20+i*40);E.render();});
+  await page.evaluate(()=>{const E=__egg;E.reset();for(let i=0;i<600;i++)E.update();for(let i=0;i<3;i++)E.puddle(20+i*40);E.render();});
   await b.close();
   console.log(JSON.stringify({out,errs}));
 })();

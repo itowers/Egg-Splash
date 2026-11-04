@@ -4,7 +4,7 @@ import json,statistics as st,sys
 def M(v):
   return st.median(v) if v else float('nan')
 d=json.load(open(sys.argv[1]))['out']
-for m in ['normal','bola']:
+for m in ['bola']:
   for p in ['bom','medio','desvia']:
     G=[x for x in d if x['perfil']==p and x['modo']==m]
     if not G:continue
