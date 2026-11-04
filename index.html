@@ -486,12 +486,11 @@ const WEAK_STEP=4*60,BOLD_P=.45,BOLD_AIM=.4,BOLD_PAIR=.5;let weakT=0;
 const weakK=()=>weak()?FRACA_K:1; // PR #53: sem a lentidao progressiva (a escalada agora e perder coracao)
 const bold=()=>false; // PR #53: o fazendeiro nao fica mais bravo com a raposa fraca (so com o susto do grito)
 /* PR #53 (pedido do Igor): sem comer, a fome tira coracao. Barriga vazia por STARVE_1 (6 s) = -1 coracao; depois um a cada
-   STARVE_N (4 s). A barra vazia enche de vermelho como contagem. A fome nao tira o ULTIMO coracao (quem mata sao as 5
-   boladas). Enquanto a raposa esta fraca, o proximo ovo e garantido perto dela (ovo de resgate). */
+   STARVE_N (4 s). A barra vazia enche de vermelho como contagem. Desde o PR #54 a fome tambem tira o ultimo coracao (pode matar). Enquanto a raposa esta fraca, o proximo ovo e garantido perto dela (ovo de resgate). */
 const STARVE_1=6*60,STARVE_N=4*60;let starveNext=STARVE_1,starveSeen=0,hf=0;
 const starveP=()=>{const prev=starveNext===STARVE_1?0:starveNext-STARVE_N,len=starveNext===STARVE_1?STARVE_1:STARVE_N;return Math.max(0,Math.min(1,(weakT-prev)/len));};
-function starveTick(){if(weakT<starveNext)return;starveNext+=STARVE_N;if(lives<=1)return;
-  lives--;losses.push('fome');logLoss('fome');hf++;shake=7;sfx.hurt();bellyHit=20;}
+function starveTick(){if(weakT<starveNext)return;starveNext+=STARVE_N; // PR #54: a fome tambem tira o ultimo coracao
+  lives--;losses.push('fome');logLoss('fome');hf++;shake=7;bellyHit=20;if(lives>0)sfx.hurt();else gameOver();}
 function starve(){} // ovo perdido: nao tira da barriga (so deixa de encher); o castigo e o chao sujo
 function fullShown(){return Math.max(0,full);}
 function hungerTick(){if(BOLA()){bPlayF++;if(full<=1e-6&&FOME_ON())weakF++;}if(!FOME_ON()||rainT>0||fox.big>0)return;const was=full>1e-6;if(full<=1e-6){weakT++;starveTick();}else{weakT=0;starveNext=STARVE_1;}
