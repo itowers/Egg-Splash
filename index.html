@@ -223,6 +223,13 @@ const BODY=[
 "..kooowwwwoookwk",
 "..kooooooooookk.",
 ];
+// microanimacao: o rabo balanca (mesmo corpo, com o rabo mais alto e a ponta branca em cima)
+const BODY_W=[
+"...kooowwoookkwk",
+"..kooowwwwoookok",
+"..kooowwwwoookk.",
+"..kooooooooook..",
+];
 const LEGS=[
 ["...kdk....kdk...","...kkk....kkk..."],
 ["....kdk..kdk....","....kkk..kkk...."],
@@ -231,7 +238,8 @@ const LEGS=[
 const FOX={};
 const FOX_PAL={...PAL,m:'#5a1622'}; // m = dentro da boca
 for(const [name,head] of [['c',HEAD],['o',HEAD_OPEN],['s',HEAD_SMILE],['m',HEAD_CHEW]])
-  LEGS.forEach((l,i)=>{const rows=[...head,...BODY,...l];FOX[name+i]=[bake(rows,false,FOX_PAL),bake(rows,true,FOX_PAL)];});
+  LEGS.forEach((l,i)=>{const rows=[...head,...BODY,...l];FOX[name+i]=[bake(rows,false,FOX_PAL),bake(rows,true,FOX_PAL)];
+    const rw=[...head,...BODY_W,...l];FOX[name+i+'w']=[bake(rw,false,FOX_PAL),bake(rw,true,FOX_PAL)];});
 // pedaco de cima do ovo depois da mordida: borda em zigue-zague com gema aparecendo
 const BITES=new Map();
 function bitten(img){if(BITES.has(img))return BITES.get(img);
@@ -320,6 +328,7 @@ const EGG_COLS=[['#f7a1c4','#d9779f'],['#8ecdf5','#5e9ed0'],['#9be09a','#62b066'
   ['#ffe066','#d9b23a'],['#c7a2f0','#9a74cf'],['#ffb36b','#d9853f']];
 const EGG_ROWS=["...kk...","..kwwk..",".kwtwck.",".ktwwck.","kwtwwwck","kwwwwwck","kwwwwwck","kwwwwwck",".kwwwck.","..kkkk.."];
 const RAIN_EGGS=EGG_COLS.map(c=>bake(EGG_ROWS,false,{...PAL,w:c[0],c:c[1],t:'#ffffff'}));
+const HEART_PULSE=bake([".kkk.kkk.","krrrkrrrk","krtrrrrrk","krrrrrrrk",".krrrrrk.","..krrrk..","...krk...","....k...."]); // ultimo coracao batendo
 const HEART_BIG=bake([".kk...kk.","krrk.krrk","krtrkrrrk","krrrrrrrk",".krrrrrk.","..krrrk..","...krk...","....k...."]);
 const STAR=bake(["..y..",".yyy.","yyyyy",".yyy.","..y.."]);
 // pintinho (olhando para a direita): [parado, pulando]
@@ -398,6 +407,8 @@ const HEN=HEN_ROWS.map(r=>[bake(r,false),bake(r,true)]);
 const LEDGE_Y=33; // topo da tabua do poleiro
 const HEN_SIT=[...HEN_TOP,".kwwwkwwwwk.","kwwwwccwwwk.","kwwwwwcwwwk.",".kwwwwwwwk..","..kkkkkkk..."];
 const HENS_SIT=[bake(HEN_SIT,false),bake(HEN_SIT,true)];
+const HEN_PECK=["............","............","........rr..",".......rrrr.","...k..kwwwk.","..kwk.kwkwwo","......kwwwwoo",...HEN_SIT.slice(7)];
+const HENS_PECK=[bake(HEN_PECK,false),bake(HEN_PECK,true)]; // microanimacao: bicando o poleiro
 const HEN_GOLD=[bake(HEN_SIT,false,{...PAL,w:'#f4c430',c:'#b8861a'}),bake(HEN_SIT,true,{...PAL,w:'#f4c430',c:'#b8861a'})];
 const FARMER_TOP=[
 "....hhhhh....",
@@ -777,10 +788,13 @@ function drawBarn(){
   ctx.save();ctx.clip(BARN_CLIP);drawOutdoor();ctx.restore();
   ctx.drawImage(barnDark(Math.round(clamp(nk*.85+cov*.3+(t>.44&&t<.6?.15:0),0,1)*8)),0,0);
   const lk=q(nk,4);if(lk<=0)return;
-  for(const x of BARN_LAMPS){
-    ctx.globalAlpha=lk*.07;ctx.drawImage(LAMP_GLOW[0],x-19,36);ctx.globalAlpha=lk*.18;ctx.drawImage(LAMP_GLOW[1],x-10,42);ctx.globalAlpha=1;
-    if(lk>.5){ctx.fillStyle='#ffe9a0';ctx.fillRect(x-1,50,3,1);ctx.fillStyle='#ffffff';ctx.fillRect(x,50,1,1);
-      for(let k=0;k<14;k++){ctx.fillStyle='rgba(255,226,140,'+(.22-k*.012)+')';ctx.fillRect(x-4-Math.floor(k/2),51+k,9+2*Math.floor(k/2),1);}}}
+  BARN_LAMPS.forEach((x,i)=>{
+    const sw=ANIM?Math.sin(frame*.022+i*2.3)*1.6:0,fl=ANIM&&(frame+i*137)%420<4?.6:1,L=lk*fl; // luminaria balanca de leve e as vezes pisca
+    ctx.globalAlpha=L*.07;ctx.drawImage(LAMP_GLOW[0],x-19,36);ctx.globalAlpha=L*.18;ctx.drawImage(LAMP_GLOW[1],x-10,42);ctx.globalAlpha=1;
+    if(lk>.5){ctx.fillStyle=fl<1?'#d8c070':'#ffe9a0';ctx.fillRect(x-1,50,3,1);ctx.fillStyle=fl<1?'#ffe9a0':'#ffffff';ctx.fillRect(x,50,1,1);
+      for(let k=0;k<14;k++){const o=Math.round(sw*k/14);ctx.fillStyle='rgba(255,226,140,'+((.22-k*.012)*fl)+')';ctx.fillRect(x-4-Math.floor(k/2)+o,51+k,9+2*Math.floor(k/2),1);}
+      if(ANIM)for(let m=0;m<5;m++){const k=(m*5.3+frame*.035*(1+m%2*.4))%13,hw=4+Math.floor(k/2),mx=x+Math.round(Math.sin(frame*.013+m*1.7)*hw*.8+sw*k/14); // poeira brilhando na luz
+        ctx.fillStyle='rgba(255,248,220,'+(.55*Math.sin(k/13*Math.PI))+')';ctx.fillRect(mx,52+Math.round(k),1,1);}}});
 }
 function drawWorld(){if(BARN)drawBarn();else drawOutdoor();}
 function drawDrops(){if(!BARN)return drawDropsOutdoor();ctx.save();ctx.clip(BARN_CLIP);drawDropsOutdoor();ctx.restore();} // a chuva so aparece no vao
@@ -1027,9 +1041,62 @@ function startEat(img){fox.chew=EAT_T;fox.eatImg=img;fox.gulp=false;}
 const fox={queasy:0,roar:0,eatImg:null,fat:0,x:W/2-8,vx:0,face:1,mouth:false,stun:0,inv:0,chew:0,walk:0,slip:false,onP:false,halt:0,sick:0,big:0};
 const keys={l:false,r:false,m:false},touch={l:false,r:false,m:false};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+/* ---------- microanimacoes (so visual: nao mudam nada no jogo) ----------
+   Raposa: respira (ofega depois de correr), pisca, abana o rabo, levanta as orelhas quando o fazendeiro ergue a bola,
+   barriga ronca com fome, fraca fica de cabeca baixa, escorregando abre os bracos, lambe o focinho depois de comer,
+   achata e solta poeira ao virar ou frear. Fazendeiro: treme de medo, gota escorre e cai, olhos seguem a raposa,
+   respira fundo antes de jogar. Galinhas: bicam, se arrumam, piscam e soltam peninha ao botar.
+   Ovos balancam caindo; a poca treme com a raposa em cima. Celeiro: feno caindo, luminarias balancando, poeira na luz.
+   HUD: ultimo coracao batendo e pop nos pontos. ?anim=0 desliga tudo para comparar. */
+const ANIM=!/[?&]anim=0/.test(location.search);
+const MA={br:0,pant:0,blink:0,nextBlink:200,tail:0,lick:0,sq:0,pvx:0,alert:0,rumble:0,nextRumble:120,pop:0,lastPts:0,prevChew:0,hens:[],fx:[],nextHay:300};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function animTick(){
+  if(!ANIM)return;
+  const play=state==='play',sp=Math.abs(fox.vx),wk=play&&weak();
+  // respiracao: ~1,3 s parada; correndo muito ofega (ate ~0,4 s) e volta aos poucos; fraca respira devagar e fundo
+  if(play&&sp>T.spd*.75)MA.pant=Math.min(1,MA.pant+1/200);else MA.pant=Math.max(0,MA.pant-1/320);
+  MA.br+=1/(wk?110:80-56*MA.pant);
+  // piscar (as vezes duas vezes)
+  if(MA.blink>0)MA.blink--;else if(--MA.nextBlink<=0){MA.blink=7;MA.nextBlink=Math.random()<.2?14:rnd(150,330);}
+  // rabo: devagar parada, rapido correndo, parado com a raposa fraca ou tonta
+  MA.tail+=wk||fox.stun>0?0:sp>.3?.24:.05;
+  // orelhas em alerta: o fazendeiro esta com a bola erguida
+  MA.alert=play&&!wk&&!fox.stun&&items.some(i=>i.wait>0&&i.thrown)?1:0;
+  // lambe o focinho quando termina de comer (nao depois de engolir bola)
+  if(MA.prevChew>0&&fox.chew===0&&!fox.gulp&&!fox.stun)MA.lick=28;MA.prevChew=fox.chew;if(MA.lick>0)MA.lick--;
+  // virar ou frear de repente: achata e solta poeira
+  if(play&&!fox.onP&&!fox.roar){const turn=Math.sign(fox.vx)&&Math.sign(MA.pvx)&&Math.sign(fox.vx)!==Math.sign(MA.pvx)&&Math.abs(MA.pvx)>1,stop=Math.abs(MA.pvx)>1.3&&sp<.3;
+    if((turn||stop)&&MA.sq===0){MA.sq=8;const s=turn?-Math.sign(fox.vx):Math.sign(MA.pvx);
+      for(let i=0;i<4;i++)parts.push({x:fox.x+8+s*(4+Math.random()*3),y:GROUND-1,vx:s*(.2+Math.random()*.6),vy:-.3-Math.random()*.6,life:14,c:Math.random()<.5?'#c9a27a':'#8a5a3a'});}}
+  if(MA.sq>0)MA.sq--;MA.pvx=fox.vx;
+  // barriga ronca: com o alerta de fome ligado e ainda com algo na barriga
+  if(MA.rumble>0)MA.rumble--;
+  if(play&&FOME_ON()&&bellyOn&&!bellyGlow&&full>1e-6&&rainT===0&&!fox.big){if(--MA.nextRumble<=0){MA.rumble=16;MA.nextRumble=rnd(150,220);tone(120,70,.18,'triangle',.04);tone(95,60,.14,'triangle',.03,.16);}}
+  else MA.nextRumble=Math.min(MA.nextRumble,90);
+  // pontos: pop quando sobem
+  if(pts>MA.lastPts&&play)MA.pop=8;MA.lastPts=pts;if(MA.pop>0)MA.pop--;
+  // galinhas do poleiro: bicam, se arrumam e piscam
+  hens.forEach((h,i)=>{const a=MA.hens[i]||(MA.hens[i]={peck:0,preen:0,blink:0,next:rnd(60,300)});
+    if(a.peck>0)a.peck--;if(a.preen>0)a.preen--;if(a.blink>0)a.blink--;
+    if(--a.next<=0){const r=Math.random();if(r<.5)a.peck=16;else if(r<.8)a.preen=22;else a.blink=6;a.next=rnd(180,420);}
+    if(Math.random()<.004)a.blink=6;});
+  // peninha caindo quando a galinha bota
+  for(const it of items)if(it.wait===3&&!it.thrown&&it.hen>=0&&hens[it.hen])MA.fx.push({k:'pena',x:hens[it.hen].x+6,y:LEDGE_Y-1,t:0,life:100});
+  // fiapo de feno caindo do palheiro
+  if(BARN&&(play||state==='title')&&--MA.nextHay<=0){MA.nextHay=rnd(240,520);MA.fx.push({k:'feno',x:rnd(6,W-8),y:LEDGE_Y+2,t:0,life:400});}
+  for(const f of MA.fx){f.t++;f.life--;
+    if(f.y<GROUND-1){f.y+=f.k==='pena'?.28:.4;f.x+=Math.sin(f.t*(f.k==='pena'?.09:.06))*(f.k==='pena'?.45:.3);}
+    else if(f.life>40)f.life=40;} // no chao: fica um pouco e some
+  MA.fx=MA.fx.filter(f=>f.life>0);
+}
+function drawFx(){if(!ANIM)return;
+  for(const f of MA.fx){if(f.life<12&&f.life%4<2)continue;const x=Math.round(f.x),y=Math.round(f.y);
+    if(f.k==='pena'){ctx.fillStyle=PAL.t;ctx.fillRect(x,y,2,1);ctx.fillStyle=PAL.c;ctx.fillRect(x+(Math.sin(f.t*.09)>0?2:-1),y,1,1);}
+    else{const d=Math.sin(f.t*.06)>0?1:-1;ctx.fillStyle='#c9a94a';ctx.fillRect(x,y,1,1);ctx.fillRect(x+d,y+1,1,1);ctx.fillStyle='#8a7236';ctx.fillRect(x+2*d,y+2,1,1);}}}
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;known=new Set(seenNow);vet=kn('galinha');lv2T=0;playF=0;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;farmerRest=0;dirtT=0;stressT=0;stressSeen=false;full=FOME.max*FOME.start;hungerHint=0;bellyOn=0;bellyGlow=0;bellyLbl=0;bellyHit=0;starveNext=STARVE_1;hf=0;bellyDisp=FOME.max*FOME.start;weakT=0;boldSeen=0;bPlayF=0;weakF=0;hitWeak=0;hitNerv=0;pzClean=0;firstHit=0;rotEaten=0;minFull=9;hintMsg=null;furySeen=false;closePyr();
+function reset(){T={...CFG};touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;known=new Set(seenNow);vet=kn('galinha');lv2T=0;playF=0;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;farmerRest=0;dirtT=0;stressT=0;stressSeen=false;full=FOME.max*FOME.start;hungerHint=0;bellyOn=0;bellyGlow=0;bellyLbl=0;bellyHit=0;starveNext=STARVE_1;hf=0;bellyDisp=FOME.max*FOME.start;weakT=0;boldSeen=0;bPlayF=0;weakF=0;hitWeak=0;hitNerv=0;pzClean=0;firstHit=0;rotEaten=0;minFull=9;hintMsg=null;furySeen=false;MA.pant=0;MA.lastPts=0;MA.pop=0;MA.sq=0;MA.fx=[];closePyr();
   Object.assign(fox,{queasy:0,roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos fora da Chuva de Ovos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -1308,7 +1375,7 @@ function henBlock(){
 function update(){
   frame++;if(state==='play')playF++;
   if(state==='play'||state==='title')skyT++;
-  if(state!=='pause')updateWorld();
+  if(state!=='pause'){updateWorld();animTick();}
   for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.life--;if(p.y>GROUND){p.y=GROUND;p.vx*=.5;p.vy=0;}}
   parts=parts.filter(p=>p.life>0);
   if(state==='over'){overT++; // a raposa foge pela esquerda com o que juntou
@@ -1482,25 +1549,39 @@ function drawFox(x,stun,mouth,chew,legs,face,inv){
     else if(chew>EAT_DROP){head='m';egg=bitten(fox.eatImg);ey=Y-9;}
     else if(chew>EAT_CHEW){head='o';egg=bitten(fox.eatImg);ey=Y-9+Math.round((EAT_DROP-chew+1)/(EAT_DROP-EAT_CHEW)*7);}
     else if(!mouth)head=Math.floor(chew/3)%2?'m':'c';}
-  const spr=FOX[head+legs][face<0?1:0];
-  if(egg&&head==='o')ctx.drawImage(egg,X+8-(egg.width>>1),ey); // desenhado antes: some atras dos dentes, dentro da boca
+  // microanimacoes: rabo, respiracao (cabeca desce 1 px ao soltar o ar), fraca de cabeca baixa, orelhas em alerta, ronco
+  const play=state==='play',wk=ANIM&&play&&weak()&&!fox.big,tail=ANIM&&!wk&&Math.sin(MA.tail)>0;
+  const breath=ANIM&&!stun&&(MA.br%1)<(wk?.55:.45)?1:0,hd=breath+(wk?1:0),HY=Y+hd;
+  const rx=ANIM&&MA.rumble>0&&frame%4<2?1:0;
+  const spr=FOX[head+legs+(tail?'w':'')][face<0?1:0];
+  if(egg&&head==='o')ctx.drawImage(egg,X+8-(egg.width>>1),ey+hd); // desenhado antes: some atras dos dentes, dentro da boca
   // gordinha: a barriga incha rapido logo depois de engolir e desincha devagar ate o fim de 1 s
-  const f=state==='play'?fox.fat:0,b=f>50?(FAT_T-f)/10:f/50,e=Math.round(3*b);
-  if(e>0){ctx.drawImage(spr,0,0,16,9,X,Y,16,9);                       // cabeca
-    ctx.drawImage(spr,0,9,16,4,X-e,Y+9-Math.min(e,2),16+2*e,4+Math.min(e,2)); // barriga mais larga e mais alta
-    ctx.drawImage(spr,0,13,16,2,X,Y+13,16,2);}                          // patas
-  else ctx.drawImage(spr,X,Y);
-  if(egg&&head!=='o')ctx.drawImage(egg,X+8-(egg.width>>1),ey);
-  if(!stun&&fox.queasy>0&&state==='play'&&head!=='m'){ // enjoo do fedor: olhinhos em X e bochecha verde
-    ctx.fillStyle=PAL.o;ctx.fillRect(X+2,Y+3,4,3);ctx.fillRect(X+10,Y+3,4,3);
+  const f=play?fox.fat:0,b=f>50?(FAT_T-f)/10:f/50,e=Math.round(3*b);
+  if(e>0)ctx.drawImage(spr,0,9,16,4,X-e+rx,Y+9-Math.min(e,2),16+2*e,4+Math.min(e,2)); // barriga mais larga e mais alta
+  else ctx.drawImage(spr,0,9,16,4,X+rx,Y+9,16,4);                                      // barriga
+  ctx.drawImage(spr,0,13,16,2,X,Y+13,16,2);                                            // patas
+  const top=wk?1:0;ctx.drawImage(spr,0,top,16,9-top,X,HY+top,16,9-top);               // cabeca (fraca: orelhas mais baixas)
+  if(ANIM&&MA.alert&&!wk)ctx.drawImage(spr,0,0,16,2,X,HY-1,16,2);                      // orelhas em pe: 1 px mais altas
+  if(egg&&head!=='o')ctx.drawImage(egg,X+8-(egg.width>>1),ey+hd);
+  if(ANIM&&!stun&&head==='c'&&!(fox.queasy>0&&play)){
+    if(MA.blink>0&&MA.blink<6){ctx.fillStyle=PAL.d;ctx.fillRect(X+3,HY+4,2,1);ctx.fillRect(X+11,HY+4,2,1);} // piscando
+    if(wk){ctx.fillStyle=PAL.d;ctx.fillRect(X+3,HY+3,2,1);ctx.fillRect(X+11,HY+3,2,1);}                    // fraca: olhos cansados
+    if(MA.lick>0){const k=MA.lick,dx=k>20||k<8?0:1,tx=face<0?X+5-dx:X+9+dx;ctx.fillStyle=PAL.p;ctx.fillRect(tx,HY+8,2,1);if(k%8<4)ctx.fillRect(tx+(face<0?0:1),HY+7,1,1);} // lambendo o focinho
+    else if(MA.pant>.45&&!fox.mouth&&!wk){ctx.fillStyle=PAL.p;ctx.fillRect(X+7,HY+8,2,breath?2:1);}           // ofegando: lingua para fora
+  }
+  if(ANIM&&MA.rumble>0&&!stun){ctx.fillStyle=PAL.k;const r=MA.rumble%8<4?0:1;ctx.fillRect(X-2,Y+10+r,1,1);ctx.fillRect(X-3,Y+11-r,1,1);ctx.fillRect(X+17,Y+10+r,1,1);ctx.fillRect(X+18,Y+11-r,1,1);} // ronco da barriga
+  if(ANIM&&fox.slip&&play&&!stun){const u=frame%12<6?0:1; // escorregando: abre os bracos para se equilibrar
+    for(const [ax,s] of [[X-2,u],[X+16,1-u]]){ctx.fillStyle=PAL.k;ctx.fillRect(ax,Y+8+s,2,3);ctx.fillStyle=PAL.o;ctx.fillRect(ax+(ax<X?1:0),Y+9+s,1,1);}}
+  if(!stun&&fox.queasy>0&&play&&head!=='m'){ // enjoo do fedor: olhinhos em X e bochecha verde
+    ctx.fillStyle=PAL.o;ctx.fillRect(X+2,HY+3,4,3);ctx.fillRect(X+10,HY+3,4,3);
     ctx.fillStyle=PAL.k;
-    for(const ex of [X+2,X+11]){ctx.fillRect(ex,Y+3,1,1);ctx.fillRect(ex+2,Y+3,1,1);ctx.fillRect(ex+1,Y+4,1,1);ctx.fillRect(ex,Y+5,1,1);ctx.fillRect(ex+2,Y+5,1,1);}
-    ctx.fillStyle='#8fa040';ctx.fillRect(X+3,Y+7,2,1);ctx.fillRect(X+11,Y+7,2,1);}
+    for(const ex of [X+2,X+11]){ctx.fillRect(ex,HY+3,1,1);ctx.fillRect(ex+2,HY+3,1,1);ctx.fillRect(ex+1,HY+4,1,1);ctx.fillRect(ex,HY+5,1,1);ctx.fillRect(ex+2,HY+5,1,1);}
+    ctx.fillStyle='#8fa040';ctx.fillRect(X+3,HY+7,2,1);ctx.fillRect(X+11,HY+7,2,1);}
   if(stun){
     // X eyes
-    ctx.fillStyle=PAL.o;ctx.fillRect(X+2,Y+3,4,3);ctx.fillRect(X+10,Y+3,4,3);
+    ctx.fillStyle=PAL.o;ctx.fillRect(X+2,HY+3,4,3);ctx.fillRect(X+10,HY+3,4,3);
     ctx.fillStyle=PAL.k;
-    for(const ex of [X+2,X+11]){ctx.fillRect(ex,Y+3,1,1);ctx.fillRect(ex+2,Y+3,1,1);ctx.fillRect(ex+1,Y+4,1,1);ctx.fillRect(ex,Y+5,1,1);ctx.fillRect(ex+2,Y+5,1,1);}
+    for(const ex of [X+2,X+11]){ctx.fillRect(ex,HY+3,1,1);ctx.fillRect(ex+2,HY+3,1,1);ctx.fillRect(ex+1,HY+4,1,1);ctx.fillRect(ex,HY+5,1,1);ctx.fillRect(ex+2,HY+5,1,1);}
     for(let i=0;i<3;i++){const a=frame*.12+i*2.094;ctx.drawImage(STAR,Math.round(X+6+Math.cos(a)*8),Math.round(Y-5+Math.sin(a)*2.5));}
   }
 }
@@ -1509,14 +1590,15 @@ function drawHud(){
   hc.clearRect(0,0,W,HH);TX=hc;
   // cascas: da esquerda para a direita, as quebradas primeiro
   for(let i=0;i<MAXL();i++){const lost=i<MAXL()-lives,why=losses[i];
-    if(BOLA()){hc.drawImage(lost?HEART0:HEART,1+i*9,4);continue;} // BOLA: a vida e coracao (cai por bola ou fome, nao por ovo)
+    if(BOLA()){const t=frame%54,beat=ANIM&&!lost&&lives===1&&state==='play'&&(t<5||t>=9&&t<13); // ultimo coracao batendo (tum-tum)
+      if(beat)hc.drawImage(HEART_PULSE,i*9,3);else hc.drawImage(lost?HEART0:HEART,1+i*9,4);continue;} // BOLA: a vida e coracao (cai por bola ou fome, nao por ovo)
     hc.drawImage(!lost?SHELL_OK:why==='rot'?SHELL_ROT:SHELL_BROKE,1+i*9,3);}
   if(false){ // v11: as gotas sairam do HUD (os ovos no chao ja mostram a sujeira) // modo BOLA: chao sujo (cada ovo perdido desde a chuva = 1 gota amarela)
     const y=FOME_ON()?18:13;for(let i=0;i<DIRT_MAX;i++){hc.fillStyle=PAL.k;hc.fillRect(1+i*9,y,8,FOME_ON()?3:4);hc.fillStyle=i<dirt?(dirt>=4&&frame%20<10?PAL.o:PAL.y):'#6b6058';hc.fillRect(2+i*9,y+1,6,FOME_ON()?1:2);}}
   // PR #51: a barriga saiu do HUD; agora e um alerta em cima da raposa (ver drawBelly)
   if(fox.big){const f=fox.big/BIG_T; // barrinha dourada do poder
     hc.fillStyle=PAL.k;hc.fillRect(0,13,46,4);hc.fillStyle=fox.big<BIG_WARN&&frame%10<5?PAL.t:PAL.y;hc.fillRect(1,14,Math.ceil(44*f),2);}
-  text(pts,W-1,3,2,PAL.t,'right',PAL.k);
+  text(pts,W-1,MA.pop>4?2:3,2,MA.pop>0?PAL.y:PAL.t,'right',PAL.k); // pop quando os pontos sobem
   {const px=W-1-textW(pts,2)-11,m=mult();hc.drawImage(PILE,px,5); // pontos (com o multiplicador do combo)
     if(m>1)text('X'+m,px-3,6,1,m>2?PAL.o:PAL.y,'right',PAL.k);}
   // o medidor do rugido fica so no botao RUGIR (a barra "NIVEL" do HUD saiu: parecia nivel e repetia o botao)
@@ -1529,15 +1611,23 @@ function drawFarm(){
   // fazendeiro atras da tabua: joga as bolas; corre assustado na Chuva de Ovos; acorda bravo no fim de jogo
   const scared=state==='play'&&rainT>0,over=state==='over';
   const FX=Math.round(farmer.x),carry=items.find(i=>i.wait>0&&i.thrown);
-  const fy=LEDGE_Y-11+(scared?Math.floor(farmer.walk/3)%2:0)+(!scared&&!over&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
+  const inhale=ANIM&&carry&&carry.wait<16&&!scared?1:0; // respira fundo antes de jogar: sobe 1 px e puxa a bola para tras
+  const fy=LEDGE_Y-11-inhale+(scared?Math.floor(farmer.walk/3)%2:0)+(!scared&&!over&&!inhale&&(carry?Math.floor(farmer.walk/4)%2:Math.floor(frame/50)%4===0)?1:0);
   ctx.save();ctx.beginPath();ctx.rect(0,0,W,LEDGE_Y+1);ctx.clip(); // atras da tabua
   const mad=BOLA()&&state==='play'&&(stressT>0||bold()); // BOLA: cara brava nervoso (depois do rugido) ou sem medo (raposa fraca)
   const afraid=BOLA()&&state==='play'&&!mad&&!scared; // BOLA (narrativa): o fazendeiro tem medo da raposa; bravo so com ela fraca ou depois do grito
-  ctx.drawImage(over||mad&&!scared?FARMER.angry:scared||afraid?FARMER.scared:FARMER.awake,FX,fy);
-  if(afraid&&frame%60<40){ctx.fillStyle='#8ecdf5';ctx.fillRect(FX+11,fy+4+Math.floor((frame%60)/14),1,2);} // gota de suor
+  const fimg=over||mad&&!scared?FARMER.angry:scared||afraid?FARMER.scared:FARMER.awake;
+  const tx=ANIM&&afraid&&!carry&&frame%90<36&&frame%4<2?1:0; // tremendo de medo
+  ctx.drawImage(fimg,FX+tx,fy);
+  if(ANIM&&state==='play'&&!scared){const d=fox.x+8-(FX+6.5),lk=d<-14?-1:d>14?1:0,ey=fy+(fimg===FARMER.angry?5:4); // olhos seguem a raposa
+    if(lk){ctx.fillStyle=FPAL.f;ctx.fillRect(FX+tx+5,ey,1,1);ctx.fillRect(FX+tx+8,ey,1,1);ctx.fillStyle=PAL.k;ctx.fillRect(FX+tx+5+lk,ey,1,1);ctx.fillRect(FX+tx+8+lk,ey,1,1);}}
+  if(afraid){const ph=frame%80;ctx.fillStyle='#8ecdf5'; // gota de suor: escorre pelo rosto e cai no palheiro
+    if(!ANIM){if(frame%60<40)ctx.fillRect(FX+11,fy+4+Math.floor((frame%60)/14),1,2);}
+    else if(ph<34)ctx.fillRect(FX+tx+11,fy+3+Math.floor(ph/6),1,2);
+    else if(ph<48){const k=ph-34;ctx.fillRect(FX+tx+11+(k>4?1:0),fy+9+Math.round(k*k*.06),1,1);}}
   ctx.restore();
   if(!scared&&state==='play'&&(mad)&&frame%30<20)text('!',FX+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
-  if(carry){const bi=ballSet(carry.ph)[0];if(items.some(i=>i.wait>0&&i.pair))ctx.drawImage(bi,FX+6,fy-14);ctx.drawImage(bi,FX+2,fy-8); // FURIOSO: duas bolas       // bola erguida, pronta para jogar
+  if(carry){const bi=ballSet(carry.ph)[0],by=inhale?-2:0;if(items.some(i=>i.wait>0&&i.pair))ctx.drawImage(bi,FX+6,fy-14+by);ctx.drawImage(bi,FX+2,fy-8+by); // FURIOSO: duas bolas       // bola erguida, pronta para jogar
     ctx.fillStyle=FPAL.R;ctx.fillRect(FX+2,fy-1,2,4);ctx.fillRect(FX+9,fy-1,2,4);}
   else if(farmer.throwT>0){ctx.fillStyle=FPAL.R;ctx.fillRect(FX+1,fy+10,2,3);ctx.fillRect(FX+10,fy+10,2,3);} // bracos descendo do arremesso
   const goldHen=(items.find(i=>i.gold&&i.state==='fall'&&i.y<GROUND-60)||{}).hen;
@@ -1545,7 +1635,11 @@ function drawFarm(){
     if(h.fy!=null&&state==='play'){ctx.drawImage(HEN[Math.floor((frame+i*3)/4)%2?2:3][h.f],Math.round(h.x),Math.round(h.fy));return;} // voando doida
     const lay=items.find(it=>it.wait>0&&it.hen===i);
     const up=lay&&lay.wait<6?2:0,bob=Math.floor((frame+i*23)/40)%3===0?1:0; // botando: levanta um pouco
-    ctx.drawImage((goldHen===i||(lay&&lay.gold)?HEN_GOLD:HENS_SIT)[h.f],Math.round(h.x),LEDGE_Y-12+bob-up);});
+    const a=ANIM&&!lay&&MA.hens[i]||{},gold=goldHen===i||(lay&&lay.gold);
+    const peck=a.peck>0&&Math.floor(a.peck/4)%2,px=a.preen>0&&frame%4<2?(a.preen%8<4?1:-1):0,hx=Math.round(h.x)+px,hy=LEDGE_Y-12+bob-up;
+    ctx.drawImage((gold?HEN_GOLD:peck?HENS_PECK:HENS_SIT)[h.f],hx,hy);
+    if(a.preen>0&&!gold){ctx.fillStyle=frame%6<3?PAL.c:PAL.t;ctx.fillRect(hx+(h.f?8:3),hy+8,1,1);} // se arrumando: pena da asa mexendo
+    if(a.blink>0&&!peck&&!gold){ctx.fillStyle=PAL.w;ctx.fillRect(hx+(h.f?4:8),hy+3,1,1);}});      // piscando
   if(scared&&frame%16<10)text('!',FX+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
 }
 // botao RUGIR em pixel art (27x28): tampa que enche de dourado de baixo para cima, rostinho da raposa e a palavra RUGIR.
@@ -1619,16 +1713,19 @@ function render(){
     if(p.w<=0)continue;const sc=p.w/(p.w0||22),yw=Math.max(2,Math.round(8*sc/2)*2); // gasta: encolhe (largura e gema), sem transparencia
     ctx.fillStyle=pc[0];ctx.fillRect(p.x,GROUND-1,p.w,3);if(p.w>6)ctx.fillRect(p.x+3,GROUND-2,p.w-6,1);
     ctx.fillStyle=pc[1];ctx.fillRect(p.x,GROUND+1,p.w,1);
-    const m=Math.round(p.x+p.w/2);ctx.fillStyle=p.rot?'#5c4426':PAL.y;ctx.fillRect(m-yw/2,GROUND-2,yw,3);if(yw>2)ctx.fillRect(m-yw/2+1,GROUND-3,yw-2,1);
+    const m=Math.round(p.x+p.w/2),fcx=fox.x+8,jy=ANIM&&state==='play'&&fcx>p.x-2&&fcx<p.x+p.w+2&&Math.abs(fox.vx)>.2&&frame%8<4?-1:0; // a raposa em cima: a gema treme
+    ctx.fillStyle=p.rot?'#5c4426':PAL.y;ctx.fillRect(m-yw/2,GROUND-2+jy,yw,3-jy);if(yw>2)ctx.fillRect(m-yw/2+1,GROUND-3+jy,yw-2,1);
     ctx.fillStyle=PAL.t;if(p.w>8)ctx.fillRect(p.x+3,GROUND-1,2,1);ctx.fillRect(m-Math.min(2,yw/2),GROUND-2,1,1);
   }
+  drawFx(); // pena e feno caindo
   for(const p of puddles)if(p.rot)stink(Math.round(p.x+p.w/2),GROUND-3,frame+p.x*7); // o splash verde tambem fede
   drawDrops();
   if(state!=='title'){
     for(const it of items){
       if(it.wait>0)continue; // ainda na mao do fazendeiro / embaixo da galinha
       const img=it.type==='heart'?HEART_BIG:it.type==='egg'?(it.rain?RAIN_EGGS[it.col]:it.gold?GOLD:EGG):it.type==='rotten'?ROTTEN:ballSet(it.ph)[Math.floor((it.t+it.x)/8)%2];
-      const hw=it.hatch&&it.state==='fall'?(Math.floor(it.t/(it.y>90?3:6))%2?1:-1):0; // ovo que vai chocar: balanca, cada vez mais rapido
+      const hw=it.hatch&&it.state==='fall'?(Math.floor(it.t/(it.y>90?3:6))%2?1:-1):
+        ANIM&&(it.type==='egg'&&!it.rain||it.type==='rotten')&&it.state==='fall'?Math.round(Math.sin((it.t+it.x)*.11)*.75):0; // ovo que vai chocar: balanca, cada vez mais rapido; os outros balancam de leve
       if(it.type==='ball'&&it.state==='bounce'&&it.t>20&&frame%4<2)continue; // pisca antes de sumir, estilo Mario
       ctx.drawImage(img,Math.round(it.x)+hw,Math.round(it.y));
       if(it.hatch&&it.state==='fall'&&it.y>60){const ex=Math.round(it.x)+hw,ey=Math.round(it.y);ctx.fillStyle=PAL.k; // rachadura aparecendo
@@ -1665,6 +1762,8 @@ function render(){
         else if(fox.roar>8){sx=1;sy=1.3;up=6+(r%4<2?1:0);ctx.translate(r%4<2?1:-1,0);}
         else{const u=fox.roar/8;sy=1+u*.3;up=Math.round(u*6);}
         ctx.translate(fcx,GROUND-up);ctx.scale(sx,sy);ctx.translate(-fcx,-GROUND);}
+      else if(ANIM&&MA.sq>0&&state==='play'){const u=MA.sq/8; // virou ou freou: achata e volta
+        ctx.translate(fcx,GROUND);ctx.scale(1+.14*u,1-.12*u);ctx.translate(-fcx,-GROUND);}
       drawFox(fox.x,fox.stun>0,fox.mouth||fox.sick>0||fox.roar>0,fox.chew,fox.sick?0:legs,fox.face,fox.inv>0);ctx.restore();}
     if(fox.sick){ctx.fillStyle='#8fa040';ctx.fillRect(Math.round(fox.x)+3,GROUND-12,10,2);if(frame%20<12)text('ECA!',fox.x+8,GROUND-26,1,'#c9cf7a','center',PAL.k);}
     if(fox.slip&&frame%20<12)text('!',fox.x+8,GROUND-24,1,PAL.r);

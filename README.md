@@ -107,6 +107,7 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 - Ovo branquinho, sem pintas, com um brilho no alto (a bola é vermelha)
 - Depois de comer um ovo, a raposa fica **gordinha** por 1 s (a barriga incha e desincha)
 - O nome **CHUVA DE OVOS!** aparece só no começo da chuva (~1,7 s) e some
+- **Microanimações** (só visual): a raposa respira (ofega depois de correr, com a língua para fora), pisca, abana o rabo, levanta as orelhas quando o fazendeiro ergue a bola, ronca de fome, fica de cabeça baixa quando fraca, abre os braços escorregando, lambe o focinho depois de comer e achata soltando poeira ao virar ou frear. O fazendeiro treme de medo, a gota de suor escorre e cai, os olhos seguem a raposa e ele respira fundo antes de jogar. As galinhas bicam, se arrumam, piscam e soltam uma peninha ao botar. Ovos balançam caindo, a gema da poça treme com a raposa em cima, cai feno do palheiro, as luminárias balançam com poeira brilhando na luz, o último coração bate e os pontos dão um pop. `?anim=0` desliga tudo para comparar
 
 ## Controles
 - ◀ ▶ andar (dá para **deslizar o dedo** de uma seta para a outra sem levantar) · botão redondo (segurar) abrir a boca · botão do trovão quando estiver **vermelho**
