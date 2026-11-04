@@ -9,6 +9,12 @@ Jogo 8-bit para iPhone: a raposa come os ovos e desvia das bolas.
 
 **Logo e ícone (anos 90):** EGG em letras de bolha brancas com extrusão rosa e SPLASH em gema mole escorrendo (os pingos crescem, soltam uma gota e voltam na tela inicial; parados com `?anim=0`). Os ícones saem de `tools/icone/icone.html`, que usa o logo e a raposa do próprio jogo.
 
+## App iOS (App Store)
+O mesmo `index.html` vira app com o **Capacitor** (pasta `ios/`, `capacitor.config.json`). No app (`NATIVE`): vibração nos eventos principais, Game Center (recorde no placar `eggsplash.pontos` e PLACAR GAME CENTER no MENU), compartilhar do iOS na pirâmide, tela cheia e **sem modo de teste/AJUSTES**. No site nada muda.
+- **Build:** GitHub Actions → *iOS → TestFlight* compila num Mac da nuvem e manda para o TestFlight (precisa de 4 secrets).
+- **Passo a passo, textos da loja, privacidade e classificação:** `store/app-store.md`. Screenshots em `store/screenshots/`, política em `privacidade.html`.
+- **No Mac:** `npm install && npm run ios:sync && npm run ios:open`.
+
 ## Dificuldade
 A curva segue o princípio de ensinar uma coisa por vez (*Design for How People Learn*, Julie Dirksen):
 - **Queda:** 3,0 s → 1,6 s · **Intervalo:** 1,6 s → 0,7 s · **Bolas:** 0% → 50% (curvas exponenciais com teto)

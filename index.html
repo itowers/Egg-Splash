@@ -146,6 +146,7 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
   <button id="mnew">JOGO NOVO</button>
   <button id="mbest">RESETAR RECORDE</button>
   <button id="mfirst">JOGAR COMO 1ª VEZ</button>
+  <button id="mgc" hidden>PLACAR GAME CENTER</button>
   <button id="mtune" hidden>AJUSTES</button>
   <div class="info" id="minfo"></div>
 </div></div>
@@ -968,6 +969,23 @@ const sfx={
   record(){arp([523,659,784,1047,784,1047],.09,.1,.06,'square',.9)},
 };
 
+/* ---------- app iOS (Capacitor): vibracao e Game Center ----------
+   No site nada disso existe (NATIVE=false) e o jogo fica igual. */
+const NATIVE=(()=>{try{return !!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())}catch(e){return false}})();
+const nplug=n=>{try{return NATIVE?Capacitor.Plugins[n]:null}catch(e){return null}};
+const HAPTIC={ // som do jogo -> vibracao (independe do botao de som)
+  eat:['impact','LIGHT'],bonk:['impact','HEAVY'],heartLost:['notification','WARNING'],roar:['impact','HEAVY'],
+  levelup:['notification','SUCCESS'],power:['impact','MEDIUM'],vomit:['impact','MEDIUM'],heart:['impact','LIGHT'],
+  over:['notification','ERROR'],record:['notification','SUCCESS'],slip:['impact','LIGHT']};
+if(NATIVE){const hp=nplug('Haptics');if(hp)for(const k in HAPTIC){const f=sfx[k],[m,v]=HAPTIC[k];
+  sfx[k]=function(...a){try{(m==='impact'?hp.impact({style:v}):hp.notification({type:v})).catch(()=>{})}catch(e){}return f.apply(this,a);};
+  if(k==='roar'){const g=sfx.roar;sfx.roar=function(...a){g.apply(this,a);setTimeout(()=>{try{hp.impact({style:'HEAVY'})}catch(e){}},180);setTimeout(()=>{try{hp.impact({style:'MEDIUM'})}catch(e){}},420);};}}}
+const GC=nplug('GameCenter');
+function gcSignIn(){if(GC)try{GC.signIn().catch(()=>{})}catch(e){}}
+function gcSubmit(score){if(GC&&score>0)try{GC.submitScore({score:Math.floor(score)}).catch(()=>{})}catch(e){}}
+function gcShow(){if(GC)try{GC.showLeaderboard().catch(()=>{})}catch(e){}}
+gcSignIn();
+
 /* ---------- state ---------- */
 /* ---------- ajustes de teste (menu AJUSTES, so no modo de teste) ----------
    Liga com ?debug=1 (fica salvo no aparelho; ?debug=0 desliga) ou tocando 5 vezes no botao de pausa na tela inicial.
@@ -1010,6 +1028,7 @@ const TUNE_PRESETS={
 let DEBUG=false;
 try{const m=location.search.match(/[?&]debug=([01])/i);if(m)localStorage.setItem('eggsplash-debug',m[1]);
   DEBUG=localStorage.getItem('eggsplash-debug')==='1';}catch(e){}
+if(NATIVE)DEBUG=false; // no app da App Store nao tem modo de teste nem AJUSTES
 // fora do modo de teste o jogo usa sempre o padrao (os ajustes ficam guardados para quando ligar de novo)
 function loadCfg(){const c={...TUNE_DEF};if(DEBUG)try{const o=JSON.parse(localStorage.getItem('eggsplash-tune')||'{}');for(const k in o)if(k in TUNE_DEF)c[k]=o[k];}catch(e){}return c;}
 let CFG=loadCfg();
@@ -1304,7 +1323,7 @@ function doRoar(){
 }
 function burst(x,y,n,colors,spd=1.5,up=1.5){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*spd*2,vy:-Math.random()*up-.3,
   life:25+Math.random()*20,c:colors[i%colors.length]});}
-function gameOver(){state='over';quake=0;overT=0;saveGame();if(pts>best){best=pts;newBest=true;try{localStorage.setItem(bestKey(),best)}catch(e){}}sfx.over();if(newBest)sfx.record();}
+function gameOver(){state='over';quake=0;overT=0;saveGame();gcSubmit(pts);if(pts>best){best=pts;newBest=true;try{localStorage.setItem(bestKey(),best)}catch(e){}}sfx.over();if(newBest)sfx.record();}
 
 function breakEgg(it){
   it.dead=true;const cx=it.x+4;
@@ -1997,8 +2016,15 @@ function openPyr(){
   pyrEl.hidden=false;sfx.levelup();
 }
 function closePyr(){pyrEl.hidden=true;}
+async function savePyrNative(){ // no app: grava a imagem no cache e abre o compartilhar do iOS (Salvar Imagem, Mensagens...)
+  const fs=nplug('Filesystem'),sh=nplug('Share');if(!fs||!sh)return;
+  try{const data=pyrImg.src.split(',')[1];
+    const r=await fs.writeFile({path:pyrName,data,directory:'CACHE'});
+    await sh.share({title:'Egg Splash',files:[r.uri]});}catch(e){}
+}
 function savePyr(){
   if(!pyrBlob)return;
+  if(NATIVE){savePyrNative();return;}
   const file=new File([pyrBlob],pyrName,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Egg Splash'}).catch(()=>{});return;}
   const a=document.createElement('a');a.href=URL.createObjectURL(pyrBlob);a.download=pyrName;
@@ -2083,6 +2109,7 @@ function renderMenu(){const g=state==='play'||state==='pause';
   document.getElementById('mcont').textContent=g?'CONTINUAR':'FECHAR';
   document.getElementById('mnew').textContent=g?'JOGO NOVO (DESISTIR)':'JOGO NOVO';
   document.getElementById('mtune').hidden=!DEBUG;
+  document.getElementById('mgc').hidden=!GC;
   for(const [id,t,c] of [['mbest','RESETAR RECORDE','CONFIRMA? ZERA O RECORDE'],['mfirst','JOGAR COMO 1ª VEZ','CONFIRMA? ZERA TUDO']]){
     const b=document.getElementById(id);b.textContent=menuArm===id?c:t;b.classList.toggle('warn',menuArm===id);}}
 function openMenu(){unlockAudio();if(state==='play'){state='pause';sfx.pause();}menuArm=null;menuInfo.textContent=(best?'RECORDE '+best:'SEM RECORDE')+(DEBUG?' · MODO DE TESTE':'');renderMenu();menuEl.hidden=false;}
@@ -2098,10 +2125,11 @@ mb('mfirst',()=>{if(!armed('mfirst'))return;clearBest();
   try{['eggsplash-boca','eggsplash-visto'].forEach(k=>localStorage.removeItem(k))}catch(e){}
   mouthKnown=false;seenNow=new Set();closeMenu(false);toTitle();tone(880,0,.06,'square',.05);tone(1319,0,.06,'square',.05,.08);});
 mb('mtune',()=>{closeMenu(false);openTune();});
+mb('mgc',()=>{closeMenu(true);gcShow();});
 menuEl.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===menuEl)closeMenu(true);}); // tocar fora da caixa = continuar
 let dbgTaps=0,dbgT=0;
 document.getElementById('menuhd').addEventListener('pointerdown',e=>{const n=performance.now();dbgTaps=n-dbgT<800?dbgTaps+1:1;dbgT=n; // 5 toques seguidos: modo de teste
-  if(dbgTaps>=5){dbgTaps=0;DEBUG=!DEBUG;try{localStorage.setItem('eggsplash-debug',DEBUG?'1':'0')}catch(_){}
+  if(dbgTaps>=5&&!NATIVE){dbgTaps=0;DEBUG=!DEBUG;try{localStorage.setItem('eggsplash-debug',DEBUG?'1':'0')}catch(_){}
     CFG=loadCfg();if(state!=='play'&&state!=='pause')T={...CFG};if(!DEBUG&&speed===2){speed=1;}syncCtrl();drawTuneBtn();drawSpd();
     tone(DEBUG?1319:440,0,.08,'square',.05);menuInfo.textContent=DEBUG?'MODO DE TESTE LIGADO':'MODO DE TESTE DESLIGADO';renderMenu();}});
 document.getElementById('pause').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();

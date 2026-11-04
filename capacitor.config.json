@@ -1,0 +1,12 @@
+{
+  "appId": "com.igortorres.eggsplash",
+  "appName": "Egg Splash",
+  "webDir": "www",
+  "backgroundColor": "#6a96aa",
+  "ios": {
+    "scrollEnabled": false,
+    "contentInset": "never",
+    "backgroundColor": "#6a96aa",
+    "allowsLinkPreview": false
+  }
+}

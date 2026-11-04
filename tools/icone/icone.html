@@ -24,8 +24,9 @@ f.onload=()=>setTimeout(()=>{try{
     const big=document.createElement('canvas');big.width=big.height=out;const b=big.getContext('2d');b.imageSmoothingEnabled=false;
     b.drawImage(c,Math.floor((out-N*sc)/2),Math.floor((out-N*sc)/2),N*sc,N*sc);return big.toDataURL();
   }
-  // gera os 3 icones do jogo; clique para baixar e troque os arquivos na raiz do repositorio
-  [[171,3,512,'icon-512.png'],[192,1,192,'icon-192.png'],[180,1,180,'apple-touch-icon.png']].forEach(([n,sc,o,name])=>{
+  // gera os icones; clique para baixar e troque os arquivos na raiz do repositorio.
+  // AppIcon-1024.png e o do app iOS: va para ios/App/App/Assets.xcassets/AppIcon.appiconset/ depois de tirar o canal alfa (a Apple recusa icone com alfa): Image.open(f).convert('RGB').save(f) no Python
+  [[171,6,1024,'AppIcon-1024.png'],[171,3,512,'icon-512.png'],[192,1,192,'icon-192.png'],[180,1,180,'apple-touch-icon.png']].forEach(([n,sc,o,name])=>{
     const u=icon(n,sc,o),a=document.createElement('a');a.href=u;a.download=name;a.innerHTML='<img src="'+u+'" style="image-rendering:pixelated;margin:8px"><br>'+name;
     a.style.cssText='display:inline-block;font:14px monospace;text-align:center';document.body.appendChild(a);out.textContent+=u+'\n';});
 }catch(e){out.textContent="ERR "+e}},800);
