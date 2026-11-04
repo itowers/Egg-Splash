@@ -7,6 +7,8 @@ Jogo 8-bit para iPhone: a raposa come os ovos e desvia das bolas.
 2. Toque em **Compartilhar → Adicionar à Tela de Início**.
 3. Abra pelo ícone. Depois da primeira abertura, o jogo funciona sem internet.
 
+**Logo e ícone (anos 90):** EGG em letras de bolha brancas com extrusão rosa e SPLASH em gema mole escorrendo (os pingos crescem, soltam uma gota e voltam na tela inicial; parados com `?anim=0`). Os ícones saem de `tools/icone/icone.html`, que usa o logo e a raposa do próprio jogo.
+
 ## Dificuldade
 A curva segue o princípio de ensinar uma coisa por vez (*Design for How People Learn*, Julie Dirksen):
 - **Queda:** 3,0 s → 1,6 s · **Intervalo:** 1,6 s → 0,7 s · **Bolas:** 0% → 50% (curvas exponenciais com teto)

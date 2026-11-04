@@ -587,6 +587,112 @@ function text(s,x,y,sc=1,col=PAL.k,align='center',sh=null){
   draw(0,0,col,false);
 }
 
+/* ---------- logo anos 90 (pedido do Igor, 04/11/2026) ----------
+   Letras gordas de bolha com contorno preto e extrusao 3D; SPLASH e gema mole escorrendo.
+   LOGO.build(escala) monta o desenho parado; LOGO.drips desenha os pingos que crescem, caem e voltam. */
+const LOGO=(()=>{
+  const G={ // 6x7, '#' = cheio
+    E:['.#####','##....','##....','#####.','##....','##....','.#####'],
+    G:['.####.','##..##','##....','##.###','##..##','##..##','.####.'],
+    S:['.####.','##..##','##....','.####.','....##','##..##','.####.'],
+    P:['#####.','##..##','##..##','#####.','##....','##....','##....'],
+    L:['##....','##....','##....','##....','##....','##....','.#####'],
+    A:['.####.','##..##','##..##','######','##..##','##..##','##..##'],
+    H:['##..##','##..##','##..##','######','##..##','##..##','##..##'],
+  };
+  // letra em mascara, cada celula vira cxc px; cantos convexos arredondados (tira 1 px de cada quina de fora)
+  function glyph(ch,c,sk){
+    const r=G[ch],h=7*c,sh=Math.floor((h-1)/sk),w=6*c+sh,m=new Uint8Array(w*h); // sk: 1 px de inclinacao a cada sk linhas (italico)
+    for(let y=0;y<h;y++){const o=Math.floor((h-1-y)/sk);for(let x=0;x<6*c;x++)m[y*w+x+o]=r[Math.floor(y/c)][Math.floor(x/c)]==='#'?1:0;}
+    const at=(x,y)=>x>=0&&y>=0&&x<w&&y<h&&m[y*w+x];
+    if(c>=2){const cut=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(m[y*w+x]){
+      const l=!at(x-1,y),rr=!at(x+1,y),u=!at(x,y-1),d=!at(x,y+1);
+      if((l||rr)&&(u||d))cut.push(y*w+x);}
+      for(const i of cut)m[i]=0;}
+    return {w,h,m,sh};
+  }
+  // monta uma palavra: letras sobrepostas (cada uma desenhada por cima da anterior) e pulando no y
+  function word(str,c,o){
+    const lt=[...str].map(ch=>glyph(ch,c,o.sk)),ov=o.over,dep=o.depth;
+    let W=0;lt.forEach((g,i)=>{W+=i<lt.length-1?g.w-g.sh-ov:g.w;});
+    const pad=dep+2,cw=W+pad*2,ch=lt[0].h+Math.max(...o.bob)+pad*2+o.extraH;
+    const cv=document.createElement('canvas');cv.width=cw;cv.height=ch;const g=cv.getContext('2d');
+    let x=pad;const placed=[];
+    lt.forEach((L,i)=>{
+      const y=pad+o.bob[i%o.bob.length];
+      const inL=(px,py)=>px>=0&&py>=0&&px<L.w&&py<L.h&&L.m[py*L.w+px];
+      const solid=(px,py)=>{for(let d=0;d<=dep;d++)if(inL(px-d,py-d))return d;return -1;}; // letra + extrusao
+      // 1) contorno preto (1 px em volta da letra com extrusao, diagonais inclusas)
+      g.fillStyle='#1b1b1f';
+      for(let py=-1;py<=L.h+dep;py++)for(let px=-1;px<=L.w+dep;px++){
+        if(solid(px,py)>=0)continue;let n=false;
+        for(let a=-1;a<=1&&!n;a++)for(let b=-1;b<=1;b++)if(solid(px+a,py+b)>=0){n=true;break;}
+        if(n)g.fillRect(x+px,y+py,1,1);}
+      // 2) extrusao (mais escura no fundo) e 3) letra com faixas de cor + brilho
+      for(let py=0;py<L.h+dep;py++)for(let px=0;px<L.w+dep;px++){const d=solid(px,py);if(d<0)continue;
+        if(d>0){g.fillStyle=d===dep?o.ext2:o.ext;g.fillRect(x+px,y+py,1,1);continue;}
+        const t=py/(L.h-1);let col=o.fill[Math.min(o.fill.length-1,Math.floor(t*o.fill.length))];
+        if(!inL(px,py-1)||!inL(px-1,py))col=o.hi; // borda de cima/esquerda acesa
+        g.fillStyle=col;g.fillRect(x+px,y+py,1,1);}
+      // brilho de bolha: um tracinho no ombro de cima a esquerda
+      g.fillStyle='#ffffff';
+      for(let py=1;py<L.h;py++){let hit=false;for(let px=1;px<L.w;px++)if(inL(px,py)&&inL(px,py-1)&&inL(px-1,py)){
+        g.fillRect(x+px,y+py,Math.max(1,c-1),1);g.fillRect(x+px,y+py,1,Math.max(2,c));hit=true;break;}if(hit)break;}
+      placed.push({x,y,L});
+      x+=L.w-L.sh-ov;});
+    return {cv,placed,pad};
+  }
+  // pingos: colunas em que a SPLASH tem fundo cheio; cada pingo tem largura, comprimento e ritmo proprios
+  function dripSpots(wd,c){
+    const out=[];
+    wd.placed.forEach(({x,y,L},i)=>{
+      const cols=[];for(let px=1;px<L.w-1;px++)if(L.m[(L.h-1)*L.w+px])cols.push(px);
+      if(!cols.length)return;
+      const pick=[[0.2],[0.1],[0.85],[0.5],[0.9],[0.1]][i%6];
+      for(const f of pick){const px=cols[Math.floor(f*(cols.length-1))];
+        out.push({x:x+px,y:y+L.h+wd.depthBot,w:[4,3,4,3,3,4,3][out.length%7],base:[4,2,7,3,5,8,3][out.length%7],
+          per:150+((i*53+out.length*31)%120),ph:(i*37+out.length*19)%150});}
+    });
+    return out;
+  }
+  function build(c){ // c = tamanho da celula da SPLASH (EGG fica 1 celula maior)
+    const egg=word('EGG',c+1,{over:0,depth:3,sk:4,bob:[c,0,c+1],extraH:0,
+      fill:['#ffffff','#fbf6ea','#f2e6cc','#e2cfa6'],hi:'#ffffff',ext:'#e65a6e',ext2:'#a83250'});
+    const spl=word('SPLASH',c,{over:-1,depth:2,sk:4,bob:[0,c,0,c,0,c],extraH:0,
+      fill:['#ffe46b','#ffd23a','#ffb92a','#f79a1c','#ef8414'],hi:'#fff2a8',ext:'#c4561a',ext2:'#8a3414'});
+    spl.depthBot=2; // o pingo sai de baixo da extrusao
+    const drips=dripSpots(spl,c);
+    const gap=-c; // EGG encosta na SPLASH
+    const w=Math.max(egg.cv.width,spl.cv.width),ex=Math.round((w-egg.cv.width)/2),sx=Math.round((w-spl.cv.width)/2),sy=egg.cv.height+gap;
+    drips.forEach(d=>{d.x+=sx;d.y+=sy-1;});
+    return {egg,spl,w,h:sy+spl.cv.height,ex,sx,sy,drips};
+  }
+  // desenha os pingos. t em frames (0 = parado no comprimento base). Cada pingo cresce, solta uma gota e volta.
+  function drips(g,lg,ox,oy,t,still){
+    for(const d of lg.drips){
+      const k=still?0.55:((t+d.ph)%d.per)/d.per; // 0..1
+      const grow=k<0.8?k/0.8:1, len=Math.round(d.base+grow*grow*d.base*0.9)-(k>=0.8?Math.round((k-0.8)/0.2*d.base*0.8):0);
+      const x=ox+d.x,y=oy+d.y,w=d.w,K='#1b1b1f',Y='#ef8414';
+      // contorno: filete largo na juncao, haste e gota redonda na ponta
+      const shape=(f,e)=>{ // e = 1 desenha o contorno (1 px maior em volta)
+        f(x-1-e,y-1,w+2+2*e,2+e);          // filete
+        f(x-e,y,w+2*e,len);                 // haste
+        f(x-1-e,y+len-1,w+2+2*e,3);         // gota
+        f(x-e,y+len-2,w+2*e,5+e);};
+      g.fillStyle=K;shape((a,b,c2,d2)=>g.fillRect(a,b,c2,d2),1);
+      g.fillStyle=Y;shape((a,b,c2,d2)=>g.fillRect(a,b,c2,d2),0);
+      g.fillRect(x-1,y-3,w+2,2); // cobre o contorno de baixo da letra: a gema sai de dentro dela
+      g.fillStyle='#ffb92a';g.fillRect(x,y-1,1,len);g.fillStyle='#fff2a8';g.fillRect(x,y+len,1,1);
+      // gota caindo
+      if(!still&&k>=0.8){const f=(k-0.8)/0.2,gy=y+len+5+Math.round(f*f*22);
+        g.fillStyle=K;g.fillRect(x-1,gy-1,w+2,4);g.fillRect(x,gy-2,w,6);
+        g.fillStyle=Y;g.fillRect(x,gy-1,w,4);g.fillStyle='#fff2a8';g.fillRect(x,gy,1,1);}
+    }
+  }
+  return {build,drips};
+})();
+const LG=LOGO.build(3),LG_X=Math.round((W-LG.w)/2),LG_Y=19;
+
 /* ---------- background: ciclo dia/noite + clima ---------- */
 // Dois relogios independentes:
 //  1) Ceu: o sol comeca no topo, desce pela direita e se poe atras das colinas; a lua faz o mesmo
@@ -1795,14 +1901,14 @@ function render(){
   if(state==='title'){
     ctx.fillStyle='rgba(246,236,216,.88)';ctx.fillRect(4,22,W-8,118); // mais largo por causa da fonte Silkscreen
     ctx.fillStyle=PAL.k;ctx.fillRect(4,22,W-8,2);ctx.fillRect(4,138,W-8,2);
-    text('EGG',W/2,32,4,PAL.r,'center',PAL.k);
-    text('SPLASH',W/2,56,3,PAL.o,'center',PAL.k);
+    ctx.drawImage(LG.egg.cv,LG_X+LG.ex,LG_Y);ctx.drawImage(LG.spl.cv,LG_X+LG.sx,LG_Y+LG.sy); // logo anos 90 com a gema escorrendo
+    LOGO.drips(ctx,LG,LG_X,LG_Y,frame,!ANIM);
     // PR #55 (pedido do Igor): a home nao tem texto; o jogo se explica jogando. So o nome, os modos, um botao de play e o recorde
-    {const k=Math.floor(frame/30)%2,cx=W/2,cy=90,h=k?6:5; // play: triangulo pulsando
+    if(!DEBUG){const k=Math.floor(frame/30)%2,cx=W/2,cy=114,h=k?6:5; // play: triangulo pulsando (no modo de teste os botoes de modo ficam no lugar dele; tocar na tela comeca)
       ctx.fillStyle=PAL.k;for(let i=-h-1;i<=h+1;i++){const w=Math.round((h+1-Math.abs(i))*1.4)+1;ctx.fillRect(cx-4,cy+i,w+1,1);}
       ctx.fillStyle=PAL.r;for(let i=-h;i<=h;i++){const w=Math.round((h-Math.abs(i))*1.4);if(w>0)ctx.fillRect(cx-3,cy+i,w,1);}}
     if(DEBUG)drawModeBtns(); // os modos so aparecem no modo de teste
-    if(best){const tw=textW(best,1),ry=DEBUG?123:110;ctx.drawImage(PILE,W/2-(tw+11)/2,ry);text(best,W/2-(tw+11)/2+11,ry+1,1,PAL.d,'left');} // recorde: so o icone dos pontos e o numero
+    if(best){const tw=textW(best,1),ry=DEBUG?127:126;ctx.drawImage(PILE,W/2-(tw+11)/2,ry);text(best,W/2-(tw+11)/2+11,ry+1,1,PAL.d,'left');} // recorde: so o icone dos pontos e o numero
     if(DEBUG){const d=tuneDiff(CFG),n=tuneLabel(d),k=Object.keys(d).length,l='AJUSTE: '+(n.includes(' ')?'PERSONALIZADO ('+k+')':n);ctx.fillStyle='rgba(27,27,31,.85)';ctx.fillRect(4,141,W-8,8);
       text(l,W/2,142,1,PAL.y);}
     drawFox(W/2-8,false,Math.floor(frame/45)%2===1,0,0,1,false);
@@ -1857,7 +1963,7 @@ function render(){
 const PB={x:W/2-40,y:151,w:80,h:14}; // botao PIRAMIDE na tela de fim de jogo
 /* tela inicial: escolha do modo. NORMAL = curva que sobe com os niveis; CONSTANTE = dificuldade fixa (como o Flappy Bird) */
 /* BOLA = so a bola tira vida; ovo perdido suja o chao. Largura de cada botao = texto + 6 px, centrados */
-const MODES=[{m:'normal',l:'NORMAL'},{m:'constante',l:'CONSTANTE'},{m:'bola',l:'BOLA'}],MODE_Y=106,MODE_H=11,MODE_GAP=3;
+const MODES=[{m:'normal',l:'NORMAL'},{m:'constante',l:'CONSTANTE'},{m:'bola',l:'BOLA'}],MODE_Y=112,MODE_H=11,MODE_GAP=3;
 function layoutModes(){let x=W/2-(MODES.reduce((a,b)=>a+textW(b.l)+6,0)+MODE_GAP*(MODES.length-1))/2;
   for(const b of MODES){b.w=textW(b.l)+6;b.x=Math.round(x);x+=b.w+MODE_GAP;}}
 function drawModeBtns(){layoutModes();for(const b of MODES){const on=modo===b.m;
@@ -2166,7 +2272,7 @@ function fit(){
 }
 addEventListener('resize',fit);fit();setTimeout(fit,100);
 
-window.__egg={get T(){return T},get rainEaten(){return rainEaten},get mouthKnown(){return mouthKnown},get speed(){return speed},get CFG(){return CFG},ptrDir,get pts(){return pts},get combo(){return combo},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
+window.__egg={LOGO,FOX,get T(){return T},get rainEaten(){return rainEaten},get mouthKnown(){return mouthKnown},get speed(){return speed},get CFG(){return CFG},ptrDir,get pts(){return pts},get combo(){return combo},get lastNew(){return lastNew},get henSeen(){return henSeen},get frame(){return frame},doRoar,roarP,set roarEggs(v){roarEggs=v},get rainT(){return rainT},farmer,get hens(){return hens},get bird(){return bird},reset,update,render,fox,keys,get items(){return items},get puddles(){return puddles},
   set score(v){score=v},set lives(v){lives=v},get lives(){return lives},get state(){return state},get dirt(){return dirt},get stressT(){return stressT},FOME,get full(){return full},set full(v){full=v},get bellyOn(){return bellyOn},get bellyGlow(){return bellyGlow},get bellyLbl(){return bellyLbl},get weakT(){return weakT},get hf(){return hf},feed,get rev(){return [revN,revHit]},get lostLog(){return lostLog},get ballHits(){return ballHits},get maxCombo(){return maxCombo},get modo(){return modo},setModo,
   drop(type,x,y=-12){items.push({type,x,y,vx:0,vy:1,state:'fall',t:0})},
   icon(S){const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
