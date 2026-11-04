@@ -4,7 +4,7 @@
 let PW;try{PW=require('playwright')}catch(e){PW=require('playwright-core')}const {chromium,devices}=PW;
 // CLEAN_Y=70: o bot so vai limpar poca quando o ovo mais baixo esta acima dessa altura (maior = limpa mais)
 const FO=process.env.FOME?process.env.FOME.split(',').map(Number):null;const MODES=['bola'],CLEAN_Y=+process.env.CLEAN_Y||70;const N=+process.argv[2]||10,MAXS=+process.argv[3]||360;
-const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html')+(process.env.CHAO==='1'?'?chao=1'+(process.env.CHAO_N?'&chaoN='+process.env.CHAO_N:''):''); // CHAO=1: a chuva nao limpa o chao
+const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html')+(process.env.CHAO==='0'?'?chao=0':process.env.CHAO_N?'?chaoN='+process.env.CHAO_N:''); // CHAO=0: a chuva volta a limpar o chao (o padrao e nao limpar) // a chuva nao limpa o chao
 const PROFILES={
   bom:  {react:10,err:3,missBall:.08,mouthLate:.05},
   medio:{react:18,err:6,missBall:.22,mouthLate:.12},

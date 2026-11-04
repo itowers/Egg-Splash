@@ -434,11 +434,12 @@ const HENS_START=[66],HENS_MAX=7;
 /* BOLA (o unico modo desde 04/11/2026; NORMAL e CONSTANTE sairam do jogo): a vida so cai quando a bola acerta a raposa
    (pancada ou engolida) ou pela fome. Perder o ovo nao tira vida: vira poca escorregadia (DIRT_MAX). A Chuva de Ovos limpa o chao. */
 const DIRT_MAX=5;
-/* Variante ?chao=1 (teste, pedido do Igor em 04/11/2026): a Chuva de Ovos NAO limpa o chao. As pocas ficam (as da chuva viram
+/* Chao nao limpa (pedido do Igor em 04/11/2026, padrao desde o PR #61): a Chuva de Ovos NAO limpa o chao. As pocas ficam (as da chuva viram
    pocas normais, coloridas) e os ovos da chuva que ainda estao no ar continuam caindo e viram poca. A raposa precisa ir de um
    lado para o outro para limpar o chao pisando (WEAR_N passadas). */
-const CHAO=/[?&]chao=1/.test(location.search),CHAO_N=+((location.search.match(/[?&]chaoN=(\d)/)||[])[1])||3; // chaoN: passadas para limpar as pocas coloridas que a chuva deixou (padrao 3; as de ovo perdido continuam com 5)
-// ?chao=1: ovo que cai em cima de uma poca (centro a menos de meia poca) nao empilha outra (senao o chao nunca limpa)
+const CHAO=!/[?&]chao=0/.test(location.search), // padrao desde 04/11/2026 (PR #61); ?chao=0 volta a chuva que limpa o chao
+     CHAO_N=+((location.search.match(/[?&]chaoN=(\d)/)||[])[1])||3; // chaoN: passadas para limpar as pocas coloridas que a chuva deixou (padrao 3; as de ovo perdido continuam com 5)
+// ovo que cai em cima de uma poca (centro a menos de meia poca) nao empilha outra (senao o chao nunca limpa)
 function addPuddle(p){if(CHAO){const c=p.x+11,q=puddles.find(o=>!o.rot&&Math.abs(o.x+(o.w0||o.w)/2-c)<11);
   if(q){if(!p.rain&&q.rain){q.rain=false;q.wn=p.wn;}if(p.col!=null&&q.rain)q.col=p.col;return;}}
   puddles.push(p);}
