@@ -1695,12 +1695,12 @@ function render(){
     ctx.fillStyle=PAL.k;ctx.fillRect(4,22,W-8,2);ctx.fillRect(4,138,W-8,2);
     text('EGG',W/2,32,4,PAL.r,'center',PAL.k);
     text('SPLASH',W/2,56,3,PAL.o,'center',PAL.k);
-    ctx.drawImage(EGG,30,74);text('COMA O OVO',44,77,1,PAL.k,'left');
-    ctx.drawImage(ballSet(0)[0],30,87);text('DESVIE DA BOLA',44,89,1,PAL.k,'left');
-    text(BOLA()?(FOME_ON()?'5 BOLADAS E A RAPOSA CAI!':'SÓ A BOLA TIRA VIDA!'):'FAZENDEIRO JOGA EM VOCÊ!',W/2,98,1,BOLA()?PAL.r:PAL.d);
+    // PR #55 (pedido do Igor): a home nao tem texto; o jogo se explica jogando. So o nome, os modos, um botao de play e o recorde
+    {const k=Math.floor(frame/30)%2,cx=W/2,cy=90,h=k?6:5; // play: triangulo pulsando
+      ctx.fillStyle=PAL.k;for(let i=-h-1;i<=h+1;i++){const w=Math.round((h+1-Math.abs(i))*1.4)+1;ctx.fillRect(cx-4,cy+i,w+1,1);}
+      ctx.fillStyle=PAL.r;for(let i=-h;i<=h;i++){const w=Math.round((h-Math.abs(i))*1.4);if(w>0)ctx.fillRect(cx-3,cy+i,w,1);}}
     drawModeBtns();
-    if(Math.floor(frame/30)%2)text('TOQUE PARA COMEÇAR',W/2,122,1,PAL.k);
-    if(best)text('RECORDE '+best,W/2,131,1,PAL.d);
+    if(best){const tw=textW(best,1);ctx.drawImage(PILE,W/2-(tw+11)/2,123);text(best,W/2-(tw+11)/2+11,124,1,PAL.d,'left');} // recorde: so o icone dos pontos e o numero
     if(DEBUG){const d=tuneDiff(CFG),n=tuneLabel(d),k=Object.keys(d).length,l='AJUSTE: '+(n.includes(' ')?'PERSONALIZADO ('+k+')':n);ctx.fillStyle='rgba(27,27,31,.85)';ctx.fillRect(4,141,W-8,8);
       text(l,W/2,142,1,PAL.y);}
     drawFox(W/2-8,false,Math.floor(frame/45)%2===1,0,0,1,false);
