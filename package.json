@@ -1,0 +1,21 @@
+{
+  "name": "egg-splash",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Egg Splash: jogo 8-bit para iPhone. O site (GitHub Pages) e o app iOS (Capacitor) usam o mesmo index.html.",
+  "scripts": {
+    "build": "node scripts/build-www.mjs",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "ios:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.6.0",
+    "@capacitor/share": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0"
+  }
+}
