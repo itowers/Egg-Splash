@@ -1281,7 +1281,7 @@ function spawn(){
   if(intro&&type===BAD){markNew();sawNew('bola');} // 1a bola da partida
   spawned++;if(thrown)ballGap=0;
   recent.push({type,x,arr});
-  const gold=type==='egg'&&score>=GOLD_FROM&&fox.big===0&&!items.some(i=>i.gold)&&(goldSeen||kn('dourado')||newOK())&&Math.random()<GOLD_P;
+  const gold=type==='egg'&&score>=GOLD_FROM&&roarP()>=1&&fox.big===0&&!items.some(i=>i.gold)&&(goldSeen||kn('dourado')||newOK())&&Math.random()<GOLD_P;
   if(gold&&!goldSeen){goldSeen=true;markNew();sawNew('dourado');}
   const perchHatch=hens.length<henTarget(score); // falta galinha no poleiro: choca ja (a galinha vai para o poleiro quando a raposa encosta nela)
   const hatch=!gold&&!rescue&&type==='egg'&&!bird&&hatchCD===0&&!items.some(i=>i.hatch)&&(henSeen||kn('galinha')||newOK())&&perchHatch; // so nasce pintinho quando o nivel sobe
