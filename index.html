@@ -1107,7 +1107,7 @@ let bird=null,hatchCD=0;
 const ROT_FROM=15,SICK_T=40;
 let rotSeen=false;
 // Ovo dourado (ver README): 2% dos ovos depois de GOLD_FROM pts. Vale +5 e deixa a raposa 2x maior e invencivel por 5 s.
-const GOLD_FROM=20,GOLD_P=.02,GOLD_PTS=5,BIG_T=5*60,BIG_GROW=30,BIG_WARN=90;
+const GOLD_FROM=20,GOLD_P=.07,GOLD_PTS=5,BIG_T=8*60,BIG_GROW=30,BIG_WARN=90;
 const rotP=s=>s<ROT_FROM?0:Math.min(.12,.05+(s-ROT_FROM)*.0015);
 const BAD='ball';
 let losses=[];
