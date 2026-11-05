@@ -1107,7 +1107,7 @@ let bird=null,hatchCD=0;
 const ROT_FROM=15,SICK_T=40;
 let rotSeen=false;
 // Ovo dourado (ver README): 2% dos ovos depois de GOLD_FROM pts. Vale +5 e deixa a raposa 2x maior e invencivel por 5 s.
-const GOLD_FROM=20,GOLD_P=.02,GOLD_PTS=5,BIG_T=5*60,BIG_GROW=30,BIG_WARN=90;
+const GOLD_FROM=20,GOLD_P=.07,GOLD_PTS=5,BIG_T=8*60,BIG_GROW=30,BIG_WARN=90;
 const rotP=s=>s<ROT_FROM?0:Math.min(.12,.05+(s-ROT_FROM)*.0015);
 const BAD='ball';
 let losses=[];
@@ -1281,7 +1281,7 @@ function spawn(){
   if(intro&&type===BAD){markNew();sawNew('bola');} // 1a bola da partida
   spawned++;if(thrown)ballGap=0;
   recent.push({type,x,arr});
-  const gold=type==='egg'&&score>=GOLD_FROM&&fox.big===0&&!items.some(i=>i.gold)&&(goldSeen||kn('dourado')||newOK())&&Math.random()<GOLD_P;
+  const gold=type==='egg'&&score>=GOLD_FROM&&roarP()>=1&&fox.big===0&&!items.some(i=>i.gold)&&(goldSeen||kn('dourado')||newOK())&&Math.random()<GOLD_P;
   if(gold&&!goldSeen){goldSeen=true;markNew();sawNew('dourado');}
   const perchHatch=hens.length<henTarget(score); // falta galinha no poleiro: choca ja (a galinha vai para o poleiro quando a raposa encosta nela)
   const hatch=!gold&&!rescue&&type==='egg'&&!bird&&hatchCD===0&&!items.some(i=>i.hatch)&&(henSeen||kn('galinha')||newOK())&&perchHatch; // so nasce pintinho quando o nivel sobe
