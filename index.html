@@ -434,6 +434,19 @@ const FARMER={
   awake:bake([...FARMER_TOP,"...kfkffkfk..",...FARMER_BOT],false,FPAL),
   scared:bake([...FARMER_TOP,"...kfkffkfk..","...kffkkffk..",...FARMER_BOT.slice(1)],false,FPAL), // boca aberta: correndo do rugido
   angry:bake([...FARMER_TOP,"...kkfffkkk..","...kfkffkfk..",...FARMER_BOT.slice(1)],false,FPAL)};
+// Sem bracos (para o fazendeiro segurando a bola): os bracos erguidos sao desenhados a parte, na escala dele (senao ficava com 4 bracos)
+const FARMER_BOT0=[
+"...kffffffk..",
+"...kbbbbbbk..",
+"....kbbbbk...",
+"....kRRuuRRk.",
+"....kRuuuuRk.",
+".....kuuuuk..",
+".....kuuuuk.."];
+const FARMER0={
+  awake:bake([...FARMER_TOP,"...kfkffkfk..",...FARMER_BOT0],false,FPAL),
+  scared:bake([...FARMER_TOP,"...kfkffkfk..","...kffkkffk..",...FARMER_BOT0.slice(1)],false,FPAL),
+  angry:bake([...FARMER_TOP,"...kkfffkkk..","...kfkffkfk..",...FARMER_BOT0.slice(1)],false,FPAL)};
 const FARMER_X=88;
 const Y0=LEDGE_Y-8;            // altura de onde a galinha bota e o fazendeiro solta a bola
 const LEAD_EGG=12,LEAD_BALL=40; // frames para a galinha/o fazendeiro chegar ao ponto antes de soltar
@@ -450,8 +463,10 @@ const DIRT_MAX=5;
 const CHAO=!/[?&]chao=0/.test(location.search), // padrao desde 04/11/2026 (PR #61); ?chao=0 volta a chuva que limpa o chao
      CHAO_N=+((location.search.match(/[?&]chaoN=(\d)/)||[])[1])||3; // chaoN: passadas para limpar as pocas coloridas que a chuva deixou (padrao 3; as de ovo perdido continuam com 5)
 // ovo que cai em cima de uma poca (centro a menos de meia poca) nao empilha outra (senao o chao nunca limpa)
-function addPuddle(p){if(CHAO){const c=p.x+11,q=puddles.find(o=>!o.rot&&Math.abs(o.x+(o.w0||o.w)/2-c)<11);
-  if(q){if(!p.rain&&q.rain){q.rain=false;q.wn=p.wn;}if(p.col!=null&&q.rain)q.col=p.col;return;}}
+// a raposa nao passa da borda da tela: poca colada na parede nunca fechava uma passada completa (e ficava para sempre). Por isso a poca fica sempre onde a raposa consegue atravessar inteira (x de 10 a 112)
+const puddleX=x=>Math.max(10,Math.min(W-10-22,x));
+function addPuddle(p){p.x=puddleX(p.x);if(CHAO){const c=p.x+11,q=puddles.find(o=>!o.rot&&Math.abs(o.x+(o.w0||o.w)/2-c)<11);
+  if(q){if(!p.rain&&q.rain){q.rain=false;q.wn=p.wn;}if(p.col!=null&&q.rain)q.col=p.col;q.sp=22;return;}}// ovo em cima de poca: nao empilha, mas a poca faz splash (sp = animacao)
   puddles.push(p);}
 /* v2 do BOLA: o chao sujo tambem deixa o FAZENDEIRO BRAVO (cara vermelha). 1+ = corre mais e avisa menos (0,7 s -> 0,4 s);
    3+ = FURIOSO, as vezes joga duas bolas. Comer CALM_N ovos seguidos acalma 1 nivel (tira uma gota). 3 vidas no BOLA. */
@@ -1353,7 +1368,7 @@ function ballLife(it){if(weak())hitWeak++;else if(stressT>0)hitNerv++;if(!firstH
 function breakRotten(it){
   it.dead=true;const cx=it.x+4;sfx.rotten();
   burst(cx,GROUND-2,7,['#a3ad5e','#6f7a34','#5c4426'],1.3,1.6);
-  puddles.push({x:Math.round(cx-11),w:22,life:Infinity,rot:true}); // splash verde: deixa a raposa lenta (nao escorrega), fica ate a Chuva de Ovos
+  puddles.push({x:puddleX(Math.round(cx-11)),w:22,life:Infinity,rot:true}); // splash verde: deixa a raposa lenta (nao escorrega), fica ate a Chuva de Ovos
 }
 // comeu: vomita e fica parado um instante (sem perder vida, mas zera o combo e nao conta ponto)
 function eatRotten(it){
@@ -1506,7 +1521,7 @@ function update(){
     // passada = entrar por um lado e sair pelo outro, 1 px alem da borda (parada em cima ou voltando pelo mesmo lado nao conta).
     // A proxima conta quando ela volta e atravessa de novo.
     for(const p of puddles){if(p.rain)continue;const c=p.x+p.w/2,hw=Math.max(p.w,4)/2,a=c-hw,b=c+hw;
-      if(!p.from){if(cx>=a&&cx<=b)p.from=lastCx<a?'L':lastCx>b?'R':cx<c?'L':'R';}
+      if(!p.from){if(cx>=a&&cx<=b){p.from=lastCx<a?'L':lastCx>b?'R':cx<c?'L':'R';}}
       else if(p.from==='L'?cx<a-1:cx>b+1)p.from=null; // voltou pelo mesmo lado
       else if(p.from==='L'?cx>b+1:cx<a-1){p.from=null;p.wear=(p.wear||0)+1;p.w0=p.w0||p.w;p.w=Math.round(p.w0*(1-p.wear/(p.wn||WEAR_N)));p.x=Math.round(c-p.w/2);
         burst(c,GROUND-1,3,p.rot?['#a3ad5e','#6f7a34']:[PAL.w,PAL.y],.9,.9);if(p.wear>=(p.wn||WEAR_N)){p.life=0;sfx.splat();pzClean++;}}}
@@ -1620,7 +1635,7 @@ function update(){
     }
   }
   items=items.filter(i=>!i.dead);
-  for(const p of puddles)p.life--;
+  for(const p of puddles){p.life--;if(p.sp>0)p.sp--;}
   puddles=puddles.filter(p=>p.life>0);
 }
 
@@ -1718,7 +1733,7 @@ function drawFarm(){
   const fimg=over||(mad||rage)&&!scared?FARMER.angry:scared||afraid?FARMER.scared:FARMER.awake;
   const tx=ANIM&&!carry?(afraid&&frame%90<36&&frame%4<2?1:(tier>=2||fGrowT>0)&&state==='play'&&frame%(fGrowT>0?2:tier>=3?3:6)<1?(frame%2?1:-1):0):0; // tremendo de medo; nos niveis altos, de raiva
   const FXs=clamp(FX+Math.round((13-dw)/2)+tx,0,W-dw);
-  ctx.drawImage(fimg,FXs,fy,dw,dh);
+  ctx.drawImage(carry&&!scared?FARMER0[fimg===FARMER.angry?'angry':fimg===FARMER.scared?'scared':'awake']:fimg,FXs,fy,dw,dh);
   if(ANIM&&state==='play'&&!scared){const d=fox.x+8-(FX+6.5),lk=d<-14?-1:d>14?1:0,ey=fy+Math.round((fimg===FARMER.angry?5:4)*fS),e1=FXs+Math.round(5*fS),e2=FXs+Math.round(8*fS); // olhos seguem a raposa
     if(lk){ctx.fillStyle=FPAL.f;ctx.fillRect(e1,ey,1,1);ctx.fillRect(e2,ey,1,1);ctx.fillStyle=PAL.k;ctx.fillRect(e1+lk,ey,1,1);ctx.fillRect(e2+lk,ey,1,1);}}
   if(afraid){const ph=frame%80;ctx.fillStyle='#8ecdf5'; // gota de suor: escorre pelo rosto e cai no palheiro
@@ -1729,7 +1744,9 @@ function drawFarm(){
   if(!scared&&state==='play'&&(mad)&&frame%30<20)text('!',FXs+(dw>>1),fy-8,1,PAL.y,'center',PAL.k);
   const a1=FXs+Math.round(2*fS),a2=FXs+Math.round(9*fS);
   if(carry){const bi=ballSet(carry.ph)[0],by=inhale?-2:0;if(items.some(i=>i.wait>0&&i.pair))ctx.drawImage(bi,FXs+Math.round(6*fS),fy-14+by);ctx.drawImage(bi,a1,fy-8+by); // FURIOSO: duas bolas       // bola erguida, pronta para jogar
-    ctx.fillStyle=FPAL.R;ctx.fillRect(a1,fy-1,2,4);ctx.fillRect(a2,fy-1,2,4);}
+    {const aw=Math.max(2,Math.round(2*fS)),sh=fy+Math.round(8*fS);ctx.fillStyle=FPAL.R; // bracos erguidos (2): do ombro ate a bola, na escala do fazendeiro
+      ctx.fillRect(FXs+Math.round(1*fS),fy-1,aw,sh-fy+1);ctx.fillRect(FXs+Math.round(10*fS)-(aw-2),fy-1,aw,sh-fy+1);
+      ctx.fillStyle=FPAL.f;ctx.fillRect(FXs+Math.round(1*fS),fy-1,aw,2);ctx.fillRect(FXs+Math.round(10*fS)-(aw-2),fy-1,aw,2);}}
   else if(farmer.throwT>0){ctx.fillStyle=FPAL.R;ctx.fillRect(FXs+Math.round(1*fS),fy0+10,2,3);ctx.fillRect(FXs+Math.round(10*fS),fy0+10,2,3);} // bracos descendo do arremesso
   const goldHen=(items.find(i=>i.gold&&i.state==='fall'&&i.y<GROUND-60)||{}).hen;
   hens.forEach((h,i)=>{
@@ -1816,6 +1833,9 @@ function render(){
     const m=Math.round(p.x+p.w/2),fcx=fox.x+8,jy=ANIM&&state==='play'&&fcx>p.x-2&&fcx<p.x+p.w+2&&Math.abs(fox.vx)>.2&&frame%8<4?-1:0; // a raposa em cima: a gema treme
     ctx.fillStyle=p.rot?'#5c4426':PAL.y;ctx.fillRect(m-yw/2,GROUND-2+jy,yw,3-jy);if(yw>2)ctx.fillRect(m-yw/2+1,GROUND-3+jy,yw-2,1);
     ctx.fillStyle=PAL.t;if(p.w>8)ctx.fillRect(p.x+3,GROUND-1,2,1);ctx.fillRect(m-Math.min(2,yw/2),GROUND-2,1,1);
+    if(p.sp>0&&p.w>6){const u=Math.sin((p.sp/22)*Math.PI),h=Math.max(1,Math.round(6*u)),k=Math.round((1-p.sp/22)*5); // ovo caiu em cima: coroa de splash e gotas subindo
+      ctx.fillStyle=pc[0];ctx.fillRect(m-1,GROUND-3-h,3,h);ctx.fillRect(m-4-k,GROUND-3-Math.round(h*.6),2,2);ctx.fillRect(m+3+k,GROUND-3-Math.round(h*.6),2,2);
+      ctx.fillStyle=PAL.y;ctx.fillRect(m,GROUND-3-h,1,Math.min(h,3));}
   }
   drawFx(); // pena e feno caindo
   for(const p of puddles)if(p.rot)stink(Math.round(p.x+p.w/2),GROUND-3,frame+p.x*7); // o splash verde tambem fede
@@ -1930,11 +1950,12 @@ function render(){
   }
   if(state==='over'){
     ctx.fillStyle='rgba(27,27,31,.6)';ctx.fillRect(0,0,W,H);
-    ctx.drawImage(FARMER.angry,Math.round(farmer.x),LEDGE_Y-11); // o fazendeiro acordou de vez (fica claro, por cima do escuro)
+    ctx.drawImage(FARMER.awake,Math.round(farmer.x),LEDGE_Y-11); // o fazendeiro fica claro, por cima do escuro
     if(frame%30<20)text('!',Math.round(farmer.x)+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
-    text('O FAZENDEIRO',W/2,40,1,PAL.r,'center',PAL.k);
-    text('ACORDOU!',W/2,48,2,PAL.r,'center',PAL.k);
-    text('PONTOS '+pts,W/2,62,2,PAL.t,'center',PAL.k);
+    const why=losses[losses.length-1]==='fome'?'A FOME VENCEU A RAPOSA':'AS BOLINHAS VENCERAM'; // fecha a historia: como a raposa saiu do celeiro
+    text('FIM DE JOGO',W/2,38,2,PAL.r,'center',PAL.k);
+    text(why,W/2,53,1,PAL.t,'center',PAL.k);
+    text('PONTOS '+pts,W/2,64,2,PAL.t,'center',PAL.k);
     text('OVOS '+score+(rainEaten?' + '+rainEaten+' NA CHUVA':''),W/2,76,1,PAL.w);
     text('MAIOR COMBO '+maxCombo,W/2,84,1,PAL.w);
     const m=MEDALS.find(m=>score>=m[0]); // medalha por ovos fora da chuva (nao depende do multiplicador)
