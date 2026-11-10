@@ -26,13 +26,16 @@ A curva segue o princípio de ensinar uma coisa por vez (*Design for How People 
 O BOLA é o único modo desde 04/11/2026: o NORMAL e o CONSTANTE saíram do jogo e do código. A tela inicial mostra só o logo, o play e o recorde.
 - **Vida:** 5 corações. A **bolinha de tênis** do fazendeiro tira um (pancada ou engolida) e a **fome** também: com a barriga vazia a raposa fica fraca (60% da velocidade), perde 1 coração depois de 6 s e mais 1 a cada 4 s até comer. A fome pode matar.
 - **Barriga:** guarda 3 ovos, começa com 2 e esvazia sempre (0,14 / 0,16 / 0,18 ovo/s). Aparece em cima da raposa quando chega na metade. Ovo comido, da chuva, dourado e podre alimentam (o podre enjoa 1 s).
-- **Ovo perdido** não tira vida: vira poça escorregadia, que some depois de 5 passadas completas da raposa.
+- **Ovo perdido** não tira vida: vira poça escorregadia, que some depois de 5 passadas completas da raposa. **A poça também seca sozinha** (desde 10/11/2026): a cada 8 s ela perde o equivalente a uma passada, então some em ~40 s (as da chuva, em ~24 s) mesmo sem ninguém pisar. `?seca=N` muda os segundos; `?seca=0` desliga.
 - **A Chuva de Ovos não limpa o chão** (desde 04/11/2026): as poças ficam e os ovos da chuva no ar continuam caindo e viram poças coloridas, que somem com 3 passadas. Limpar não dá nada; só tira o escorregão. Ovo que cai em cima de uma poça não empilha outra. `?chao=0` volta a chuva que limpa.
+- **Combo:** x2 com **6** ovos seguidos e x3 com **12** (eram 10 e 20; o x2 quase nunca saía).
+- **Primeira vez:** a barriga só começa a esvaziar depois do 1º ovo comido (ou de 3 perdidos), e o aviso do chão escorregadio espera o 1º ovo comido e o intervalo entre novidades.
+- **Fim de jogo:** mostra a causa do último coração (O FAZENDEIRO ACERTOU! ou A RAPOSA FICOU SEM COMER!).
 - **Grito (rugido):** só comendo, 10 ovos no nível 1, +2 por nível. Chama a Chuva de Ovos, onde caem os corações perdidos (a chuva não limpa mais o chão); depois o fazendeiro fica bravo por 5 s.
 - **Fazendeiro:** tem medo (gota de suor); ameaça desde o começo (pelo menos 35% de bolas).
 - **Curva:** anda por ovos comidos + perdidos. Recorde em `eggsplash-pts-b`. Telemetria em `?stats=1`. `?bola=vinganca` troca a fome pela bola da vingança (teste). Bot em `tools/bot/`.
 
-As seções abaixo contam a história do jogo (curva, fazenda, rugido etc.); o que fala de cascas ou de ovo perdido tirando vida era do NORMAL.
+As seções abaixo contam a história do jogo (curva, fazenda, rugido etc.). **Onde elas divergem desta seção, vale esta:** o que fala de cascas, de "5 ovos esborrachados", de ovo perdido tirando vida ou de "o fazendeiro acorda" era do NORMAL; o rugido enche com 10 ovos (+2 por nível), não com 20 ovos ou 45 s; o combo é 6/12.
 
 ## Aprender e continuar jogando (v2)
 - **Uma novidade por vez:** entre uma regra nova e a próxima passam pelo menos **20 s**. Isso vale para a 1ª bola, o 1º pintinho/galinha, o 1º rugido, o 1º ovo podre e o 1º dourado. Se a próxima já pode chegar (pela pontuação), ela espera o intervalo; o botão do rugido fica quase cheio até lá
@@ -65,7 +68,8 @@ O botão de pausa abre o **MENU** (na partida, pausa o jogo):
 - **CONTINUAR** (ou FECHAR fora da partida)
 - **JOGO NOVO**: começa outra partida na hora (no meio de uma, desiste dela)
 - **RESETAR RECORDE**: zera o recorde dos dois modos
-- **JOGAR COMO 1ª VEZ**: zera o recorde, o SEGURE A BOCA! e as novidades já vistas, e volta para a tela inicial, para testar o jogo completo como um jogador novo
+- **JOGAR COMO 1ª VEZ** (só no modo de teste): zera o recorde, o SEGURE A BOCA! e as novidades já vistas, e volta para a tela inicial, para testar o jogo completo como um jogador novo
+- **ENVIAR NÚMEROS** (só no modo de teste ou com `?stats=1`): abre o compartilhar do iPhone com o resumo e o registro das partidas, para o tester mandar por WhatsApp. Nada sai do aparelho sozinho
 - Os dois resets pedem um 2º toque para confirmar. A telemetria e os ajustes não são apagados
 
 ## Rugido
@@ -95,8 +99,8 @@ Um ovo verde com manchas e **fedor subindo** (fiozinhos verdes ondulando; o spla
 
 ## Ovo dourado
 Um ovo de ouro que brilha. **Coma!**
-- Aparece a partir de **20 pontos**, em 2% dos ovos (nunca enquanto a raposa já está gigante)
-- **Vale +5** e deixa a raposa **2x maior e invencível por 5 s** (barrinha dourada embaixo dos corações)
+- Aparece a partir de **20 pontos**, em 7% dos ovos, só com o botão do rugido cheio (nunca enquanto a raposa já está gigante)
+- **Vale +5** e deixa a raposa **2x maior e invencível por 8 s** (barrinha dourada embaixo dos corações)
 - Gigante: a boca e o corpo ficam do dobro do tamanho; bolas que encostam saem voando sem tontura; o ovo podre se desfaz sem vômito nem cheiro; a galinha sai voando sem parar a raposa
 - Ovos normais que caem no chão continuam tirando vida
 - No último 1,5 s a raposa pisca entre os dois tamanhos, avisando que vai acabar
@@ -114,11 +118,11 @@ No fim de jogo, o botão **PIRÂMIDE** (ou a tecla V) mostra todos os ovos que a
 - Ovo branquinho, sem pintas, com um brilho no alto (a bola é vermelha)
 - Depois de comer um ovo, a raposa fica **gordinha** por 1 s (a barriga incha e desincha)
 - O nome **CHUVA DE OVOS!** aparece só no começo da chuva (~1,7 s) e some
-- **Microanimações** (só visual): a raposa respira (ofega depois de correr, com a língua para fora), pisca, abana o rabo, levanta as orelhas quando o fazendeiro ergue a bola, ronca de fome, fica de cabeça baixa quando fraca, abre os braços escorregando, lambe o focinho depois de comer e achata soltando poeira ao virar ou frear. O fazendeiro treme de medo, a gota de suor escorre e cai, os olhos seguem a raposa e ele respira fundo antes de jogar. As galinhas bicam, se arrumam, piscam e soltam uma peninha ao botar. Ovos balançam caindo, a gema da poça treme com a raposa em cima, cai feno do palheiro, as luminárias balançam com poeira brilhando na luz, o último coração bate e os pontos dão um pop. `?anim=0` desliga tudo para comparar
+- **Microanimações** (só visual): a raposa respira (ofega depois de correr, com a língua para fora), pisca, abana o rabo, levanta as orelhas quando o fazendeiro ergue a bola, ronca de fome, fica de cabeça baixa quando fraca, abre os braços escorregando, lambe o focinho depois de comer e achata soltando poeira ao virar ou frear. O fazendeiro treme de medo, a gota de suor escorre e cai, os olhos seguem a raposa e ele respira fundo antes de jogar. As galinhas bicam, se arrumam, piscam e soltam uma peninha ao botar. Ovos balançam caindo, a gema da poça treme com a raposa em cima, cai feno do palheiro, as luminárias balançam com poeira brilhando na luz, o último coração bate e os pontos dão um pop. `?anim=0` desliga tudo para comparar; quem usa **Reduzir Movimento** no iOS joga sem elas e sem a tela tremer
 
 ## Controles
 - ◀ ▶ andar (dá para **deslizar o dedo** de uma seta para a outra sem levantar) · botão redondo (segurar) abrir a boca · botão do trovão quando estiver **vermelho**
-- **Som:** o botão de som no topo. Com o som do jogo **desligado**, a música de outro app (Spotify, Apple Music) continua tocando; com ele ligado, o jogo toca mesmo com a chave de silencioso
+- **Som:** o botão de som no topo. A música de outro app (Spotify, Apple Music) **continua tocando com o som do jogo ligado**: os efeitos tocam por cima (sessão de áudio `ambient`, desde 10/11/2026). Em troca, a chave de silencioso do iPhone cala o jogo
 - Teclado: setas / A D, ↑ ou espaço para a boca, R rugir, P pausa, Esc menu, M som, Enter jogar de novo (X = 2X, só no modo de teste)
 
 ## Ajustes de teste

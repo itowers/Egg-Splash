@@ -1,11 +1,13 @@
 // Bot para calibrar o jogo (BOLA, o unico modo). Uso: node tools/bot/bot.js <partidas> <maxSeg> > saida.json
-// Perfis: bom, medio, desvia (nao come, so desvia), desviaBom. O bot sabe onde a bola vai cair, entao desvia melhor que uma pessoa.
+// Perfis: craque (teto de habilidade), bom, medio, desvia (nao come, so desvia), desviaBom. O bot sabe onde a bola vai cair, entao desvia melhor que uma pessoa.
 // FOME=max,start,rate sobrescreve a fome do BOLA para calibrar.
 let PW;try{PW=require('playwright')}catch(e){PW=require('playwright-core')}const {chromium,devices}=PW;
 // CLEAN_Y=70: o bot so vai limpar poca quando o ovo mais baixo esta acima dessa altura (maior = limpa mais)
 const FO=process.env.FOME?process.env.FOME.split(',').map(Number):null;const MODES=['bola'],CLEAN_Y=+process.env.CLEAN_Y||70;const N=+process.argv[2]||10,MAXS=+process.argv[3]||360;
-const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html')+(process.env.CHAO==='0'?'?chao=0':process.env.CHAO_N?'?chaoN='+process.env.CHAO_N:''); // CHAO=0: a chuva volta a limpar o chao (o padrao e nao limpar) // a chuva nao limpa o chao
+const path=require('path');const URL='file://'+path.resolve(__dirname,'../../index.html')+(process.env.Q?process.env.Q: // Q='?seca=0' etc.: qualquer parametro de teste
+  process.env.CHAO==='0'?'?chao=0':process.env.CHAO_N?'?chaoN='+process.env.CHAO_N:''); // CHAO=0: a chuva volta a limpar o chao (o padrao e nao limpar) // a chuva nao limpa o chao
 const PROFILES={
+  craque:{react:3,err:1,missBall:0,mouthLate:0,smart:true}, // teto de habilidade: reage em 0,05 s, nunca deixa de ver a bola
   bom:  {react:10,err:3,missBall:.08,mouthLate:.05},
   medio:{react:18,err:6,missBall:.22,mouthLate:.12},
   desvia:{react:18,err:6,missBall:.22,mouthLate:.12,lazy:true},
@@ -19,7 +21,7 @@ const PROFILES={
   const errs=[];page.on('pageerror',e=>errs.push(String(e)));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
   await page.goto(URL);await page.waitForTimeout(300);
   const out=[];
-  for(const modo of MODES)for(const [pn,P] of Object.entries(PROFILES))for(let g=0;g<N;g++){
+  for(const modo of MODES)for(const [pn,P] of Object.entries(PROFILES).filter(([k])=>!process.env.PERFIS||process.env.PERFIS.split(',').includes(k)))for(let g=0;g<N;g++){
     const r=await page.evaluate(({modo,P,MAXS,seed,FO,CLEAN_Y})=>{
       const E=window.__egg;if(FO){E.FOME.max=FO[0];E.FOME.start=FO[1];E.FOME.rate=FO[2];}E.reset();
       const GROUND=E.fox?null:null;
@@ -34,7 +36,11 @@ const PROFILES={
           let tx=P.lazy?fx:eggs.length?eggs[0].x+(Math.random()*2-1)*P.err:fx;
           // bola perto: foge (as vezes nao ve)
           const danger=its.filter(i=>(i.type==='ball'||i.type==='rotten')&&i.y>105&&Math.abs((i.land!=null?i.land:i.x)+4.5-fx)<15);
-          if(danger.length&&Math.random()>P.missBall){const d=danger[0],dx=(d.land!=null?d.land:d.x)+4.5;tx=dx<fx?Math.min(140,dx+22):Math.max(4,dx-22);}
+          if(danger.length&&Math.random()>P.missBall){const d=danger[0],dx=(d.land!=null?d.land:d.x)+4.5;tx=dx<fx?Math.min(140,dx+22):Math.max(4,dx-22);
+            // craque: foge para o lado que tem espaco (nao contra a parede) e nao troca de lado no meio da fuga
+            if(P.smart){if(d._side==null)d._side=dx<26?1:dx>118?-1:(fx>=dx?1:-1);tx=dx+22*d._side;}}
+          else if(P.smart){ // craque: nao busca ovo passando por baixo de uma bola que esta chegando
+            const b=its.find(i=>i.type==='ball'&&i.y>70);if(b){const bx=(b.land!=null?b.land:b.x)+4.5;if((tx-bx)*(fx-bx)<0||Math.abs(tx-bx)<15)tx=bx+(fx>=bx?20:-20);}}
           // sem ovo para pegar logo: atravessa a poca mais perto para limpar o chao (como uma pessoa faria)
           if(!P.lazy&&(!eggs.length||eggs[0].y<CLEAN_Y)&&!danger.length){const ps=E.puddles.filter(p=>!p.rain&&p.w>0);
             if(ps.length){const p=ps.sort((a,b)=>Math.abs(a.x+a.w/2-fx)-Math.abs(b.x+b.w/2-fx))[0],c=p.x+p.w/2;
