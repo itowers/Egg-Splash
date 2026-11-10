@@ -155,7 +155,8 @@ button svg{display:block;width:100%;height:100%;pointer-events:none}
   <button id="mcont" class="main">CONTINUAR</button>
   <button id="mnew">JOGO NOVO</button>
   <button id="mbest">RESETAR RECORDE</button>
-  <button id="mfirst">JOGAR COMO 1ª VEZ</button>
+  <button id="mfirst" hidden>JOGAR COMO 1ª VEZ</button>
+  <button id="mstats" hidden>ENVIAR NÚMEROS</button>
   <button id="mtune" hidden>AJUSTES</button>
   <div class="info" id="minfo"></div>
 </div></div>
@@ -443,12 +444,14 @@ const LEAD_EGG=12,LEAD_BALL=40; // frames para a galinha/o fazendeiro chegar ao 
 const HENS_START=[66],HENS_MAX=7;
 /* BOLA (o unico modo desde 04/11/2026; NORMAL e CONSTANTE sairam do jogo): a vida so cai quando a bola acerta a raposa
    (pancada ou engolida) ou pela fome. Perder o ovo nao tira vida: vira poca escorregadia (DIRT_MAX). A Chuva de Ovos limpa o chao. */
-const DIRT_MAX=5;
+const DIRT_MAX=5,SECA_DEF=8; // SECA_DEF: segundos para a poca secar uma passada sozinha (?seca=N muda; ?seca=0 desliga)
+let dried=0;
 /* Chao nao limpa (pedido do Igor em 04/11/2026, padrao desde o PR #61): a Chuva de Ovos NAO limpa o chao. As pocas ficam (as da chuva viram
    pocas normais, coloridas) e os ovos da chuva que ainda estao no ar continuam caindo e viram poca. A raposa precisa ir de um
    lado para o outro para limpar o chao pisando (WEAR_N passadas). */
 const CHAO=!/[?&]chao=0/.test(location.search), // padrao desde 04/11/2026 (PR #61); ?chao=0 volta a chuva que limpa o chao
-     CHAO_N=+((location.search.match(/[?&]chaoN=(\d)/)||[])[1])||3; // chaoN: passadas para limpar as pocas coloridas que a chuva deixou (padrao 3; as de ovo perdido continuam com 5)
+     CHAO_N=+((location.search.match(/[?&]chaoN=(\d)/)||[])[1])||3,
+     DRY_T=Math.round(60*(()=>{const m=location.search.match(/[?&]seca=(\d+)/);return m?+m[1]:SECA_DEF;})()); // chaoN: passadas para limpar as pocas coloridas que a chuva deixou (padrao 3; as de ovo perdido continuam com 5)
 // ovo que cai em cima de uma poca (centro a menos de meia poca) nao empilha outra (senao o chao nunca limpa)
 function addPuddle(p){if(CHAO){const c=p.x+11,q=puddles.find(o=>!o.rot&&Math.abs(o.x+(o.w0||o.w)/2-c)<11);
   if(q){if(!p.rain&&q.rain){q.rain=false;q.wn=p.wn;}if(p.col!=null&&q.rain)q.col=p.col;return;}}
@@ -511,7 +514,7 @@ function starveTick(){if(weakT<starveNext)return;starveNext+=STARVE_N; // PR #54
   lives--;losses.push('fome');logLoss('fome');hf++;shake=7;bellyHit=20;if(lives>0)sfx.hurt();else gameOver();}
 function starve(){} // ovo perdido: nao tira da barriga (so deixa de encher); o castigo e o chao sujo
 function fullShown(){return Math.max(0,full);}
-function hungerTick(){bPlayF++;if(full<=1e-6&&FOME_ON())weakF++;if(!FOME_ON()||rainT>0||fox.big>0)return;const was=full>1e-6;if(full<=1e-6){weakT++;starveTick();}else{weakT=0;starveNext=STARVE_1;}
+function hungerTick(){bPlayF++;if(full<=1e-6&&FOME_ON())weakF++;if(!FOME_ON()||rainT>0||fox.big>0||(!mouthKnown&&missed<3))return;const was=full>1e-6;if(full<=1e-6){weakT++;starveTick();}else{weakT=0;starveNext=STARVE_1;}
     full=Math.max(0,full-fomeRate()/60);
   if(was&&full<=1e-6){shake=4;sfx.hurt();if(!hungerHint){hungerHint=1;bolaHint('COM FOME!','SEM COMER, PERDE CORAÇÃO!',150);}}
   else if(full>0&&full<FOME.max*.25&&frame%40===0)tone(110,0,.12,'triangle',.05);} // barriga roncando
@@ -912,20 +915,15 @@ function drawDrops(){if(!BARN)return drawDropsOutdoor();ctx.save();ctx.clip(BARN
 
 
 /* ---------- audio ---------- */
-let ac=null,master=null,noiseBuf=null,silentEl=null,muted=false;
+let ac=null,master=null,noiseBuf=null,muted=false;
 try{muted=localStorage.getItem('eggsplash-mute')==='1'}catch(e){}
-function silentWav(){const n=4410,buf=new ArrayBuffer(44+n*2),v=new DataView(buf);
-  const w=(o,str)=>{for(let i=0;i<str.length;i++)v.setUint8(o+i,str.charCodeAt(i))};
-  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);
-  v.setUint16(22,1,true);v.setUint32(24,44100,true);v.setUint32(28,88200,true);v.setUint16(32,2,true);v.setUint16(34,16,true);
-  w(36,'data');v.setUint32(40,n*2,true);return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));}
-/* Som do jogo ligado: sessao "playback" (toca mesmo com a chave de silencioso, escolha anterior).
-   Som DESLIGADO: sessao "ambient", AudioContext suspenso e nenhum audio tocando, entao a musica de outro app
-   (Spotify, Apple Music) continua tocando enquanto a pessoa joga. */
-function audioMode(){try{if(navigator.audioSession)navigator.audioSession.type=muted?'ambient':'playback'}catch(e){}}
+/* Revisao de 10/11/2026: sessao "ambient" SEMPRE. Os efeitos do jogo tocam por cima da musica de outro app
+   (Spotify, Apple Music), que nao para. Custo: a chave de silencioso do iPhone cala o jogo (padrao dos jogos no iOS).
+   Antes: "playback" com o som ligado, que parava a musica. Som desligado: AudioContext suspenso. */
+function audioMode(){try{if(navigator.audioSession)navigator.audioSession.type='ambient'}catch(e){}}
 function unlockAudio(){
   audioMode();
-  if(muted){if(silentEl&&!silentEl.paused)silentEl.pause();if(ac&&ac.state==='running')ac.suspend().catch(()=>{});return;}
+  if(muted){if(ac&&ac.state==='running')ac.suspend().catch(()=>{});return;}
   if(!ac){try{
     ac=new(window.AudioContext||window.webkitAudioContext)();
     master=ac.createGain();master.gain.value=muted?0:.9;
@@ -934,9 +932,7 @@ function unlockAudio(){
   }catch(e){ac=null;return;}}
   if(ac.state!=='running')ac.resume().catch(()=>{});
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
-  // iOS: an HTML audio element switches the session to "playback" so the silent switch doesn't mute the game
-  if(!silentEl&&!navigator.audioSession){try{silentEl=new Audio(silentWav());silentEl.loop=true;silentEl.setAttribute('playsinline','');}catch(e){}}
-  if(silentEl&&silentEl.paused)silentEl.play().catch(()=>{});
+  // (o <audio> mudo que forcava a sessao "playback" saiu: ele parava a musica dos outros apps)
 }
 function setMuted(m){muted=m;try{localStorage.setItem('eggsplash-mute',m?'1':'0')}catch(e){}
   if(master)master.gain.setTargetAtTime(m?0:.9,ac.currentTime,.02);
@@ -998,7 +994,7 @@ const sfx={
    (regra 5 da curva: controles constantes durante a partida). Cada partida guarda na telemetria o que mudou (cfg). */
 const TUNE_DEF={ctrl:'setas',mouthMode:'segurar',btn:1,spd:1.8,spdMouth:.8,acc:.45,brake:.6,mouthPad:0,
   stun:1,halt:.4,sick:.7,slow:.45,fallK:.9,ballMax:50,ballGap:6,aimK:1,aimErrK:1,
-  roarEggs:20,roarFloor:45,newGap:20,c2:10,c3:20};
+  roarEggs:20,roarFloor:45,newGap:20,c2:6,c3:12}; // combo: x2 com 6 e x3 com 12 (eram 10 e 20: o x2 quase nunca saia)
 // [chave, nome no menu, min, max, passo, unidade]; texto = opcoes
 const TUNE_SPEC=[
   ['CONTROLE',[
@@ -1087,7 +1083,7 @@ function sawNew(k){if(seenNow.has(k))return;seenNow.add(k);try{localStorage.setI
 const CHICK_VET=90,HEN_AUTO=150; // veterano: pintinho -> galinha em 1,5 s; galinha sobe sozinha em 2,5 s
 // Veterano tambem pula a espera do nivel 1: o 1o ovo ja choca (o nivel 2 e pedido desde o 0) e ate 2 objetos caem juntos antes dos 5 ovos.
 // (Com 1 objeto por vez, ovo e bola se revezam e os 5 ovos levavam ~32 s mesmo sem errar.)
-const mult=()=>combo>=T.c3?3:combo>=T.c2?2:1; // x2 com 10 ovos seguidos, x3 com 20 (ajustavel)
+const mult=()=>combo>=T.c3?3:combo>=T.c2?2:1; // x2 com 6 ovos seguidos, x3 com 12 (ajustavel)
 function gain(n){pts+=n*mult();if(combo>maxCombo)maxCombo=combo;if(combo===T.c2||combo===T.c3){multT=70;sfx.record();}}
 const BALL_GAP=()=>Math.min(T.ballGap,FARM_GAP[farmerTier()])*60; // BOLA: cada nivel de sujeira tira 10% (6 s -> 3 s) // A: o fazendeiro nunca fica mais de 6 s sem jogar (fora da Chuva de Ovos)
 const RAIN_LEN=7*60; // Chuva de Ovos (7 s): so acontece quando a raposa ruge
@@ -1106,7 +1102,7 @@ let bird=null,hatchCD=0;
 // Cair no chao = splash verde igual ao do ovo normal (escorrega), ate a Chuva de Ovos.
 const ROT_FROM=15,SICK_T=40;
 let rotSeen=false;
-// Ovo dourado (ver README): 2% dos ovos depois de GOLD_FROM pts. Vale +5 e deixa a raposa 2x maior e invencivel por 5 s.
+// Ovo dourado (ver README): 7% dos ovos depois de GOLD_FROM pts, so com o rugido cheio. Vale +5 e deixa a raposa 2x maior e invencivel por 8 s.
 const GOLD_FROM=20,GOLD_P=.07,GOLD_PTS=5,BIG_T=8*60,BIG_GROW=30,BIG_WARN=90;
 const rotP=s=>s<ROT_FROM?0:Math.min(.12,.05+(s-ROT_FROM)*.0015);
 const BAD='ball';
@@ -1116,10 +1112,10 @@ let lostLog=[],ballHits=0;
 const STATS=/[?&]stats=1/i.test(location.search);
 function logLoss(c){lostLog.push({c,ph:phaseOf(score),s:score,busy:fox.stun>0||fox.sick>0||fox.halt>0});}
 function saveGame(){try{const L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]');
-  L.push({score,pts,ch:rainEaten,sv:2,m:'b',bv:12,...(CHAO?{chao:1,cl:chaoLate,df:Math.round(dirtF/60),dm:dirtMax}:{}),hf,rv:[revN,revHit],dur:Math.round(bPlayF/60),wk:Math.round(weakF/60),hw:hitWeak,nv:hitNerv,pz:pzClean,b1:firstHit,rc:rotEaten,mc:maxCombo,...(lv2T?{l2:lv2T}:{}),...(vet?{vet:1}:{}),cfg:{...tuneDiff(T),...(fastGame?{x2:1}:{})},lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
+  L.push({score,pts,ch:rainEaten,sv:2,m:'b',bv:13,...(CHAO?{chao:1,cl:chaoLate,df:Math.round(dirtF/60),dm:dirtMax}:{}),hf,rv:[revN,revHit],dur:Math.round(bPlayF/60),wk:Math.round(weakF/60),hw:hitWeak,nv:hitNerv,pz:pzClean,dr:dried,b1:firstHit,rc:rotEaten,mc:maxCombo,...(lv2T?{l2:lv2T}:{}),...(vet?{vet:1}:{}),cfg:{...tuneDiff(T),...(fastGame?{x2:1}:{})},lost:lostLog,balls:ballHits,roars,idle:roarFull,t:Date.now()});localStorage.setItem('eggsplash-log',JSON.stringify(L.slice(-200)));}catch(e){}}
 function statsLines(){let L=[];try{L=JSON.parse(localStorage.getItem('eggsplash-log')||'[]')}catch(e){}
   // telemetria do BOLA (tela inicial com ?stats=1)
-  L=L.filter(g=>g.m==='b'&&g.bv>=11&&!g.chao===!CHAO);if(!L.length)return[(CHAO?'CHÃO=1':'BOLA')+': SEM PARTIDAS AINDA']; // ?chao=1 tem a telemetria separada
+  L=L.filter(g=>g.m==='b'&&g.bv>=13&&!g.chao===!CHAO);if(!L.length)return[(CHAO?'CHÃO=1':'BOLA')+': SEM PARTIDAS AINDA']; // ?chao=1 tem a telemetria separada
   const md=a=>{a=[...a].sort((x,y)=>x-y);return a[Math.floor(a.length/2)];},S=k=>L.reduce((a,g)=>a+(g[k]||0),0);
   return['JOGOS '+L.length+' OVOS '+md(L.map(g=>g.score))+' PTS '+md(L.map(g=>g.pts)),
     'TEMPO '+md(L.map(g=>g.dur||0))+'S 1A BOLADA '+md(L.map(g=>g.b1||0))+'S',
@@ -1147,7 +1143,9 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v;
    respira fundo antes de jogar. Galinhas: bicam, se arrumam, piscam e soltam peninha ao botar.
    Ovos balancam caindo; a poca treme com a raposa em cima. Celeiro: feno caindo, luminarias balancando, poeira na luz.
    HUD: ultimo coracao batendo e pop nos pontos. ?anim=0 desliga tudo para comparar. */
-const ANIM=!/[?&]anim=0/.test(location.search);
+/* Revisao de 10/11/2026: quem liga "Reduzir Movimento" no iOS joga sem as microanimacoes (igual a ?anim=0) e sem a tela tremer. */
+const CALMO=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}})();
+const ANIM=!CALMO&&!/[?&]anim=0/.test(location.search);
 const MA={br:0,pant:0,blink:0,nextBlink:200,tail:0,lick:0,sq:0,pvx:0,alert:0,rumble:0,nextRumble:120,pop:0,lastPts:0,prevChew:0,hens:[],fx:[],nextHay:300};
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 function animTick(){
@@ -1195,7 +1193,7 @@ function drawFx(){if(!ANIM)return;
     else{const d=Math.sin(f.t*.06)>0?1:-1;ctx.fillStyle='#c9a94a';ctx.fillRect(x,y,1,1);ctx.fillRect(x+d,y+1,1,1);ctx.fillStyle='#8a7236';ctx.fillRect(x+2*d,y+2,1,1);}}}
 const hit=(a,aw,ah,b)=>a.x<b.x+b.w&&a.x+aw>b.x&&a.y<b.y+b.h&&a.y+ah>b.y;
 
-function reset(){T={...CFG};chaoLate=0;dirtF=0;dirtMax=0;touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;known=new Set(seenNow);vet=kn('galinha');lv2T=0;playF=0;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;farmerRest=0;fGrowT=0;dirtT=0;stressT=0;stressSeen=false;full=FOME.max*FOME.start;hungerHint=0;bellyOn=0;bellyGlow=0;bellyLbl=0;bellyHit=0;starveNext=STARVE_1;hf=0;bellyDisp=FOME.max*FOME.start;weakT=0;boldSeen=0;bPlayF=0;weakF=0;hitWeak=0;hitNerv=0;pzClean=0;firstHit=0;rotEaten=0;minFull=9;hintMsg=null;furySeen=false;MA.pant=0;MA.lastPts=0;MA.pop=0;MA.sq=0;MA.fx=[];closePyr();
+function reset(){T={...CFG};dried=0;chaoLate=0;dirtF=0;dirtMax=0;touch.m=false;ptrs.clear();syncCtrl();lvlT=0;lvl=1;quake=0;skyT=0;resetWeather();score=0;lives=MAXL();resetFarm();heartsToDrop=0;heartPlan=[];combo=0;rainT=0;recent=[];roarEggs=0;roarT=0;roarFull=0;roarHint=0;roarSeen=false;roars=[];spawned=0;ballRun=0;eggRun=0;lastBallPhase=-1;ballGap=0;lastEgg={x:W/2-4,arr:frame+60};items=[];parts=[];puddles=[];spawnT=50;newBest=false;bird=null;hatchCD=0;eaten=[];hatched=0;losses=[];lostLog=[];ballHits=0;rotSeen=false;pts=0;maxCombo=0;multT=0;lastNew=-1e9;henSeen=false;henHint=0;goldSeen=false;twistLvl=0;twistT=0;rainEaten=0;rainRun=0;fastGame=false;known=new Set(seenNow);vet=kn('galinha');lv2T=0;playF=0;dirt=0;dirtHint=0;dirtSeen=false;missed=0;revN=0;revHit=0;calm=0;farmerRest=0;fGrowT=0;dirtT=0;stressT=0;stressSeen=false;full=FOME.max*FOME.start;hungerHint=0;bellyOn=0;bellyGlow=0;bellyLbl=0;bellyHit=0;starveNext=STARVE_1;hf=0;bellyDisp=FOME.max*FOME.start;weakT=0;boldSeen=0;bPlayF=0;weakF=0;hitWeak=0;hitNerv=0;pzClean=0;firstHit=0;rotEaten=0;minFull=9;hintMsg=null;furySeen=false;MA.pant=0;MA.lastPts=0;MA.pop=0;MA.sq=0;MA.fx=[];closePyr();
   Object.assign(fox,{queasy:0,roar:0,fat:0,hid:false,x:W/2-8,vx:0,stun:0,inv:0,chew:0,walk:0,halt:0,sick:0,big:0});state='play';sfx.start();}
 // Curva de dificuldade (ver curva-de-dificuldade.md no projeto). s = ovos comidos fora da Chuva de Ovos.
 // Sobe rapido no inicio e se aproxima de um teto justo: queda 3,0s -> 1,6s, intervalo 1,6s -> 0,7s, bolas 0% -> 50%.
@@ -1327,7 +1325,7 @@ function doRoar(){
 }
 function burst(x,y,n,colors,spd=1.5,up=1.5){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*spd*2,vy:-Math.random()*up-.3,
   life:25+Math.random()*20,c:colors[i%colors.length]});}
-function gameOver(){state='over';quake=0;overT=0;saveGame();if(pts>best){best=pts;newBest=true;try{localStorage.setItem(bestKey(),best)}catch(e){}}sfx.over();if(newBest)sfx.record();}
+function gameOver(){items=items.filter(i=>i.type!=='ball');state='over';quake=0;overT=0;saveGame();if(pts>best){best=pts;newBest=true;try{localStorage.setItem(bestKey(),best)}catch(e){}}sfx.over();if(newBest)sfx.record();}
 
 function breakEgg(it){
   it.dead=true;const cx=it.x+4;
@@ -1337,7 +1335,7 @@ function breakEgg(it){
   // ovo perdido nao tira vida: vira poca escorregadia
     missed++;if(!it.hatch)starve();logLoss('egg');combo=0;shake=3;sfx.crack();sfx.slip();
     revengeBall();
-    if(!dirtSeen){dirtSeen=true;bolaHint('CHÃO ESCORREGADIO!','PASSE 5 VEZES PARA LIMPAR');}
+    if(!dirtSeen&&mouthKnown&&newOK()){dirtSeen=true;bolaHint('CHÃO ESCORREGADIO!','PASSE 5X PARA LIMPAR');} // uma novidade por vez: espera o 1o ovo comido e o intervalo entre novidades
     addPuddle({x:Math.round(cx-11),w:22,life:Infinity});
     burst(cx,GROUND-2,6,[PAL.w,PAL.c],1.4,1.8);burst(cx,GROUND-2,5,[PAL.y],1,1.2);
 }
@@ -1506,6 +1504,9 @@ function update(){
     // passada = entrar por um lado e sair pelo outro, 1 px alem da borda (parada em cima ou voltando pelo mesmo lado nao conta).
     // A proxima conta quando ela volta e atravessa de novo.
     for(const p of puddles){if(p.rain)continue;const c=p.x+p.w/2,hw=Math.max(p.w,4)/2,a=c-hw,b=c+hw;
+      // PR da revisao de 10/11: a poca SECA sozinha. A cada DRY_T sem ser pisada ela perde o equivalente a uma passada (sem contar como limpa)
+      if(DRY_T&&(p.age=(p.age||0)+1)>=DRY_T){p.age=0;p.wear=(p.wear||0)+1;p.w0=p.w0||p.w;p.w=Math.round(p.w0*(1-p.wear/(p.wn||WEAR_N)));p.x=Math.round(c-p.w/2);
+        if(p.wear>=(p.wn||WEAR_N)){p.life=0;dried++;}continue;}
       if(!p.from){if(cx>=a&&cx<=b)p.from=lastCx<a?'L':lastCx>b?'R':cx<c?'L':'R';}
       else if(p.from==='L'?cx<a-1:cx>b+1)p.from=null; // voltou pelo mesmo lado
       else if(p.from==='L'?cx>b+1:cx<a-1){p.from=null;p.wear=(p.wear||0)+1;p.w0=p.w0||p.w;p.w=Math.round(p.w0*(1-p.wear/(p.wn||WEAR_N)));p.x=Math.round(c-p.w/2);
@@ -1801,8 +1802,8 @@ function drawMouthHint(){const on=state==='play'&&!mouthKnown;if(on!==bmHint){bm
 function render(){
   drawRoarBtn();drawMouthHint();
   ctx.save();
-  if(shake)ctx.translate(Math.round((Math.random()-.5)*shake*.6),Math.round((Math.random()-.5)*shake*.6));
-  const qa=quake>0?Math.ceil(4*quake/QUAKE_T):0,qx=qa?Math.round(Math.sin(quake*1.9)*qa):0,qy=qa?Math.round((Math.random()-.5)*qa):0;
+  if(shake&&!CALMO)ctx.translate(Math.round((Math.random()-.5)*shake*.6),Math.round((Math.random()-.5)*shake*.6));
+  const qa=quake>0&&!CALMO?Math.ceil(4*quake/QUAKE_T):0,qx=qa?Math.round(Math.sin(quake*1.9)*qa):0,qy=qa?Math.round((Math.random()-.5)*qa):0;
   if(qa)ctx.translate(qx,qy); // terremoto: o mundo todo treme de um lado para o outro
   quakeDOM(qa?qx:0,qa?qy:0);
   drawWorld();
@@ -1932,8 +1933,9 @@ function render(){
     ctx.fillStyle='rgba(27,27,31,.6)';ctx.fillRect(0,0,W,H);
     ctx.drawImage(FARMER.angry,Math.round(farmer.x),LEDGE_Y-11); // o fazendeiro acordou de vez (fica claro, por cima do escuro)
     if(frame%30<20)text('!',Math.round(farmer.x)+6,LEDGE_Y-19,1,PAL.y,'center',PAL.k);
-    text('O FAZENDEIRO',W/2,40,1,PAL.r,'center',PAL.k);
-    text('ACORDOU!',W/2,48,2,PAL.r,'center',PAL.k);
+    {const fome=losses[losses.length-1]==='fome'; // causa do ultimo coracao: responde "por que perdi?"
+    text(fome?'A RAPOSA FICOU':'O FAZENDEIRO',W/2,40,1,PAL.r,'center',PAL.k);
+    text(fome?'SEM COMER!':'ACERTOU!',W/2,48,2,PAL.r,'center',PAL.k);}
     text('PONTOS '+pts,W/2,62,2,PAL.t,'center',PAL.k);
     text('OVOS '+score+(rainEaten?' + '+rainEaten+' NA CHUVA':''),W/2,76,1,PAL.w);
     text('MAIOR COMBO '+maxCombo,W/2,84,1,PAL.w);
@@ -2112,6 +2114,7 @@ function renderMenu(){const g=state==='play'||state==='pause';
   document.getElementById('mcont').textContent=g?'CONTINUAR':'FECHAR';
   document.getElementById('mnew').textContent=g?'JOGO NOVO (DESISTIR)':'JOGO NOVO';
   document.getElementById('mtune').hidden=!DEBUG;
+  document.getElementById('mfirst').hidden=!DEBUG;document.getElementById('mstats').hidden=!(DEBUG||STATS); // so no modo de teste (ou com ?stats=1)
   for(const [id,t,c] of [['mbest','RESETAR RECORDE','CONFIRMA? ZERA O RECORDE'],['mfirst','JOGAR COMO 1ª VEZ','CONFIRMA? ZERA TUDO']]){
     const b=document.getElementById(id);b.textContent=menuArm===id?c:t;b.classList.toggle('warn',menuArm===id);}}
 function openMenu(){unlockAudio();if(state==='play'){state='pause';sfx.pause();}menuArm=null;menuInfo.textContent=(best?'RECORDE '+best:'SEM RECORDE')+(DEBUG?' · MODO DE TESTE':'');renderMenu();menuEl.hidden=false;}
@@ -2127,6 +2130,15 @@ mb('mfirst',()=>{if(!armed('mfirst'))return;clearBest();
   try{['eggsplash-boca','eggsplash-visto'].forEach(k=>localStorage.removeItem(k))}catch(e){}
   mouthKnown=false;seenNow=new Set();closeMenu(false);toTitle();tone(880,0,.06,'square',.05);tone(1319,0,.06,'square',.05,.08);});
 mb('mtune',()=>{closeMenu(false);openTune();});
+/* ENVIAR NUMEROS (modo de teste ou ?stats=1): o tester manda o resumo e o registro das partidas pelo compartilhar do iOS
+   (WhatsApp, Mensagens, e-mail). Nada sai do aparelho sozinho: so quando a pessoa toca aqui e escolhe para onde mandar. */
+mb('mstats',()=>{let log='[]';try{log=localStorage.getItem('eggsplash-log')||'[]'}catch(e){}
+  const resumo='EGG SPLASH\n'+statsLines().join('\n'),done=m=>{menuInfo.textContent=m;};
+  try{const file=new File([log],'eggsplash-partidas.json',{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],text:resumo,title:'Egg Splash'}).then(()=>done('ENVIADO'),()=>{});return;}}catch(e){}
+  if(navigator.share){navigator.share({text:resumo,title:'Egg Splash'}).then(()=>done('ENVIADO'),()=>{});return;}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(resumo+'\n'+log).then(()=>done('COPIADO'),()=>done('NÃO DEU PARA COPIAR'));return;}
+  done('SEM COMPARTILHAR NESTE APARELHO');});
 menuEl.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===menuEl)closeMenu(true);}); // tocar fora da caixa = continuar
 let dbgTaps=0,dbgT=0;
 document.getElementById('menuhd').addEventListener('pointerdown',e=>{const n=performance.now();dbgTaps=n-dbgT<800?dbgTaps+1:1;dbgT=n; // 5 toques seguidos: modo de teste

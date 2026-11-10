@@ -8,6 +8,7 @@ python3 tools/bot/analise.py saida.json                        # duração, ovos
 node tools/bot/perfeito.js                                     # BOLA: quem come todos os ovos nunca fica fraco?
 ```
 
-- **Perfis:** `bom`, `medio`, `desvia` (não come, só desvia), `desviaBom`.
+- **Perfis:** `craque` (teto de habilidade: reage em 0,05 s, foge para o lado com espaço), `bom`, `medio`, `desvia` (não come, só desvia), `desviaBom`.
 - **Limite:** o bot sabe onde a bola vai cair, então desvia melhor que uma pessoa, e não mede se o jogo é entendido. Use para comparar versões, não para decidir sozinho.
 - `FOME=max,start,rate` sobrescreve a fome do BOLA (ex.: `FOME=3,0.6667,0.18`).
+- `Q='?seca=0'` passa qualquer parâmetro de teste para o jogo; `PERFIS=craque,bom` roda só alguns perfis.
